@@ -174,6 +174,27 @@ public class RedisSessionDAO extends EnterpriseCacheSessionDAO {
 
 #获取所有用户sessionid及信息
 Collection<Session> sessions = sessionDAO.getActiveSessions();
+
+public Session getSessionByUsername(String userid) {
+        Collection<Session> sessions = sessionDAO.getActiveSessions();
+        Member user;
+        Object attribute;
+        for (Session session : sessions) {
+            attribute = session.getAttribute(DefaultSubjectContext.PRINCIPALS_SESSION_KEY);
+            if (attribute == null) {
+                continue;
+            }
+            user = (Member) ((SimplePrincipalCollection) attribute).getPrimaryPrincipal();
+            if (user == null) {
+                continue;
+            }
+            if (userid.equals(user.getUid()+"")) {
+                return session;
+            }
+        }
+        return null;
+    }
+
 #删除用户sessionid
 public boolean removeSession(String ids) {
         //read session by id
