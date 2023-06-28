@@ -172,6 +172,17 @@ public class RedisSessionDAO extends EnterpriseCacheSessionDAO {
     }
 }
 
+#获取所有用户sessionid及信息
+Collection<Session> sessions = sessionDAO.getActiveSessions();
+#删除用户sessionid
+public boolean removeSession(String ids) {
+        //read session by id
+        Session session = sessionDAO.readSession(ids);//通过readSession读取session，然后调用delete删除
+        sessionDAO.delete(session);
+        return true;
+    }
+
+
 
 
 
@@ -260,5 +271,6 @@ shiroconfig的SecurityManager添加：securityManager.setSessionManager(sessionM
         ClearSessionCacheFilter clearSessionCacheFilter = new ClearSessionCacheFilter();
         return clearSessionCacheFilter;
     }
+
 
 
