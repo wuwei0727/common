@@ -173,6 +173,9 @@ public class RedisSessionDAO extends EnterpriseCacheSessionDAO {
 }
 
 #获取所有用户sessionid及信息
+@Resource
+    private SessionDAO sessionDAO;
+
 Collection<Session> sessions = sessionDAO.getActiveSessions();
 
 public Session getSessionByUsername(String userid) {
