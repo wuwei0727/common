@@ -1,0 +1,81 @@
+1、appcation配置文件
+## 内存模式
+spring.shardingsphere.mode.type=Standalone
+spring.shardingsphere.mode.repository.type=File
+spring.shardingsphere.mode.overwrite=true
+# 打印SQl
+spring.shardingsphere.props.sql-show=true
+
+#
+###  一个实体类对应多个表 覆盖
+spring.main.allow-bean-definition-overriding=true
+## 配置真实数据源 名称
+spring.shardingsphere.datasource.names=ds0,ds1
+#========================数据源
+spring.shardingsphere.datasource.ds0.type=com.zaxxer.hikari.HikariDataSource
+spring.shardingsphere.datasource.ds0.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.shardingsphere.datasource.ds0.url=jdbc:mysql://localhost:3306/park0?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+spring.shardingsphere.datasource.ds0.username=root
+spring.shardingsphere.datasource.ds0.password=123456
+
+spring.shardingsphere.datasource.ds1.type=com.zaxxer.hikari.HikariDataSource
+spring.shardingsphere.datasource.ds1.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.shardingsphere.datasource.ds1.url=jdbc:mysql://localhost:3306/park1?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+spring.shardingsphere.datasource.ds1.username=root
+spring.shardingsphere.datasource.ds1.password=123456
+
+#========================标准分片表配置（数据节点配置）
+####指定数据库 ds相当于上面#spring.shardingsphere.datasource.names=ds0,ds1起的别名。$->{0..1}是表达式0..1表示你表名后面的数字，如果是1/2那就是$->{1..2}
+####p_findcar是表名。p_findcar1、p_findcar2 ---》p_findcar$->{1..2}
+spring.shardingsphere.rules.sharding.tables.p_findcar.actual-data-nodes=ds$->{0..1}.p_findcar$->{0..1}
+#------------------------分库策略
+# 分片列名称
+spring.shardingsphere.rules.sharding.tables.p_findcar.database-strategy.standard.sharding-column=map
+# 分片算法名称
+spring.shardingsphere.rules.sharding.tables.p_findcar.database-strategy.standard.sharding-algorithm-name=alg_inline_map
+
+#------------------------分片算法配置
+# 行表达式分片算法
+# 分片算法类型
+spring.shardingsphere.rules.sharding.sharding-algorithms.alg_inline_map.type=INLINE
+# 分片算法属性配置
+spring.shardingsphere.rules.sharding.sharding-algorithms.alg_inline_map.props.algorithm-expression=ds$->{map % 2}
+
+#------------------------分表策略
+# 分片列名称
+spring.shardingsphere.rules.sharding.tables.p_findcar.table-strategy.standard.sharding-column=placeName
+# 分片算法名称
+spring.shardingsphere.rules.sharding.tables.p_findcar.table-strategy.standard.sharding-algorithm-name=alg_hash_mod
+#------------------------分片算法配置
+# 哈希取模分片算法
+## 分片算法类型
+spring.shardingsphere.rules.sharding.sharding-algorithms.alg_hash_mod.type=HASH_MOD
+# 分片算法属性配置
+spring.shardingsphere.rules.sharding.sharding-algorithms.alg_hash_mod.props.sharding-count=2
+
+#spring.shardingsphere.rules.sharding.sharding-algorithms.alg_hash_mod.type=INLINE
+## 分片算法属性配置
+#spring.shardingsphere.rules.sharding.sharding-algorithms.alg_hash_mod.props.algorithm-expression=p_findcar$->{map % 2}
+#------------------------分布式序列策略配置
+#####---------------
+##//当配置了shardingsphere-jdbc的分布式序列时，自动使用shardingsphere-jdbc的分布式序列
+##//当没有配置shardingsphere-jdbc的分布式序列时，自动依赖数据库的主键自增策略
+####
+# 分布式序列列名称
+###指定p_findcar表里面主键map为生成策略 SNOWFLAKE
+#spring.shardingsphere.rules.sharding.tables.p_findcar.key-generate-strategy.column=id
+## 分布式序列算法名称
+#spring.shardingsphere.rules.sharding.tables.p_findcar.key-generate-strategy.key-generator-name=alg_snowflake
+#
+##------------------------分布式序列算法配置
+## 分布式序列算法类型
+#spring.shardingsphere.rules.sharding.key-generators.alg_snowflake.type=SNOWFLAKE
+# 分布式序列算法属性配置
+#spring.shardingsphere.rules.sharding.key-generators.alg_snowflake.props.xxx=
+
+2、<dependency>
+            <groupId>org.apache.shardingsphere</groupId>
+            <artifactId>shardingsphere-jdbc-core-spring-boot-starter</artifactId>
+            <version>5.1.1</version>
+        </dependency>
+3、
