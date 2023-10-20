@@ -1,3 +1,56 @@
+=====================================================================================================================================
+properties方式：
+
+spring.data.elasticsearch.repositories.enabled=true
+#spring.data.elasticsearch.client.reactive.endpoints=192.168.1.131:9200
+spring.elasticsearch.rest.uris=192.168.1.131:9200
+logging.level.org.elasticsearch=debug
+
+
+=====================================================================================================================================
+
+和上面的二选一可要可不要
+java方式：
+// package com.tgy.rtls.data.config;
+//
+// import org.elasticsearch.client.RestHighLevelClient;
+// import org.springframework.context.annotation.Bean;
+// import org.springframework.context.annotation.Configuration;
+// import org.springframework.data.elasticsearch.client.ClientConfiguration;
+// import org.springframework.data.elasticsearch.client.RestClients;
+// import org.springframework.data.elasticsearch.config.AbstractElasticsearchConfiguration;
+//
+// /**
+//  * @BelongsProject: rtls
+//  * @BelongsPackage: com.tgy.rtls.data.config
+//  * @Author: wuwei
+//  * @CreateTime: 2023-10-16 11:15
+//  * @Description: TODO
+//  * @Version: 1.0
+//  * ElasticSearch 客户端配置
+//  */
+// @Configuration
+// public class ElasticSearchClientConfig extends AbstractElasticsearchConfiguration {
+//     @Override
+//     @Bean
+//     public RestHighLevelClient elasticsearchClient() {
+//         final ClientConfiguration clientConfiguration = ClientConfiguration.builder()
+//                 .connectedTo("localhost:9200")
+//                 .build();
+//         return RestClients.create(clientConfiguration).rest();
+//     }
+// }
+
+=====================================================================================================================================
+
+
+<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+                7.6.2
+        </dependency>
+
+
 package com.tgy.rtls.web.controller.ES;
 
 import com.alibaba.fastjson.JSON;
@@ -27,7 +80,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.ParsedValueCount;
@@ -104,8 +156,8 @@ public class EsTeseController {
 
             ESInfraredOriginal original = new ESInfraredOriginal();
             original.setTimestamp("2023");
-            original.setGatewayNum("21");
-            original.setInfraredNum("213");
+            original.setGatewayNum("22");
+            original.setInfraredNum("214");
             original.setState(0);
             original.setCount(11);
             original.setRssi(22);
@@ -122,9 +174,12 @@ public class EsTeseController {
     @PostMapping ("/createIndex")
     public Boolean createIndex() throws IOException {
         CreateIndexRequest createIndexRequest = new CreateIndexRequest(EsConst.infraredOriginal);
-        if (client.indices().create(createIndexRequest, RequestOptions.DEFAULT).isAcknowledged()) {
-            return elasticsearchRestTemplate.indexOps(ESInfraredOriginal.class).putMapping(operations.indexOps(ESInfraredOriginal.class).createMapping());
+        if(!getIndex(createIndexRequest.index())){
+            if (client.indices().create(createIndexRequest, RequestOptions.DEFAULT).isAcknowledged()) {
+                return elasticsearchRestTemplate.indexOps(ESInfraredOriginal.class).putMapping(operations.indexOps(ESInfraredOriginal.class).createMapping());
+            }
         }
+
         return false;
 
 
@@ -216,16 +271,16 @@ public class EsTeseController {
     public Object test() throws IOException {
             Instant start = Instant.now();
             // 1. 创建查询请求对象
-            SearchRequest query = new SearchRequest(EsConst.ES_INDEX);
+            SearchRequest query = new SearchRequest(EsConst.infraredOriginal);
             // 2. 构建搜索条件
             SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
             // 构建聚合，按照map字段进行分组
-            TermsAggregationBuilder mapAggregation = AggregationBuilders.terms("map").field("map");
+            TermsAggregationBuilder mapAggregation = AggregationBuilders.terms("gatewayNum").field("gatewayNum");
             // 添加子聚合，统计每个map下的文档数量
-            ValueCountAggregationBuilder countAggregation = AggregationBuilders.count("count").field("map");
+            ValueCountAggregationBuilder countAggregation = AggregationBuilders.count("count").field("gatewayNum");
             // 添加子聚合，获取每个map下的name和mapname
-            TermsAggregationBuilder nameAggregation = AggregationBuilders.terms("name").field("name").size(10);
-            TermsAggregationBuilder mapnameAggregation = AggregationBuilders.terms("mapName").field("mapName").size(10);
+            TermsAggregationBuilder nameAggregation = AggregationBuilders.terms("infraredNum").field("infraredNum").size(10);
+            TermsAggregationBuilder mapnameAggregation = AggregationBuilders.terms("gatewayNum").field("gatewayNum").size(10);
             // 将子聚合添加到map聚合中
             mapAggregation.subAggregation(countAggregation);
             mapAggregation.subAggregation(nameAggregation);
@@ -241,19 +296,19 @@ public class EsTeseController {
             System.out.println("search代码执行时间：" + elapsedTime.toMillis() + "毫秒");
             Aggregations aggregations = search.getAggregations();
             if (aggregations != null) {
-                Terms mapTerms = aggregations.get("map");
+                Terms mapTerms = aggregations.get("gatewayNum");
                 List<Student> result = new ArrayList<>();
                 for (Terms.Bucket mapBucket : mapTerms.getBuckets()) {
                     Student student = new Student();
                     student.setName(mapBucket.getKeyAsString());
                     student.setCount(mapBucket.getDocCount());
 
-                    Terms nameTerms = mapBucket.getAggregations().get("name");
+                    Terms nameTerms = mapBucket.getAggregations().get("gatewayNum");
                     if (nameTerms.getBuckets().size() > 0) {
                         student.setName(nameTerms.getBuckets().get(0).getKeyAsString());
                     }
 
-                    Terms mapnameTerms = mapBucket.getAggregations().get("mapName");
+                    Terms mapnameTerms = mapBucket.getAggregations().get("gatewayNum");
                     if (mapnameTerms.getBuckets().size() > 0) {
                         student.setMapName(mapnameTerms.getBuckets().get(0).getKeyAsString());
                     }
@@ -273,7 +328,7 @@ public class EsTeseController {
     @GetMapping("/map-stats")
     public Object  getMapStats() throws IOException {
         // 1.创建查询请求对象
-        SearchRequest query = new SearchRequest(EsConst.ES_INDEX);
+        SearchRequest query = new SearchRequest(EsConst.findcartest);
         // 2.构建搜索条件
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         // 构建聚合，聚合之间可以进行嵌套聚合，如果要先分组然后sum或者avg时，需要嵌套
@@ -312,36 +367,7 @@ public class EsTeseController {
             return search;
         }
     }
-
-    @GetMapping ("/count")
-    public void count() throws Exception {
-        System.out.println("getTypeGroupBy() = " + getTypeGroupBy());
-    }
-
-
-    public Map<String, Long> getTypeGroupBy() throws IOException {
-        Map<String, Long> map = new LinkedHashMap<>();
-        SearchRequest searchRequest = new SearchRequest();
-        searchRequest.indices(EsConst.ES_INDEX);
-        //指定分组字段,terms指定别名,field指定字段名
-        TermsAggregationBuilder aggregation = AggregationBuilders.terms("content")
-                //聚合字段名
-                .field("map.keywrod")
-                .size(10000)
-                // 降序
-                .order(BucketOrder.count(false));
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.aggregation(aggregation);
-        //执行查询
-        searchRequest.source(searchSourceBuilder);
-        SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-        Terms byAgeAggregation = response.getAggregations().get("content");
-        List<? extends Terms.Bucket> buckets = byAgeAggregation.getBuckets();
-        for (Terms.Bucket buck: buckets) {
-            map.put(buck.getKeyAsString(), buck.getDocCount());
-        }
-        return map;
-    }
+    
 
     @GetMapping ("batchInsert")
     public String batchInsert(Integer num1,String map,String mapName) {
