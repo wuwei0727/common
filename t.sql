@@ -341,9 +341,33 @@ BEGIN
 END //
 
 DELIMITER ;
+-- --------------------------------------------------------------------------------------------------------------------------------------
+根据用户id添加访问次数
 
 
-
+DELIMITER $
+CREATE PROCEDURE insertUserVisitCount(
+    IN input_year INT,
+    IN input_month INT,
+    IN days_in_month INT,
+    IN number_of_records INT,
+    IN mapId INT,
+    IN userId INT
+)
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    DECLARE random_day INT;
+    DECLARE random_date DATETIME;
+    WHILE i < number_of_records DO
+            SET random_day = FLOOR(1 + (RAND() * days_in_month));
+            SET random_date = STR_TO_DATE(CONCAT(input_year, '-', input_month, '-', random_day, ' ', FLOOR(RAND() * 24), ':', FLOOR(RAND() * 60), ':', FLOOR(RAND() * 60)), '%Y-%m-%d %H:%i:%s');
+            insert into map_monthactiveuserrecord(userid,map,loginTime,is_fake_data) values (userId,mapId,random_date,1);
+            SET i = i + 1;
+        END WHILE;
+END$
+DELIMITER ;
+-- 调用存储过程
+CALL insertUserVisitCount(2023, 5,20,1,75,19);
 
 
 SELECT
