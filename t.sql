@@ -6,32 +6,50 @@
 # numbers 必须
 
 DROP PROCEDURE IF EXISTS insertUsersTotal;
-
 DELIMITER $
+
 CREATE PROCEDURE insertUsersTotal(
     IN input_year INT,
     IN input_month INT,
     IN days_in_month INT,
     IN number_of_records INT,
-    IN map INT,
-    IN userId VARCHAR(255)
+    IN mapId INT,
+    IN visit_count INT
 )
 BEGIN
     DECLARE i INT DEFAULT 0;
+    DECLARE j INT;
     DECLARE random_day INT;
     DECLARE random_date DATETIME;
+    DECLARE last_inserted_id INT;
 
+    -- 插入 wechat_userinfo 表数据
     WHILE i < number_of_records DO
             SET random_day = FLOOR(1 + (RAND() * days_in_month));
-            SET random_date = STR_TO_DATE(CONCAT(input_year, '-', input_month, '-', random_day, ' ', FLOOR(RAND() * 24), ':', FLOOR(RAND() * 60), ':', FLOOR(RAND() * 60)), '%Y-%m-%d %H:%i:%s');
-            INSERT INTO map_monthactiveuserrecord (userid,map,loginTime,is_fake_data) VALUES (userId,map,random_date,1);
+            SET random_date = STR_TO_DATE(CONCAT(input_year, '-', LPAD(input_month, 2, '0'), '-', LPAD(random_day, 2, '0'), ' ', LPAD(FLOOR(RAND() * 24), 2, '0'), ':', LPAD(FLOOR(RAND() * 60), 2, '0'), ':', LPAD(FLOOR(RAND() * 60), 2, '0')), '%Y-%m-%d %H:%i:%s');
+
+            -- 插入 wechat_userinfo 表
+            INSERT INTO wechat_userinfo(nickName, time, is_fake_data)
+            VALUES ('微信用户', random_date, 1);
+
+            -- 获取刚插入的用户ID
+            SET last_inserted_id = LAST_INSERT_ID();
+
+            -- 插入 map_monthactiveuserrecord 表数据
+            SET j = 0;
+            WHILE j < visit_count DO
+                    INSERT INTO map_monthactiveuserrecord(map, userId, loginTime, is_fake_data)
+                    VALUES (mapId, last_inserted_id, random_date, 1);
+                    SET j = j + 1;
+                END WHILE;
+
             SET i = i + 1;
         END WHILE;
 END$
 DELIMITER ;
 
 -- 调用存储过程
-CALL insertUsersTotal(2023, 5,20,1,75,999999999994);
+CALL insertUsersTotal(2024, 6, 05, 2, 75, 10);
 
 -- --------------------------------------------------------------------------------------------------------------------
 DROP PROCEDURE IF EXISTS insertUserSearchTotal;
