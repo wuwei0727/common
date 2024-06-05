@@ -287,9 +287,42 @@ END$
 DELIMITER ;
 -- 调用存储过程
 CALL insertReverseCarSearchTotal(2023, 5,20,5.0,75,15483,'E001',1);
+-- --------------------------------------------------------------------------------------------------------------------
+
+车位使用记录 随机当天相差小时
+DROP PROCEDURE IF EXISTS insertPlaceUseRecordTotal;
 
 
+DELIMITER //
 
+CREATE PROCEDURE insertPlaceUseRecordTotal(
+    IN input_year INT,
+    IN input_month INT,
+    IN input_day INT,
+    IN number_of_records INT,
+    IN hour_difference INT,
+    IN mapId INT,
+    IN placeId INT
+)
+BEGIN
+    DECLARE i INT DEFAULT 1;
+    DECLARE start_time DATETIME;
+    DECLARE end_time DATETIME;
+
+    WHILE i <= number_of_records DO
+            SET start_time = CONCAT(input_year, '-', LPAD(input_month, 2, '0'), '-', LPAD(input_day, 2, '0'), ' ', LPAD(FLOOR(RAND() * 24), 2, '0'), ':', LPAD(FLOOR(RAND() * 60), 2, '0'), ':', LPAD(FLOOR(RAND() * 60), 2, '0'));
+            SET end_time = DATE_ADD(start_time, INTERVAL hour_difference HOUR);
+
+            -- 确保结束时间仍然在同一天内
+            IF DATE(end_time) = DATE(start_time) THEN
+                INSERT INTO place_userecord(map, place, start, end, is_fake_data)
+                VALUES (mapId, placeId, start_time, end_time, 1);
+                SET i = i + 1;
+            END IF;
+        END WHILE;
+END //
+
+DELIMITER ;
 
 
 
