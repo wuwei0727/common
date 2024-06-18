@@ -329,6 +329,10 @@ BEGIN
 
     WHILE i <= number_of_records DO
             SET start_time = CONCAT(input_year, '-', LPAD(input_month, 2, '0'), '-', LPAD(input_day, 2, '0'), ' ', LPAD(FLOOR(RAND() * 24), 2, '0'), ':', LPAD(FLOOR(RAND() * 60), 2, '0'), ':', LPAD(FLOOR(RAND() * 60), 2, '0'));
+            -- 如果超过当前时间就以当前时间为准
+            IF STR_TO_DATE(start_time, '%Y-%m-%d %H:%i:%s') > NOW() THEN
+                SET start_time = NOW();
+            END IF;
             SET end_time = DATE_ADD(start_time, INTERVAL hour_difference HOUR);
 
             -- 确保结束时间仍然在同一天内
