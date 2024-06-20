@@ -27,7 +27,10 @@ BEGIN
     WHILE i < number_of_records DO
             SET random_day = FLOOR(1 + (RAND() * days_in_month));
             SET random_date = STR_TO_DATE(CONCAT(input_year, '-', LPAD(input_month, 2, '0'), '-', LPAD(random_day, 2, '0'), ' ', LPAD(FLOOR(RAND() * 24), 2, '0'), ':', LPAD(FLOOR(RAND() * 60), 2, '0'), ':', LPAD(FLOOR(RAND() * 60), 2, '0')), '%Y-%m-%d %H:%i:%s');
-
+            -- 如果超过当前时间就以当前时间为准
+            IF STR_TO_DATE(random_date, '%Y-%m-%d %H:%i:%s') > NOW() THEN
+            SET random_date = NOW();
+            END IF;
             -- 插入 wechat_userinfo 表
             INSERT INTO wechat_userinfo(nickName, time, is_fake_data)
             VALUES ('微信用户', random_date, 1);
