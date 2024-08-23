@@ -37,24 +37,43 @@ import java.util.Collection;
         this.loginType = loginType;
     }
 }
- 
+
+
+
+/**
+ * 当配置了多个Realm时，我们通常使用的 认证器 是shiro自带的org.apache.shiro.authc.pam.ModularRealmAuthenticator，
+ * 其中决定使用的Realm的是doAuthenticate()方法。
+ * 
+ * 自定义Authenticator
+ * 注意，当需要分别定义处理 普通用户和系统管理员验证的Realm时，对应Realm的全类名应该包含字符串“Member”或者“User”。
+ * 并且，他们不能相互包含，例如 处理 普通用户的Realm的全类名中不应该包含字符串“User”
+ * 
+ * @author Administrator
+ *
+ */
 public class MultiRealmAuthenticator extends ModularRealmAuthenticator {
     private static final Logger log = LoggerFactory.getLogger(MultiRealmAuthenticator.class);
 
 
     @Override
     public AuthenticationInfo doAuthenticate(AuthenticationToken authenticationToken) throws AuthenticationException {
-        
-            UserToken token = (UserToken) authenticationToken;
-            String loginType = token.getLoginType();
+        //判断getRealms()是否返回为空
+   		 assertRealmsConfigured();
+   		//强制转换回自定义的UserToken
+   		UserToken token = (UserToken) authenticationToken;
+   		//获取登录类型
+   		String loginType = userToken.getLoginType();
+		
+            //所有Realm
             Collection<Realm> realms = getRealms();
+ //登录类型对应的所有Realm
             Collection<Realm> authRealms = new ArrayList<>();
             for(Realm realm : realms){
                 if(realm.getName().equals(loginType)){
                     authRealms.add(realm);
                 }
             }
-
+//判断是 单Realm 还是 多Realm
             if(authRealms.size() == 1){
                 return doSingleRealmAuthentication(authRealms.iterator().next(), token);
             } else {
