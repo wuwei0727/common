@@ -1,0 +1,42 @@
+server:
+  port: 8081
+spring:
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: non_null
+    
+canal.conf:
+  mode: tcp # 客户端的模式，可选tcp kafka rocketMQ
+  flatMessage: true # 扁平message开关, 是否以json字符串形式投递数据, 仅在kafka/rocketMQ模式下有效
+  zookeeperHosts:    # 对应集群模式下的zk地址
+  syncBatchSize: 1000 # 每次同步的批数量
+  retries: 0 # 重试次数, -1为无限重试
+  timeout: # 同步超时时间, 单位毫秒
+  accessKey:
+  secretKey:
+  consumerProperties:
+    # canal tcp consumer
+    canal.tcp.server.host: 127.0.0.1:11111 #设置canal-server的地址
+    canal.tcp.zookeeper.hosts:
+    canal.tcp.batch.size: 500
+    canal.tcp.username:
+    canal.tcp.password:
+ 
+  srcDataSources: # 源数据库配置
+    defaultDS:
+      url: jdbc:mysql://192.168.1.95:3306/park1?useUnicode=true&useSSL=true #测试数据库连接
+      username: root #数据库账号
+      password: tuguiyao #数据库密码
+  canalAdapters: # 适配器列表
+  - instance: example # canal实例名或者MQ topic名
+    groups: # 分组列表
+    - groupId: g1 # 分组id, 如果是MQ模式将用到该值
+      outerAdapters:
+      - name: logger # 日志打印适配器
+      - name: es7 # ES同步适配器
+        hosts: 192.168.1.131:9200 # ES连接地址
+        properties:
+          mode: rest # 模式可选transport(9300) 或者 rest(9200)
+          #security.auth: elastic:123456 #  连接es的用户和密码，仅rest模式使用
+          cluster.name: es # ES集群名称, 与es目录下 elasticsearch.yml文件cluster.name对应
