@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.mapconfig.JumpMapParamMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.mapconfig.JumpMapParam">
+    <!--@mbg.generated-->
+    <!--@Table jump_map_param-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="map_id" jdbcType="BIGINT" property="mapId" />
+    <result column="app_id" jdbcType="BIGINT" property="appId" />
+    <result column="short_link" jdbcType="VARCHAR" property="shortLink" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    j.id, j.map_id, j.app_id, j.short_link,j.createdTime,m.id,m.name as mapName
+  </sql>
+  <update id="updateBatch" parameterType="java.util.List">
+    <!--@mbg.generated-->
+    update park.jump_map_param
+    <trim prefix="set" suffixOverrides=",">
+      <trim prefix="map_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.mapId,jdbcType=BIGINT}
+        </foreach>
+      </trim>
+      <trim prefix="app_id = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.appId,jdbcType=BIGINT}
+        </foreach>
+      </trim>
+      <trim prefix="short_link = case" suffix="end,">
+        <foreach collection="list" index="index" item="item">
+          when id = #{item.id,jdbcType=BIGINT} then #{item.shortLink,jdbcType=VARCHAR}
+        </foreach>
+      </trim>
+    </trim>
+    where id in
+    <foreach close=")" collection="list" item="item" open="(" separator=", ">
+      #{item.id,jdbcType=BIGINT}
+    </foreach>
+  </update>
+  <insert id="batchInsert" keyColumn="id" keyProperty="id" parameterType="map" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into park.jump_map_param
+    (map_id, app_id, short_link)
+    values
+    <foreach collection="list" item="item" separator=",">
+      (#{item.mapId,jdbcType=BIGINT}, #{item.appId,jdbcType=BIGINT}, #{item.shortLink,jdbcType=VARCHAR}
+        )
+    </foreach>
+  </insert>
+
+  <select id="getMapconfig" resultMap="BaseResultMap">
+    select
+        <include refid="Base_Column_List"/>
+    from jump_map_param j
+            left join map_2d m on j.map_id = m.id
+    <where>
+        <if test="mapId != null">
+          m.id = #{mapId}
+        </if>
+        <if test="maps != null and maps != ''">
+          and m.id in
+                  <foreach collection="maps" item="mapIds" open="(" close=")" separator=",">
+                        #{mapIds}
+                  </foreach>
+        </if>
+        <if test="keyword!= null and keyword != ''">
+          <bind name="mapConfigName" value="'%' + keyword + '%'"/>
+          and j.name like #{mapConfigName}
+        </if>
+    </where>
+      <if test="desc != null and desc != ''">
+          order by ${desc}
+      </if>
+  </select>
+</mapper>

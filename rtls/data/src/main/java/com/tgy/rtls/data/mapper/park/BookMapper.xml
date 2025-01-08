@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.park.BookMapper">
+    <insert id="addBookPlace" keyProperty="id" useGeneratedKeys="true">
+        insert into vip_parking (map, start_time, end_time, place, name, license, fee, userid, phone, floor,reservation_person,status,source,create_time)
+        value (#{bookPlace.map},#{bookPlace.start},#{bookPlace.end},#{bookPlace.place},#{bookPlace.placeName},#{bookPlace.license},#{bookPlace.fee},
+        #{bookPlace.userid},#{bookPlace.phone},#{bookPlace.floor},#{bookPlace.reservationPerson},#{bookPlace.status},#{bookPlace.source},#{bookPlace.time})
+    </insert>
+
+    <delete id="delBookPlace">
+        DELETE
+        from vip_parking
+        where vip_parking.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="delStorePlaceById">
+        DELETE
+        from store_place
+        where id = #{id}
+    </delete>
+    <delete id="delLicense">
+        DELETE
+        from wechat_license
+        where wechat_license.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+    <update id="updateBookPlace">
+        update book_place
+        <set>
+            <if test="bookPlace.start != null and bookPlace.start != ''">
+                start= #{bookPlace.start},
+            </if>
+            <if test="bookPlace.end != null and bookPlace.end != ''">
+                end= #{bookPlace.end},
+            </if>
+            <if test="bookPlace.license != null and bookPlace.license != ''">
+                license= #{bookPlace.license},
+            </if>
+            <if test="bookPlace.fee != null and bookPlace.fee != ''">
+                fee= #{bookPlace.fee},
+            </if>
+            <if test="bookPlace.map != null and bookPlace.map != ''">
+                map= #{bookPlace.map},
+            </if>
+            <if test="bookPlace.place != null and bookPlace.place != ''">
+                place= #{bookPlace.place},
+            </if>
+            <if test="bookPlace.charge != null">
+                charge= #{bookPlace.charge},
+            </if>
+            <if test="bookPlace.userid != null">
+                userid= #{bookPlace.userid}
+            </if>
+        </set>
+        where id = #{bookPlace.id}
+    </update>
+
+    <select id="selectFeeByLicenseAndMap" resultType="com.tgy.rtls.data.entity.park.BookPlace">
+        select license,
+               TIME_FORMAT(TIMEDIFF(NOW(), start), '%k时%i分%s秒') AS duration,
+               (case
+                    when TIMESTAMPDIFF(MINUTE, START, NOW()) > 15 then
+                        (CEILING(TIMESTAMPDIFF(MINUTE, start, NOW()) / 30) * 0.5 - fee)
+                    else (0 - fee) end)                            AS fee,
+               charge/*,
+        (select name from parking_place where parking_place.id=book_place.place ) as placeName*/
+        from book_place
+        where license = #{license}
+          and map = #{map}
+        <if test="charge != null">
+            and charge = #{charge}
+        </if>
+        order by id desc
+    </select>
+
+
+    <delete id="deleteCompany">
+        DELETE
+        from parking_company
+        where parking_company.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <insert id="addWechat" keyProperty="id" useGeneratedKeys="true">
+        insert into wechat (userid)
+            value (
+            #{weChatUser.userid}
+            )
+    </insert>
+    <select id="findWeChatUserByUserid" resultType="com.tgy.rtls.data.entity.park.WeChatUser">
+        select *
+        from wechat
+        <where>
+            <if test="id==null and userid == null">userid is null</if>
+            <if test="id != null">and id=#{id}</if> <if test="userid != null and userid != ''">and userid = #{userid}</if>
+        </where>
+    </select>
+    <insert id="addWechatLicense" keyProperty="id" useGeneratedKeys="true">
+        insert into wechat_license (userid, license)
+            value (
+                   #{weChatLicense.userid},
+                   #{weChatLicense.license}
+            )
+    </insert>
+    <select id="findWeChatUserLicense" resultType="com.tgy.rtls.data.entity.park.WeChatLicense">
+        select *
+        from wechat_license
+        where 1=1
+        <if test="userid != null">
+            and userid = #{userid}
+        </if>
+        <if test="license != null and license != ''">and license=#{license}</if>
+    </select>
+
+    <select id="selectRealTimeData" resultType="com.tgy.rtls.data.entity.park.RealTimeData">
+        select
+        (
+        select count(id)
+        from parking_place where state = 0 and instanceid is null
+        <if test="map != null">
+            and map = #{map}
+        </if>
+        ) as emptyPlace,
+        (
+        select count(id)
+        from parking_place where state = 1 and instanceid is null and name != 'lrr0112'
+        <if test="map != null">
+            and map = #{map}
+        </if>
+        ) as usedPlace,
+        (
+        select count(id)
+        from parking_place where charge = 0
+                             and type = 1 and state = 0
+        <if test="map != null">
+            and map = #{map}
+        </if>
+        ) as emptyCharge,
+        (
+        select count(id)
+        from parking_place where charge = 1 and type = 1 and state = 1 and name != 'lrr0112'
+        <if test="map != null">
+            and map = #{map}
+        </if>
+        ) as usedCharge,
+        (
+        select count(id)
+        from parking_place
+        <if test="map != null">
+            where map = #{map}
+        </if>
+        ) as totalPlace,
+        (
+        select count(id)
+        from parking_place where type = 1
+        <if test="map != null">
+            and map = #{map}
+        </if>
+        ) as totalCharge,
+        (
+        SELECT COUNT(1)
+        FROM
+        (
+        SELECT *
+        FROM book_place WHERE NOW() BETWEEN book_place.start AND book_place.end
+        <if test="map != null">
+            and map = #{map}
+        </if>
+        <!--GROUP BY place-->
+        ) aa
+        ) as bookPlace
+    </select>
+    <select id="selectPlaceUseRecordByPlaceid" resultType="com.tgy.rtls.data.entity.park.PlaceUseRecord">
+        select *
+        from place_userecord
+        where place = #{place}
+          and `end` is null
+    </select>
+    <update id="UpdatePlaceUseRecordByid">
+        update place_userecord
+        <set>
+            <if test="placeUseRecord.end != null and placeUseRecord.end != ''">
+                end= #{placeUseRecord.end}
+            </if>
+        </set>
+        where id = #{placeUseRecord.id}
+    </update>
+
+    <select id="selectPlaceChargeRecordByPlaceid" resultType="com.tgy.rtls.data.entity.park.ChargeUseRecord">
+        select *
+        from place_chargerecord
+        where place = #{place}
+          and `end` is null
+    </select>
+    <update id="UpdatePlaceChargeRecordByid">
+        update place_chargerecord
+        <set>
+            <if test="chargeUseRecord.end != null and chargeUseRecord.end != ''">
+                end= #{chargeUseRecord.end}
+            </if>
+        </set>
+        where id = #{chargeUseRecord.id}
+    </update>
+
+
+    <insert id="addPlaceUseRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into place_userecord (map, license, start, place)
+        values (#{placeUseRecord.map}, #{placeUseRecord.license}, #{placeUseRecord.start}, #{placeUseRecord.place})
+    </insert>
+
+    <insert id="addPlaceChargeRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into place_chargerecord (map, license, start, place)
+        values (#{chargeUseRecord.map}, #{chargeUseRecord.license}, #{chargeUseRecord.start}, #{chargeUseRecord.place})
+    </insert>
+    <select id="findBookInfoByUserid" resultType="com.tgy.rtls.data.entity.park.BookPlace">
+        select v.license,
+<!--               TIME_FORMAT(TIMEDIFF(NOW(), v.start_time), '%k时%i分%s秒')        AS duration,-->
+<!--               (case when TIMESTAMPDIFF(MINUTE, v.start_time, NOW()) > 15-->
+<!--                     then (CEILING(TIMESTAMPDIFF(MINUTE, v.start_time, NOW()) / 30) * 0.5 - fee)-->
+<!--                     else (0 - fee) end) AS fee,-->
+               v.place,
+               v.id,
+               v.start_time start,
+               v.end_time end,
+               v.map mapId,
+               (SELECT NAME FROM map_2d WHERE map_2d.id = v.map) AS mapName,
+               parking_place.name                                         as placeName,
+               parking_place.charge,
+               parking_place.x,
+               parking_place.y,
+               parking_place.fid,
+               parking_place.floor,
+               fl.device_num                                                      as floorLockId
+        from vip_parking v
+                 left join parking_place on v.place = parking_place.id
+                 left join floor_lock fl on parking_place.id = fl.place
+        where 1 = 1 and parking_place.carbittype = 1
+          and v.userid = #{userid}
+        <if test="license != null">
+            and v.license = #{license}
+        </if>
+        <if test="mapId != null">
+            and v.map = #{mapId}
+        </if>
+        order by v.id desc
+    </select>
+
+
+    <select id="getStorePlace" resultType="com.tgy.rtls.data.entity.park.StorePlace">
+        select *
+        from store_place
+        where userid = #{userid}
+        <if test="map != null">
+            and map = #{map}
+        </if>
+    </select>
+
+    <select id="selectBookPlaceConfix" resultType="com.tgy.rtls.data.entity.park.BookPlace">
+        select v.id,
+               v.`map`,
+               v.`name`,
+               v.place,
+               v.`floor`,
+               v.license,
+               v.reservation_person,
+               v.phone,
+               v.`type`,
+               v.start_time as start,
+               v.end_time as end,
+               v.duration,
+               v.`state`,
+               v.fee,
+               v.charge,
+               v.userid
+        from vip_parking v
+                 left join parking_place pp on v.name = pp.id
+        where v.place = #{place}
+    </select>
+
+    <insert id="addStorePlace" keyProperty="id" useGeneratedKeys="true">
+        insert into store_place (x, y, floor, fid, map, `name`, userid,icon,type_num,outdoorType,ename)
+            value (
+                   #{storePlace.x},
+                   #{storePlace.y},
+                   #{storePlace.floor},
+                   #{storePlace.fid},
+                   #{storePlace.map},
+                   #{storePlace.name},
+                   #{storePlace.userid},
+                   #{storePlace.icon},
+                   #{storePlace.typeNum},
+                   #{storePlace.outdoorType},
+                   #{storePlace.ename}
+            )
+    </insert>
+
+    <delete id="delStorePlace">
+        DELETE
+        from store_place
+        where store_place.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="selectPlaceUseRecordByPlaceidAndMapid" resultType="com.tgy.rtls.data.entity.park.PlaceUseRecord">
+        select *
+        from place_userecord
+        where map = #{mapId}
+          and place = #{placeId}
+        <if test="time != null and time != ''and time.equals('time')">
+            and start is not null  and end is null
+        </if>
+    </select>
+
+    <delete id="delPlaceUseRecord">
+        DELETE
+        FROM place_userecord
+        WHERE map = #{map}
+          AND place = #{placeId}
+          <!--AND id NOT IN (SELECT p.id
+                         FROM (SELECT id
+                               FROM place_userecord
+                               WHERE map = #{map} AND place = #{placeId}
+                               ORDER BY id DESC
+                               LIMIT 1) p);-->
+    </delete>
+
+    <select id="getStorePlaceByName" resultType="com.tgy.rtls.data.entity.park.StorePlace">
+        select id,
+               x,
+               y,
+               fid,
+               map,
+               name,
+               userid,
+               floor
+        from store_place
+        where name like concat('%', #{comName}, '%')
+    </select>
+
+    <update id="updateStorePlace">
+        update store_place
+        <set>
+            <if test="storePlace.x != null and storePlace.x != ''">
+                x = #{storePlace.x},
+            </if>
+            <if test="storePlace.y != null and storePlace.y != ''">
+                y = #{storePlace.y},
+            </if>
+            <if test="storePlace.floor != null and storePlace.floor != ''">
+                floor = #{storePlace.floor},
+            </if>
+            <if test="storePlace.fid != null and storePlace.fid != ''">
+                fid = #{storePlace.fid},
+            </if>
+            <if test="storePlace.map != null">
+                map = #{storePlace.map}
+            </if>
+        </set>
+        where id = #{storePlace.id}
+    </update>
+
+    <select id="getStorePlaceByFid" resultType="com.tgy.rtls.data.entity.park.StorePlace">
+        select id,
+               x,
+               y,
+               fid,
+               map,
+               name,
+               userid,
+               floor
+        from store_place
+        where store_place.fid = #{fid}
+    </select>
+</mapper>

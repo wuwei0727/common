@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.map.BsConfigMapper">
+    <resultMap id="bsConfigMap" type="com.tgy.rtls.data.entity.map.BsConfig">
+        <!-- 主键映射 -->
+        <id column="id" property="id"/>
+
+        <!-- 基本字段映射 -->
+        <result column="bsid" property="bsid"/>
+        <result column="x" property="x"/>
+        <result column="y" property="y"/>
+        <result column="z" property="z"/>
+        <result column="type" property="type"/>
+        <result column="typeName" property="typeName"/>
+        <result column="floor" property="floor"/>
+
+        <!-- 分站信息映射 -->
+        <result column="num" property="num"/>
+        <result column="name" property="name"/>
+        <result column="networkstate" property="networkstate"/>
+        <result column="networkName" property="networkName"/>
+        <result column="batteryVolt" property="batteryVolt"/>
+        <result column="power" property="power"/>
+        <result column="batteryTime" property="batteryTime"/>
+        <result column="addTime" property="addTime"/>
+        <result column="lifetimeMonths" property="lifetimeMonths"/>
+
+        <!-- 地图信息映射 -->
+        <result column="mapName" property="mapName"/>
+    </resultMap>
+    <select id="findByAll" resultMap="bsConfigMap">
+        SELECT b.id, b.bsid, b.x, b.y, b.z, b.type, b.floor,
+        substation.num,
+        substation.num AS name,
+        bs.name as typeName,
+        substation.networkstate,
+        status.`name` AS networkName,
+        substation.batteryVolt,
+        substation.power,
+        substation.batteryTime,
+        substation.addTime,
+        substation.lifetime_months lifetimeMonths,
+        m.name AS mapName
+        FROM bsconfig b
+            INNER JOIN substation ON b.bsid= substation.id
+            inner join bstype bs on substation.type = bs.id
+            INNER JOIN map_2d m ON m.id = substation.map
+            INNER JOIN status ON status.typeid=substation.networkstate AND status.type='network'
+        WHERE substation.map=#{map}
+        order by substation.addTime desc
+    </select>
+
+    <!--$var name=1-->
+    <select id="findById" resultType="com.tgy.rtls.data.entity.map.BsConfig">
+        select *,
+        (select num from substation where id=b.bsid)as num,
+        (select map from substation where id=b.bsid)as map,
+        (select num from substation where id=b.bsid)as `name`,
+        (select ${name} from bstype where id=b.type)as typeName
+        from bsconfig b
+        where b.id=#{id}
+    </select>
+    <!--$var name=1-->
+    <select id="findById2" resultType="com.tgy.rtls.data.entity.map.BsConfig">
+        select *,
+        (select num from substation where id=b.bsid)as num,
+        (select map from substation where id=b.bsid)as map,
+        (select num from substation where id=b.bsid)as `name`
+        from bsconfig b
+        where b.id=#{id}
+    </select>
+
+    <select id="findByNum" resultType="com.tgy.rtls.data.entity.map.BsConfig">
+        select *,
+        (select num from substation where id=b.bsid)as num,
+        (select num from substation where id=b.bsid)as `name`,
+        (SELECT map FROM substation WHERE id=b.bsid)AS map
+        from bsconfig b
+        where bsid=(select id from substation where num=#{num})
+    </select>
+    <select id="findByNum2" resultType="com.tgy.rtls.data.entity.map.BsConfig">
+        select *,
+        (select num from substation where id=b.bsid)as num,
+        (select num from substation where id=b.bsid)as `name`,
+        (SELECT map FROM substation WHERE id=b.bsid)AS map
+        from bsconfig b
+        where bsid=(select id from substation where num=#{num})
+    </select>
+
+    <insert id="addBsConfig" useGeneratedKeys="true">
+        insert into bsconfig(bsid)
+        value (#{bsid})
+    </insert>
+
+    <insert id="addDisparkBsConfig" keyProperty="id" useGeneratedKeys="true">
+        insert into bsconfig(bsid,x,y,z,floor)
+        value (#{bsConfig.bsid},#{bsConfig.x},#{bsConfig.y},#{bsConfig.z},#{bsConfig.floor})
+    </insert>
+
+    <update id="updateBsConfig">
+        update bsconfig
+        <set>
+            <if test="bsConfig.x != null">
+                x=#{bsConfig.x},
+            </if>
+            <if test="bsConfig.y != null">
+                y=#{bsConfig.y},
+            </if>
+            <if test="bsConfig.z != null">
+                z=#{bsConfig.z},
+            </if>
+            <if test="bsConfig.floor != null and bsConfig.floor != ''">
+                floor=#{bsConfig.floor}
+            </if>
+        </set>
+        where id=#{bsConfig.id}
+    </update>
+
+    <!--    <update id="updateSubBsConfig">-->
+    <!--         update bsconfig-->
+    <!--         set antennadelay=#{antennadelay},disfix=#{disfix}-->
+    <!--         where bsid=#{bsid}-->
+    <!--    </update>-->
+
+    <delete id="delBsConfig">
+        delete from bsconfig
+        where bsconfig.id in
+        <foreach collection="ids" separator="," close=")" open="(" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <delete id="delSub">
+        delete from substation
+        where id in
+        <foreach collection="ids" separator="," close=")" open="(" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="delBsConfigBsid">
+        delete from bsconfig
+        where bsid in
+        <foreach collection="ids" separator="," close=")" open="(" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--$var name=w-->
+    <select id="findByCodeNum" resultType="com.tgy.rtls.data.entity.map.BsConfig">
+        select *,
+        (select num from substation where id=b.bsid)as num,
+        (select ${name} from bstype where id=b.type)as typeName
+        from bsconfig b
+        where bsid=(select id from substation where num=#{num} and
+        instanceid=(select id from instance where code1=#{code1} and code2=#{code2})
+        )
+    </select>
+
+    <select id="getSub" resultType="java.lang.String">
+        select s.id
+        from substation s
+                left join bsconfig b on s.id = b.bsid
+        where b.id = #{bsid}
+
+    </select>
+</mapper>

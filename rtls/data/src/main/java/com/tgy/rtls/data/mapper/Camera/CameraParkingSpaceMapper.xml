@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.Camera.CameraParkingSpaceMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.Camera.CameraParkingSpace">
+    <!--@mbg.generated-->
+    <!--@Table camera_parking_space-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="area_id" jdbcType="BIGINT" property="areaId" />
+    <result column="place_name" jdbcType="VARCHAR" property="placeName" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, area_id, place_name
+  </sql>
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.park.RecommConfigAreaMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.park.RecommConfigArea">
+    <!--@mbg.generated-->
+    <!--@Table park.recommconfigarea-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="x" jdbcType="VARCHAR" property="x" />
+    <result column="y" jdbcType="VARCHAR" property="y" />
+    <result column="z" jdbcType="VARCHAR" property="z" />
+    <result column="recommConfigId" jdbcType="BIGINT" property="recommconfigid" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, x, y, z, recommConfigId
+  </sql>
+</mapper>

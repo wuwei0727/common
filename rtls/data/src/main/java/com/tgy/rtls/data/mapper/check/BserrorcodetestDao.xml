@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.check.BserrorcodetestDao">
+<!--    <cache-ref namespace="com.tgy.rtls.data.mapper.check.BserrorcodetestDao"/>-->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.check.BserrorcodetestEntity">
+        <id column="id" property="id" />
+        <result column="tagcheckid" property="tagcheckid" />
+        <result column="send" property="send" />
+        <result column="receive" property="receive" />
+        <result column="pass" property="pass" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, tagcheckid, send, receive, pass
+    </sql>
+
+    <select id="getByCode" resultType="com.tgy.rtls.data.entity.check.BserrorcodetestEntity">
+        select * from bserrorcodetest where send=#{send}
+    </select>
+
+   <select id="getRecentSend" resultType="com.tgy.rtls.data.entity.check.BserrorcodetestEntity">
+        select * from bserrorcodetest where tagcheckid=#{tagcheckid} and pass=-1
+    </select>
+    <select id="getByTagCheckId" resultType="com.tgy.rtls.data.entity.check.BserrorcodetestrecordEntity">
+         (SELECT    (SELECT COUNT(id)  FROM bserrorcodetest WHERE tagcheckid=#{tagcheckid}) AS sendnum,
+         (SELECT COUNT(id)  FROM bserrorcodetest WHERE tagcheckid=#{tagcheckid} AND receive IS NOT NULL) AS receivenum ,
+         (SELECT COUNT(id)  FROM bserrorcodetest WHERE tagcheckid=#{tagcheckid} AND pass=1 ) AS errornum ,
+          (SELECT `start` FROM bserrorcodetestrecord WHERE tagcheckid=#{tagcheckid}) AS `start`,
+          (SELECT `end` FROM bserrorcodetestrecord WHERE tagcheckid=#{tagcheckid}) AS `end`,
+          (SELECT state FROM bserrorcodetestrecord WHERE tagcheckid=#{tagcheckid}) AS state,
+           (SELECT testcount FROM bserrorcodetestrecord WHERE tagcheckid=#{tagcheckid}) AS testcount,
+          (SELECT tagcheckid FROM bserrorcodetestrecord WHERE tagcheckid=#{tagcheckid}) AS tagcheckid)
+    </select>
+    <update id = "truncateTest"> TRUNCATE table bserrorcodetest </update>
+
+
+</mapper>

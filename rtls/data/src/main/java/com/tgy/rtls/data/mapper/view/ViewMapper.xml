@@ -1,0 +1,1570 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.view.ViewMapper">
+    <select id="getAllUserInfo" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+<!--        select count(*)                                  AS userCount,-->
+<!--               count(CASE gender WHEN '1' THEN '男' END)  as man,-->
+<!--               count(CASE gender WHEN '2' THEN '女' END)  as female,-->
+<!--               count(CASE gender WHEN '0' THEN '未知' END) as unknown-->
+<!--        from wechat_userinfo-->
+<!--        where 1 = 1-->
+<!--        having count(*)-->
+        select count(*)AS userCount
+        from wechat_userinfo
+        where 1=1
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                and time >= #{start} AND time &lt;= #{end}
+            </when>
+            <when test="time != null and time != ''">
+                and time >= DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+                AND time &lt;= NOW()
+            </when>
+        </choose>
+
+    </select>
+
+    <select id="getAllUserArea" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        SELECT count(city) as num,
+               city        as city
+        FROM wechat_userinfo
+        group by city
+        having count(city)
+    </select>
+
+    <select id="getParkingCountAndStateInfo" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        select count(*)                                  AS parkingCount,
+               count(CASE state WHEN '1' THEN '占用' END)  as occupy,
+               count(CASE state WHEN '2' THEN '已预约' END) as reserved,
+               count(CASE type WHEN '1' THEN '充电车位' END) as chargePark
+        from parking_place;
+    </select>
+
+    <select id="getCarBitAndHardwareInfo" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        select (select count(*) from parking_place)                                   AS carBitCount,
+        (
+        (SELECT COUNT(DISTINCT id) FROM parking_place WHERE map = 178 AND state = 0)+ (SELECT COUNT(DISTINCT place) FROM infrared WHERE map != 178 AND status = 0) )  as carBitIdle,
+        (
+        (SELECT COUNT(DISTINCT id) FROM parking_place WHERE map = 178 AND state = 1) + (SELECT COUNT(DISTINCT place) FROM infrared WHERE map != 178 AND status = 1) ) as carBitOccupy,
+        (select count(CASE state WHEN '2' THEN '已预约' END) from parking_place)  as carBitReserved,
+        (select count(CASE type WHEN '2' THEN '专用' END) from parking_place)    as carBitExclusive,
+        <!--               (select count(CASE type WHEN '7' THEN 'VIP' END) from parking_place)   as carBitVIP,-->
+        (SELECT COUNT(*) AS total_count FROM parking_place WHERE (carbittype = 1)) as carBitVIP,
+        (select count(CASE type WHEN '1' THEN '充电车位' END) from parking_place)  as carBitChargePark,
+        (select count(*) from infrared where map is not null)                                        AS detectorCount,
+        (select count(CASE networkstate WHEN '0' THEN '离线' END) from infrared where map is not null) as detectorOffLine,
+        (select count(CASE networkstate WHEN '1' THEN '在线' END) from infrared where map is not null) as detectorOnLine,
+        <!--               (select count(*) from infrared where power &lt; 20 and map is not null)    as detectorLowPower,-->
+        (select count(*) from infrared where power &lt;= 1 and map is not null)                       as detectorLowPower,
+        (select count(*) from substation where map is not null)                                                            AS subCount,
+        (select count(CASE networkstate WHEN '0' THEN '离线' END) from substation where map is not null) as subOffLine,
+        (select count(CASE networkstate WHEN '1' THEN '在线' END) from substation where map is not null)                     as subOnLine,
+        <!--               (select count(*) from substation where batteryVolt &lt; 2.7)               as subLowPower,-->
+        (select count(*) from substation where networkstate = 2 and map is not null)                                       as subLowPower,
+        (select count(*) from substation where map=#{mapId} and type=7)                                                            AS roadSpikeCount,
+        (select count(CASE networkstate WHEN '0' THEN '离线' END) from substation where num != '0112' and map=#{mapId} and type=7) as rsOnLine,
+        (select count(CASE networkstate WHEN '1' THEN '在线' END) from substation where map=#{mapId} and type=7)                     as rsOffLine,
+        (select count(*) from gateway_lora where map is not null)                                                              AS gatewayCount,
+        (select count(CASE networkstate WHEN '0' THEN '离线' END) from gateway_lora where map is not null)                                                                          as gatewayOffLine,
+        (select count(CASE networkstate WHEN '1' THEN '在线' END) from gateway_lora where map is not null)       as gatewayOnLine
+        from dual
+    </select>
+
+    <select id="getSubCountAndStateInfo" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        select count(*)                                                     AS subCount,
+               count(CASE networkstate WHEN '0' THEN '离线' END)              as offLine,
+               count(CASE networkstate WHEN '1' THEN '在线' END)              as onLine,
+               (select count(*) from substation where batteryVolt &lt; 2.7) as lowPower
+        from substation;
+    </select>
+
+    <select id="getGatewayCountAndStateInfo" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        select count(*)                                        AS gatewayCount,
+               count(CASE networkstate WHEN '0' THEN '离线' END) as offLine,
+               count(CASE networkstate WHEN '1' THEN '在线' END) as onLine
+        from gateway_lora;
+    </select>
+
+    <select id="getSettledMerchantAndFirmInfo" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        select (select count(*) from shangjia)        as allMerchant,
+               (select count(*) from parking_company) as allFirm
+        from dual
+    </select>
+
+
+    <select id="getMonthActiveUser" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        select count(userid)                              as totalNum,
+        DATE_FORMAT(time, #{month})                as month,
+        (select count(userid)
+        from wechat_position
+        WHERE DATE_FORMAT(time, '%c') = #{month}) as num
+        FROM wechat_position
+        where 1 = 1
+    </select>
+
+
+    <select id="getAllUserTotalNumByMonth" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        SELECT COUNT(*)                        AS monthTotalNum,
+               DATE_FORMAT(loginTime, '%Y-%m') AS perMonth
+        FROM monthActiveUserRecord
+        WHERE loginTime BETWEEN DATE_SUB(NOW(), INTERVAL 5 MONTH) AND NOW()
+        GROUP BY perMonth;
+    </select>
+
+    <select id="getAllUserTotalNumByMonth0" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT COUNT(distinct userid)                        AS activeUsers,
+        DATE_FORMAT(loginTime, '%Y-%m') AS perMonth
+        FROM monthActiveUserRecord
+        WHERE
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                 loginTime >= #{start} AND loginTime &lt;= #{end}
+            </when>
+            <when test="time != null">
+                 loginTime >= DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+                AND loginTime &lt;= NOW()
+            </when>
+        </choose>
+        GROUP BY perMonth;
+    </select>
+
+
+    <select id="getAllUserTotalNumByMonth2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT COUNT(distinct userid)                        AS activeUsers,
+        DATE_FORMAT(loginTime, '%Y-%m') AS perMonth
+        FROM map_monthactiveuserrecord
+        WHERE
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                loginTime >= #{start} AND loginTime &lt;= #{end}
+            </when>
+            <when test="time != null">
+                loginTime >= DATE_SUB(CURDATE(), INTERVAL #{time} MONTH)
+                AND loginTime &lt;= NOW()
+            </when>
+        </choose>
+        <if test="mapId != null and mapId != ''">and map =#{mapId}</if>
+        GROUP BY perMonth;
+    </select>
+
+    <select id="getCumulativeUseFrequency" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        select count(userid) as useFrequency
+        from monthActiveUserRecord where 1=1
+        <choose>
+            <when test="start != null and end != null">
+                AND loginTime >= #{start} AND loginTime &lt;= #{end}
+            </when>
+            <when test="time != null">
+                AND loginTime >= DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+                AND loginTime &lt;= NOW()
+            </when>
+        </choose>
+    </select>
+
+
+    <select id="getManyMapActiveUserNumber" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        select count(distinct userid) as activeUsers
+        from monthActiveUserRecord where 1=1
+        <choose>
+            <when test="start != null and end != null">
+                and loginTime >= #{start} AND loginTime &lt;= #{end}
+            </when>
+            <when test="time != null and time != ''">
+                and loginTime >= DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+                AND loginTime &lt;= NOW()
+            </when>
+        </choose>
+    </select>
+
+    <select id="getCumulativeUseFrequency2" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        select count(userid) as useFrequency
+        from map_monthactiveuserrecord where map=#{mapId}
+        <choose>
+            <when test="start != null and end != null">
+                AND loginTime >= #{start} AND loginTime &lt;= #{end}
+            </when>
+            <when test="time != null">
+                AND loginTime >= DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+                AND loginTime &lt;= NOW()
+            </when>
+        </choose>
+    </select>
+
+    <select id="getSingleMapParkingStateInfo" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        SELECT m2d.id                                       as mapId,
+               m2d.name                                     as mapName,
+               COUNT(CASE pp.state WHEN '0' THEN '空闲' END)  as free,
+               COUNT(CASE pp.state WHEN '1' THEN '占用' END)  as occupy,
+               COUNT(CASE pp.state WHEN '2' THEN '已预约' END) as reserved,
+               COUNT(CASE pp.type WHEN '1' THEN '充电车位' END) as chargePark,
+               m2d.mapKey,
+               m2d.appName,
+               m2d.fmapID,
+               m2d.lng,
+               m2d.lat,
+               m2d.mapImg,
+               m2d.themeImg
+        FROM parking_place pp
+                 left join map_2d m2d on pp.map = m2d.id
+        GROUP BY mapName;
+    </select>
+
+    <select id="getRealTimeInAndOutData" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        SELECT pu.place,
+        case pp.state
+        when 0 THEN DATE_FORMAT(pu.end, '%Y-%m-%d %H:%i:%s')
+        when 1 THEN DATE_FORMAT(pu.start, '%Y-%m-%d %H:%i:%s')
+        END as 'time',
+        m.name  AS parkingLot,
+        case pp.state
+        when 0 then CONCAT(pp.name, '空闲')
+        when 1 then CONCAT(pp.name, '占用')
+        end as carbit
+        from place_userecord pu
+        LEFT JOIN parking_place pp ON pp.id = pu.place
+        LEFT JOIN map_2d m ON pu.map = m.id
+        where pu.map = #{mapId} and is_fake_data =0
+        ORDER BY STR_TO_DATE(time, '%Y-%m-%d %H:%i:%s') DESC
+        LIMIT 40
+    </select>
+    <select id="getRealTimeInAndOutData1" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        SELECT pu.place,
+        CASE
+        WHEN pu.end >= pu.start THEN DATE_FORMAT(pu.end, '%Y-%m-%d %H:%i:%s')
+        ELSE DATE_FORMAT(pu.start, '%Y-%m-%d %H:%i:%s')
+        END                                             AS `time`,
+        m.name                                              AS parkingLot,
+        CONCAT(pp.name, IF(pu.end >= pu.start, '空闲', '占用')) AS carbit
+        FROM place_userecord pu
+        LEFT JOIN
+        parking_place pp ON pp.id = pu.place
+        LEFT JOIN
+        map_2d m ON pu.map = m.id
+        ORDER BY `time` DESC
+        limit 40
+    </select>
+
+    <select id="getSingleAddOrUpdateCarBitUseRecord" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        SELECT pu.place,
+        case pp.state
+        when 0 THEN DATE_FORMAT(pu.end, '%Y-%m-%d %H:%i:%s')
+        when 1 THEN DATE_FORMAT(pu.start, '%Y-%m-%d %H:%i:%s')
+        END as 'time',
+        m.name  AS parkingLot,
+        case pp.state
+        when 0 then CONCAT(pp.name, '空闲')
+        when 1 then CONCAT(pp.name, '占用')
+        end as carbit
+        from place_userecord pu
+        LEFT JOIN parking_place pp ON pp.id = pu.place
+        LEFT JOIN map_2d m ON pu.map = m.id
+        where pu.map = #{mapId}
+        and pu.place = #{placeId}
+        order by pu.id desc
+        limit 1
+    </select>
+
+    <select id="getFindCarFrequency" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        select m.name       as parkingLot,
+               m.`describe` as abbreviation,
+               p.map        as map,
+               count(p.map) as findCarFrequency
+        from parking_info_statistics_findcar p
+                 LEFT JOIN map_2d m ON p.map = m.id
+        GROUP BY map
+    </select>
+    <select id="getUseCarFrequency" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        select m.name       as parkingLot,
+               m.`describe` as abbreviation,
+               p.map        as map,
+               count(p.map) as useCarFrequency
+        from parking_info_statistics_use p
+                 LEFT JOIN map_2d m ON p.map = m.id
+        GROUP BY map
+    </select>
+    <select id="getRecommendCarFrequency" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        select m.name       as parkingLot,
+               m.`describe` as abbreviation,
+               p.map        as map,
+               count(p.map) as recommendFrequency
+        from parking_info_statistics_recommend p
+                 LEFT JOIN map_2d m ON p.map = m.id
+        where map != 269
+        GROUP BY map
+    </select>
+
+    <select id="getWithinThreeMonthsNewUsers" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        select count(*) as newUserTotal
+        from wechat_userinfo
+        where DATE(DATE_FORMAT(time, '%Y-%m-%d')) >= DATE_SUB(CURDATE(), INTERVAL #{time} MONTH);
+    </select>
+
+    <select id="getPlaceUseTotal" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT (select `describe` from map_2d where u.map = map_2d.id)                        mapName,
+        (select p.name from parking_place p where p.id = u.place)                      placeName,
+        (    SELECT count(*) FROM place_userecord where
+            <choose>
+                <when test="start != null and end != null">
+                    <!--@ignoreSql -->
+                    START >= #{start} AND START &lt;= #{end}
+                </when>
+                <otherwise>
+                    ((START>DATE_SUB(NOW(), INTERVAL #{time} MONTH) and START &lt; now() ) or (END>DATE_SUB(NOW(), INTERVAL #{time} MONTH) and START &lt; now() )or (END is null and START &lt; now()))
+                </otherwise>
+            </choose>
+        )total,
+
+        count(*) placeUseTotal
+        FROM place_userecord u
+        WHERE
+            <choose>
+                <when test="start != null and end != null">
+                    <!--@ignoreSql -->
+                    START >= #{start} AND START &lt;= #{end}
+                </when>
+                <otherwise>
+                    ((START>DATE_SUB(NOW(), INTERVAL #{time} MONTH) and START &lt; now()) or (END>DATE_SUB(NOW(), INTERVAL #{time} MONTH) and START &lt; now())or (END is null and START &lt; now()))
+                </otherwise>
+            </choose>
+        GROUP BY mapName
+        ORDER BY placeUseTotal DESC
+        LIMIT 10
+    </select>
+    <select id="getPlaceUseTotal2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT (select p.name from parking_place p where p.id = u.place) placeName,
+               (SELECT count(*) FROM place_userecord
+                where map = #{mapId}
+                and
+                <choose>
+                    <when test="start != null and end != null">
+                        <!--@ignoreSql -->
+                        START >= #{start} AND START &lt;= #{end}
+                    </when>
+                    <otherwise>
+                        ((START>DATE_SUB(NOW(), INTERVAL #{time} MONTH) and START &lt; now() ) or (END>DATE_SUB(NOW(), INTERVAL #{time} MONTH) and START &lt; now() )or (END is null and START &lt; now()))
+                    </otherwise>
+                </choose>
+                )total,
+               count(*)                                                  placeUseTotal
+        FROM place_userecord u
+        WHERE map = #{mapId}
+        and
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql -->
+                START >= #{start} AND START &lt;= #{end}
+            </when>
+            <otherwise>
+                ((START>DATE_SUB(NOW(), INTERVAL #{time} MONTH) and START &lt; now() ) or (END>DATE_SUB(NOW(), INTERVAL #{time} MONTH) and START &lt; now() )or (END is null and START &lt; now()))
+            </otherwise>
+        </choose>
+        GROUP BY placeName
+        ORDER BY placeUseTotal DESC
+        LIMIT 10
+    </select>
+
+    <select id="getTop10ParkingPlaces" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT
+            map_name mapName,
+            COUNT(place) AS placeSearchCount
+        FROM
+            each_map_search_place
+        GROUP BY
+            map
+        ORDER BY
+            placeSearchCount DESC
+        LIMIT 10;
+    </select>
+
+    <select id="getTop10Business" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT
+        business_name businessName,
+        COUNT(business_id) AS businessSearchCount
+        FROM
+        each_map_search_business
+        where
+            <choose>
+                <when test="start != null and end != null">
+                    <!--@ignoreSql -->
+                    addTime >= #{start} AND addTime &lt;= #{end}
+                </when>
+                <otherwise>
+                    addTime >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND addTime &lt;= NOW()
+                </otherwise>
+            </choose>
+        GROUP BY
+        business_name
+        ORDER BY
+        businessSearchCount DESC
+        LIMIT 10;
+    </select>
+
+    <select id="getTop10Business2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT
+        business_name businessName,
+        COUNT(business_id) AS businessSearchCount
+        FROM
+        each_map_search_business
+        where
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql -->
+                addTime >= #{start} AND addTime &lt;= #{end}
+            </when>
+            <otherwise>
+                addTime >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND addTime &lt;= NOW()
+            </otherwise>
+        </choose>
+        and map =#{mapId}
+        GROUP BY
+        business_name
+        ORDER BY
+        businessSearchCount DESC
+        LIMIT 10;
+    </select>
+
+    <select id="getPlaceIdleTotalDuration" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT m.name AS mapName, p.map,
+        <!-- 统计数量 -->
+        IF(m.id = 178,
+        (SELECT COUNT(*) FROM parking_place p WHERE p.map = 178),
+        COUNT(DISTINCT p.id)
+        ) AS total_places,
+
+        <!-- 总空闲时长 -->
+        IF(m.id = 178,
+        (SELECT COUNT(*) FROM parking_place p WHERE p.map = 178) *
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                TIMESTAMPDIFF(SECOND, #{start}, #{end})
+            </when>
+            <otherwise>
+                TIMESTAMPDIFF(SECOND, DATE_SUB(NOW(), INTERVAL #{time} MONTH), NOW())
+            </otherwise>
+        </choose>,
+        COUNT(DISTINCT p.id) *
+        <choose>
+            <when test="start != null and end != null">
+                TIMESTAMPDIFF(SECOND, #{start}, #{end})
+            </when>
+            <otherwise>
+                TIMESTAMPDIFF(SECOND, DATE_SUB(NOW(), INTERVAL #{time} MONTH), NOW())
+            </otherwise>
+        </choose>
+        ) AS totalVacantDurations,
+
+        <!-- 占用时间 -->
+        SUM( CASE
+        <choose>
+            <when test="start != null and end != null">
+                WHEN ur.start > #{start} AND ur.end &lt; #{end}
+                THEN TIMESTAMPDIFF(SECOND, ur.start, ur.end)
+                WHEN ur.start > #{start} AND ur.end > #{end}
+                THEN TIMESTAMPDIFF(SECOND, ur.start, #{end})
+                WHEN ur.start > #{start} AND ur.end IS NULL
+                THEN TIMESTAMPDIFF(SECOND, ur.start, #{end})
+                WHEN ur.start &lt; #{start} AND ur.end &lt; #{end}
+                THEN TIMESTAMPDIFF(SECOND, #{start}, ur.end)
+                WHEN ur.start &lt; #{start} AND ur.end > #{end}
+                THEN TIMESTAMPDIFF(SECOND, #{start}, #{end})
+                WHEN ur.start &lt; #{start} AND ur.end IS NULL
+                THEN TIMESTAMPDIFF(SECOND, #{start}, #{end})
+            </when>
+            <otherwise>
+                WHEN ur.start > DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end &lt; NOW()
+                THEN TIMESTAMPDIFF(SECOND, ur.start, ur.end)
+                WHEN ur.start > DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end > NOW()
+                THEN TIMESTAMPDIFF(SECOND, ur.start, NOW())
+                WHEN ur.start > DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end IS NULL
+                THEN TIMESTAMPDIFF(SECOND, ur.start, NOW())
+                WHEN ur.start &lt; DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end &lt; NOW()
+                THEN TIMESTAMPDIFF(SECOND, DATE_SUB(NOW(), INTERVAL #{time} MONTH), ur.end)
+                WHEN ur.start &lt; DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end > NOW()
+                THEN TIMESTAMPDIFF(SECOND, DATE_SUB(NOW(), INTERVAL #{time} MONTH), NOW())
+                WHEN ur.start &lt; DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end IS NULL
+                THEN TIMESTAMPDIFF(SECOND, DATE_SUB(NOW(), INTERVAL #{time} MONTH), NOW())
+            </otherwise>
+        </choose>
+        ELSE 0
+        END
+        ) AS occupied_time,
+
+        <!-- 空闲时间 -->
+        IF(m.id = 178, (SELECT COUNT(*) FROM parking_place p WHERE p.map = 178) *
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                TIMESTAMPDIFF(SECOND, #{start}, #{end})
+            </when>
+            <otherwise>
+                TIMESTAMPDIFF(SECOND, DATE_SUB(NOW(), INTERVAL #{time} MONTH), NOW())
+            </otherwise>
+        </choose> - SUM(
+        CASE
+        <choose>
+            <when test="start != null and end != null">
+                WHEN ur.start > #{start} AND ur.end &lt; #{end}
+                THEN TIMESTAMPDIFF(SECOND, ur.start, ur.end)
+                WHEN ur.start > #{start} AND ur.end > #{end}
+                THEN TIMESTAMPDIFF(SECOND, ur.start, #{end})
+                WHEN ur.start > #{start} AND ur.end IS NULL
+                THEN TIMESTAMPDIFF(SECOND, ur.start, #{end})
+                WHEN ur.start &lt; #{start} AND ur.end &lt; #{end}
+                THEN TIMESTAMPDIFF(SECOND, #{start}, ur.end)
+                WHEN ur.start &lt; #{start} AND ur.end > #{end}
+                THEN TIMESTAMPDIFF(SECOND, #{start}, #{end})
+                WHEN ur.start &lt; #{start} AND ur.end IS NULL
+                THEN TIMESTAMPDIFF(SECOND, #{start}, #{end})
+            </when>
+            <otherwise>
+                WHEN ur.start > DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end &lt; NOW()
+                THEN TIMESTAMPDIFF(SECOND, ur.start, ur.end)
+                WHEN ur.start > DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end > NOW()
+                THEN TIMESTAMPDIFF(SECOND, ur.start, NOW())
+                WHEN ur.start > DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end IS NULL
+                THEN TIMESTAMPDIFF(SECOND, ur.start, NOW())
+                WHEN ur.start &lt; DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end &lt; NOW()
+                THEN TIMESTAMPDIFF(SECOND, DATE_SUB(NOW(), INTERVAL #{time} MONTH), ur.end)
+                WHEN ur.start &lt; DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end > NOW()
+                THEN TIMESTAMPDIFF(SECOND, DATE_SUB(NOW(), INTERVAL #{time} MONTH), NOW())
+                WHEN ur.start &lt; DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end IS NULL
+                THEN TIMESTAMPDIFF(SECOND, DATE_SUB(NOW(), INTERVAL #{time} MONTH), NOW())
+            </otherwise>
+        </choose>
+        ELSE 0
+        END
+        ),
+        (COUNT(DISTINCT p.id) *
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                TIMESTAMPDIFF(SECOND, #{start}, #{end})
+            </when>
+            <otherwise>
+                TIMESTAMPDIFF(SECOND, DATE_SUB(NOW(), INTERVAL #{time} MONTH), NOW())
+            </otherwise>
+        </choose> - SUM(
+        CASE
+        <choose>
+            <when test="start != null and end != null">
+                WHEN ur.start > #{start} AND ur.end &lt; #{end}
+                THEN TIMESTAMPDIFF(SECOND, ur.start, ur.end)
+                WHEN ur.start > #{start} AND ur.end > #{end}
+                THEN TIMESTAMPDIFF(SECOND, ur.start, #{end})
+                WHEN ur.start > #{start} AND ur.end IS NULL
+                THEN TIMESTAMPDIFF(SECOND, ur.start, #{end})
+                WHEN ur.start &lt; #{start} AND ur.end &lt; #{end}
+                THEN TIMESTAMPDIFF(SECOND, #{start}, ur.end)
+                WHEN ur.start &lt; #{start} AND ur.end > #{end}
+                THEN TIMESTAMPDIFF(SECOND, #{start}, #{end})
+                WHEN ur.start &lt; #{start} AND ur.end IS NULL
+                THEN TIMESTAMPDIFF(SECOND, #{start}, #{end})
+            </when>
+            <otherwise>
+                WHEN ur.start > DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end &lt; NOW()
+                THEN TIMESTAMPDIFF(SECOND, ur.start, ur.end)
+                WHEN ur.start > DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end > NOW()
+                THEN TIMESTAMPDIFF(SECOND, ur.start, NOW())
+                WHEN ur.start > DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end IS NULL
+                THEN TIMESTAMPDIFF(SECOND, ur.start, NOW())
+                WHEN ur.start &lt; DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end &lt; NOW()
+                THEN TIMESTAMPDIFF(SECOND, DATE_SUB(NOW(), INTERVAL #{time} MONTH), ur.end)
+                WHEN ur.start &lt; DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end > NOW()
+                THEN TIMESTAMPDIFF(SECOND, DATE_SUB(NOW(), INTERVAL #{time} MONTH), NOW())
+                WHEN ur.start &lt; DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end IS NULL
+                THEN TIMESTAMPDIFF(SECOND, DATE_SUB(NOW(), INTERVAL #{time} MONTH), NOW())
+            </otherwise>
+        </choose>
+        ELSE 0
+        END
+        ))
+        ) AS totalVacantDuration
+
+        FROM parking_place p
+        LEFT JOIN place_userecord ur ON p.id = ur.place
+        LEFT JOIN infrared i ON p.id = i.place
+        LEFT JOIN map_2d m ON ur.map = m.id
+
+        WHERE
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                (ur.start > #{start} AND ur.start &lt; #{end})
+                OR (ur.end > #{start} AND ur.end &lt; #{end})
+                OR (ur.end IS NULL AND ur.start &lt; #{end})
+            </when>
+            <otherwise>
+                (ur.start > DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.start &lt; NOW())
+                OR (ur.end > DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND ur.end &lt; NOW())
+                OR (ur.end IS NULL AND ur.start &lt; NOW())
+            </otherwise>
+        </choose>
+
+        GROUP BY m.name
+        ORDER BY totalVacantDuration DESC
+        LIMIT 10
+
+    </select>
+
+    <select id="getPlaceIdleTotalDuration2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT (SELECT NAME FROM parking_place WHERE id = place) AS placeName,
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                (TIMESTAMPDIFF(SECOND, #{start}, #{end}) - SUM(TIMESTAMPDIFF(SECOND, start, IFNULL(end, NOW())))) / 3600 AS totalVacantDuration
+            </when>
+            <otherwise>
+                (TIMESTAMPDIFF(SECOND,DATE_SUB(NOW(), INTERVAL #{time} MONTH), now()) - SUM(TIMESTAMPDIFF(SECOND, start, IFNULL(end, now())))) / 3600 AS totalVacantDuration
+            </otherwise>
+        </choose>
+        FROM (SELECT place, start, end
+        FROM place_userecord
+        WHERE map = #{mapId}
+        <choose>
+            <when test="start != null and end != null">
+                AND (
+                (start >= #{start} AND start &lt;= #{end})
+                OR (end >= #{start} AND end &lt;= #{end})
+                OR (start &lt;= #{start} AND end >= #{end})
+                )
+            </when>
+            <otherwise>
+                AND (
+                (start >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND start &lt;= now())
+                OR (end >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND end &lt;= now())
+                OR (start &lt;= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND end >= now())
+                )
+            </otherwise>
+        </choose>
+
+
+        UNION ALL
+        SELECT pp.id                                   AS place,
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                #{start} AS start,
+                #{end} AS end
+            </when>
+            <otherwise>
+                DATE_SUB(NOW(), INTERVAL #{time} MONTH) AS start,
+                NOW() AS end
+            </otherwise>
+        </choose>
+        FROM parking_place pp
+        LEFT JOIN
+        place_userecord pur ON pp.id = pur.place
+        WHERE pur.place IS NULL
+        AND pp.map = #{mapId}) AS records
+        GROUP BY place
+        ORDER BY totalVacantDuration DESC
+        LIMIT 10;
+    </select>
+
+    <select id="getReservationTotal" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        select map,count(*) reservationTotal
+        from vip_parking
+        WHERE
+        <choose>
+            <when test="start != null and end != null">
+                `create_time` >= #{start} AND `create_time` &lt;= #{end}
+            </when>
+            <otherwise>
+                `create_time` >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND `create_time` &lt;= NOW()
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getReservationTotal2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        select map,count(*) reservationTotal
+        from vip_parking
+        WHERE
+        <choose>
+            <when test="start != null and end != null">
+                `create_time` >= #{start} AND `create_time` &lt;= #{end}
+            </when>
+            <otherwise>
+                `create_time` >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND `create_time` &lt;= NOW()
+            </otherwise>
+        </choose>
+        and map =#{mapId}
+    </select>
+
+    <select id="getPlatformPlaceUtilizationRate" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT COUNT(*) / (SELECT COUNT(*) FROM parking_place WHERE id IN (SELECT place FROM infrared))/ DATEDIFF(
+            <choose>
+                <when test="start != null and end != null">
+                    #{end}, #{start}
+                </when>
+                <otherwise>
+                    NOW(), DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+                </otherwise>
+            </choose>
+        ) AS platformUtilizationRate
+        FROM place_userecord
+        WHERE
+        <choose>
+            <when test="start != null and end != null">
+                `start` >= #{start} AND `start` &lt;= #{end}
+            </when>
+            <otherwise>
+                `start` >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND `start` &lt;= NOW()
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getPlatformPlaceUtilizationRate2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT COUNT(*) / (SELECT COUNT(*) AS total_count FROM parking_place WHERE id IN (SELECT place FROM infrared))/
+        DATEDIFF(
+            <choose>
+                <when test="start != null and end != null">
+                    <!--@ignoreSql-->
+                    #{end}, #{start}
+                </when>
+                <otherwise>
+                    NOW(), DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+                </otherwise>
+            </choose>
+        ) AS platformUtilizationRate
+        FROM place_userecord
+        WHERE
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                `start` >= #{start} AND `start` &lt;= #{end}
+            </when>
+            <otherwise>
+                `start` >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND `start` &lt;= NOW()
+            </otherwise>
+        </choose>
+        and map =#{mapId}
+    </select>
+
+    <select id="getMapPlaceUtilizationRate" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT p.map,
+               (pu.total_count / IF(p.map = 178, COUNT(*), (SELECT COUNT(*) FROM infrared WHERE map = p.map) ) /
+            <choose>
+                <when test="start != null and end != null">
+                    <!--@ignoreSql-->
+                    DATEDIFF(#{end}, #{start})
+                </when>
+                <otherwise>
+                    DATEDIFF(NOW(), DATE_SUB(NOW(), INTERVAL #{time} MONTH))
+                </otherwise>
+            </choose>
+        ) AS mapPlatformUtilizationRate
+        FROM parking_place p
+        JOIN (SELECT map, COUNT(*) AS total_count
+              FROM place_userecord
+              WHERE
+                <choose>
+                    <when test="start != null and end != null">
+                        <!--@ignoreSql-->
+                        `start` >= #{start} AND `start` &lt;= #{end}
+                    </when>
+                    <otherwise>
+                        `start` >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND `start` &lt;= NOW()
+                    </otherwise>
+                </choose>
+              GROUP BY map) AS pu ON p.map = pu.map
+        WHERE (p.map = 178 OR p.id IN (SELECT place FROM infrared WHERE map = p.map))
+        GROUP BY p.map
+        ORDER BY mapPlatformUtilizationRate DESC
+        LIMIT 10;
+    </select>
+
+    <select id="getMapPlaceUtilizationRate2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT
+        p.map,
+        (pu.total_count /
+        <!--根据 mapId 判断使用 parking_place 还是 infrared-->
+        IF(#{mapId} = 178, COUNT(*), (SELECT COUNT(*) FROM infrared WHERE map = #{mapId})) /
+            <choose>
+                <when test="start != null and end != null">
+                    <!--@ignoreSql-->
+                    DATEDIFF(#{end}, #{start})
+                </when>
+                <otherwise>
+                    DATEDIFF(NOW(), DATE_SUB(NOW(), INTERVAL #{time} MONTH))
+                </otherwise>
+            </choose>
+        ) AS mapPlatformUtilizationRate
+        FROM parking_place p
+        JOIN
+        ( SELECT map, COUNT(*) AS total_count
+        FROM place_userecord
+        where
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                `start` >= #{start} AND `start` &lt;= #{end}
+            </when>
+            <otherwise>
+                `start` >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND `start` &lt;= NOW()
+            </otherwise>
+        </choose>
+         AND map = #{mapId}
+        GROUP BY map ) AS pu ON p.map = pu.map
+        <!--如果 map = 178，不过滤 infrared 表，直接按 parking_place 表统计-->
+        WHERE
+        (#{mapId} = 178 OR id IN (SELECT place FROM infrared)) AND p.map = #{mapId}
+        GROUP BY p.map
+        ORDER BY mapPlatformUtilizationRate DESC
+        LIMIT 10;
+
+    </select>
+
+    <select id="getPlaceAvailabilityRate" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT ((total_hours - occupied_hours) / total_hours) * 100 AS placeAvailabilityRate
+        FROM (
+            SELECT
+                TIMESTAMPDIFF(HOUR,
+                <choose>
+                    <when test="start != null and end != null">
+                        #{start},#{end}
+                    </when>
+                    <!--@ignoreSql-->
+                    <otherwise>
+                        DATE_SUB(NOW(), INTERVAL #{time} MONTH),now()
+                    </otherwise>
+                </choose>
+                ) * COUNT(DISTINCT p.id) AS total_hours, <!--&#45;&#45; 计算总时长-->
+        COALESCE(SUM(
+        CASE
+        WHEN pu.start IS NOT NULL AND pu.end IS NULL THEN <!--&#45;&#45; 处理没有结束时间的情况-->
+        CASE
+            WHEN pu.start &lt;
+                <choose>
+                    <when test="start != null and end != nul"><!--@ignoreSql-->#{start}</when>
+                    <otherwise>DATE_SUB(NOW(), INTERVAL #{time} MONTH)</otherwise>
+                </choose><!--&#45;&#45; 开始时间早于时段，则占用整个时段-->
+
+            THEN TIMESTAMPDIFF(HOUR,
+                    <choose>
+                        <when test="start != null and end != null">
+                            #{start}, #{end}
+                        </when>
+                        <otherwise>
+                            DATE_SUB(NOW(), INTERVAL #{time} MONTH),now()
+                        </otherwise>
+                    </choose>
+            )
+                                            <!--@ignoreSql-->
+            ELSE TIMESTAMPDIFF(HOUR, pu.start,
+            <choose>
+                <when test="start != null and end != nul">#{end}</when>
+                <otherwise>NOW()</otherwise>
+            </choose>
+            )<!--&#45;&#45; 开始时间晚于时段，则占用从开始时间到现在的时长-->
+        END
+            WHEN pu.start IS NOT NULL AND pu.end IS NOT NULL
+            THEN TIMESTAMPDIFF(HOUR,
+        CASE
+        WHEN pu.start >
+        <choose>
+            <when test="start != null and end != null">#{start}</when>
+            <otherwise>DATE_SUB(NOW(), INTERVAL #{time} MONTH)</otherwise>
+        </choose>
+        THEN pu.start
+        ELSE
+        <choose>
+            <when test="start != null and end != null">#{start}</when>
+            <otherwise>DATE_SUB(NOW(), INTERVAL #{time} MONTH)</otherwise>
+        </choose>
+        END,
+        CASE
+        WHEN pu.end &lt;
+        <choose>
+            <when test="start != null and end != null">#{end}</when>
+            <otherwise>NOW()</otherwise>
+        </choose>
+        THEN pu.end
+        ELSE
+        <choose>
+            <when test="start != null and end != null">#{end}</when>
+            <otherwise>NOW()</otherwise>
+        </choose>
+        END
+        )<!-- &#45;&#45; 处理有开始和结束时间的情况-->
+            ELSE 0 <!--&#45;&#45; 没有使用记录的车位被认为在时段内空闲-->
+        END
+            ), 0)            AS occupied_hours
+        FROM parking_place p
+                 LEFT JOIN infrared i ON p.id = i.place
+                 LEFT JOIN place_userecord pu ON p.id = pu.place
+            AND ((pu.start IS NOT NULL AND pu.end IS NOT NULL AND pu.end > pu.start)OR (pu.start IS NOT NULL AND pu.end IS NULL))
+            AND (pu.start >= <choose>
+                                <when test="start != null and end != null">#{start}</when>
+                                <otherwise>DATE_SUB(NOW(), INTERVAL #{time} MONTH)</otherwise>
+                            </choose> OR pu.end IS NULL)
+            AND pu.start &lt;= <choose>
+                                <when test="start != null and end != null">#{end}</when>
+                                <otherwise>NOW()</otherwise>
+                            </choose>
+        WHERE i.map IS NOT NULL) AS subquery;
+
+    </select>
+
+    <select id="getPlaceAvailabilityRate2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT ((total_hours - occupied_hours) / total_hours) * 100 AS placeAvailabilityRate
+        FROM (
+        SELECT
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                TIMESTAMPDIFF(HOUR, #{start}, #{end})
+            </when>
+            <otherwise>
+                TIMESTAMPDIFF(HOUR, DATE_SUB(NOW(), INTERVAL #{time} MONTH), NOW())
+            </otherwise>
+        </choose> * COUNT(DISTINCT p.id) AS total_hours,
+        COALESCE(SUM(
+        CASE
+        WHEN pu.start IS NOT NULL AND pu.end IS NULL THEN
+        CASE
+        WHEN pu.start &lt;
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{start}</when>
+
+            <otherwise>DATE_SUB(NOW(), INTERVAL #{time} MONTH)</otherwise>
+        </choose>
+        THEN TIMESTAMPDIFF(HOUR,
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                #{start}, #{end}
+            </when>
+            <otherwise>
+                DATE_SUB(NOW(), INTERVAL #{time} MONTH), NOW()
+            </otherwise>
+        </choose>
+        )
+        ELSE TIMESTAMPDIFF(HOUR, pu.start,
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{end}</when>
+            <otherwise>NOW()</otherwise>
+        </choose>
+        )
+        END
+        WHEN pu.start IS NOT NULL AND pu.end IS NOT NULL THEN
+        TIMESTAMPDIFF(HOUR,
+        CASE
+        WHEN pu.start >
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{start}</when>
+            <otherwise>DATE_SUB(NOW(), INTERVAL #{time} MONTH)</otherwise>
+        </choose>
+        THEN pu.start
+        ELSE
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{start}</when>
+            <otherwise>DATE_SUB(NOW(), INTERVAL #{time} MONTH)</otherwise>
+        </choose>
+        END,
+        CASE
+        WHEN pu.end &lt;
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{end}</when>
+            <otherwise>NOW()</otherwise>
+        </choose>
+        THEN pu.end
+        ELSE
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{end}</when>
+            <otherwise>NOW()</otherwise>
+        </choose>
+        END
+        )
+        ELSE 0
+        END
+        ), 0) AS occupied_hours
+        FROM parking_place p
+        LEFT JOIN infrared i ON p.id = i.place
+        LEFT JOIN place_userecord pu ON p.id = pu.place
+        AND ((pu.start IS NOT NULL AND pu.end IS NOT NULL AND pu.end > pu.start) OR (pu.start IS NOT NULL AND pu.end IS NULL))
+        AND (pu.start >=
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{start}</when>
+            <otherwise>DATE_SUB(NOW(), INTERVAL #{time} MONTH)</otherwise>
+        </choose>
+        OR pu.end IS NULL)
+        AND pu.start &lt;=
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{end}</when>
+            <otherwise>NOW()</otherwise>
+        </choose>
+        WHERE i.map IS NOT NULL AND p.map = #{mapId}
+        ) AS subquery
+    </select>
+
+<!--    </select>-->
+    <select id="getPlaceAvailabilityRate22" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT ((total_hours - occupied_hours) / total_hours) * 100 AS placeAvailabilityRate
+        FROM (SELECT #{day} * COUNT(DISTINCT p.id) AS total_hours, <!--&#45;&#45; 计算总时长-->
+        COALESCE(SUM(
+        CASE
+        WHEN pu.start IS NOT NULL AND pu.end IS NULL THEN <!--&#45;&#45; 处理没有结束时间的情况-->
+        CASE
+            WHEN pu.start &lt; DATE_SUB(NOW(), INTERVAL #{time} MONTH) THEN #{day} -- 开始时间早于时段，则占用整个时段
+            ELSE TIMESTAMPDIFF(HOUR, pu.start, NOW()) <!--&#45;&#45; 开始时间晚于时段，则占用从开始时间到现在的时长-->
+        END
+            WHEN pu.start IS NOT NULL AND pu.end IS NOT NULL THEN TIMESTAMPDIFF(HOUR, pu.start, pu.end)<!-- &#45;&#45; 处理有开始和结束时间的情况-->
+            ELSE 0 <!--&#45;&#45; 没有使用记录的车位被认为在时段内空闲-->
+            END
+                ), 0)            AS occupied_hours
+        FROM parking_place p
+                 LEFT JOIN infrared i ON p.id = i.place
+                 LEFT JOIN place_userecord pu ON p.id = pu.place
+            AND ((pu.start IS NOT NULL AND pu.end IS NOT NULL AND pu.end > pu.start) OR (pu.start IS NOT NULL AND pu.end IS NULL))
+            AND (pu.start >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) OR pu.end IS NULL)
+            AND pu.start &lt;= NOW()
+        WHERE i.map IS NOT NULL AND p.map=#{mapId}) AS subquery;
+    </select>
+
+    <select id="getPlaceNavigationTotal" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT SUM(total_count) AS placeNavigationTotal
+        FROM (
+        SELECT COUNT(*) AS total_count
+        FROM user_active_select_place
+        WHERE
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                addTime >= #{start} AND addTime &lt;= #{end}
+            </when>
+            <otherwise>
+                addTime >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND addTime &lt;= NOW()
+            </otherwise>
+        </choose>
+        UNION ALL
+        SELECT COUNT(*) AS total_count
+        FROM parking_info_statistics_recommend
+        WHERE
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                start_time >= #{start} AND start_time &lt;= #{end}
+            </when>
+            <otherwise>
+                start_time >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND start_time &lt;= NOW()
+            </otherwise>
+        </choose>
+        ) AS total_counts
+    </select>
+
+    <select id="getPlaceNavigationTotal2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT SUM(total_count) AS placeNavigationTotal
+        FROM (
+        SELECT COUNT(*) AS total_count
+        FROM user_active_select_place
+        WHERE
+        map = #{mapId}
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                and addTime >= #{start} AND addTime &lt;= #{end}
+            </when>
+            <otherwise>
+                and addTime >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND addTime &lt;= NOW()
+            </otherwise>
+        </choose>
+        UNION ALL
+        SELECT COUNT(*) AS total_count
+        FROM parking_info_statistics_recommend
+        WHERE
+         map = #{mapId}
+        <choose>
+            <when test="start != null and end != null">
+                and start_time >= #{start} AND start_time &lt;= #{end}
+            </when>
+            <otherwise>
+                and start_time >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND start_time &lt;= NOW()
+            </otherwise>
+        </choose>
+        ) AS total_counts
+
+    </select>
+
+    <select id="getPlaceNavigationUseRate" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT subquery.total_count / placeCount.total_count /
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                TIMESTAMPDIFF(DAY, #{start}, #{end})
+            </when>
+            <otherwise>
+                TIMESTAMPDIFF(DAY, DATE_SUB(NOW(), INTERVAL #{time} MONTH), NOW())
+            </otherwise>
+        </choose> AS placeNavigationUseRate
+        FROM (
+        SELECT SUM(total_count) AS total_count
+        FROM (
+        SELECT COUNT(*) AS total_count
+        FROM user_active_select_place
+        WHERE addTime >=
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{start}</when>
+
+            <otherwise>DATE_SUB(NOW(), INTERVAL #{time} MONTH)</otherwise>
+        </choose>
+        AND addTime &lt;=
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{end}</when>
+            <otherwise>NOW()</otherwise>
+        </choose>
+        UNION ALL
+
+        SELECT COUNT(*) AS total_count
+        FROM parking_info_statistics_recommend
+        WHERE start_time >=
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{start}</when>
+            <otherwise>DATE_SUB(NOW(), INTERVAL #{time} MONTH)</otherwise>
+        </choose>
+        AND start_time &lt;=
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{end}</when>
+            <otherwise>NOW()</otherwise>
+        </choose>
+        ) AS subquery
+        ) AS subquery,
+        (SELECT COUNT(*) AS total_count FROM parking_place WHERE id IN (SELECT place FROM infrared)) AS placeCount
+    </select>
+
+    <select id="getPlaceNavigationUseRate2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT subquery.total_count / placeCount.total_count /
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                TIMESTAMPDIFF(DAY, #{start}, #{end})
+            </when>
+            <otherwise>
+                TIMESTAMPDIFF(DAY, DATE_SUB(NOW(), INTERVAL #{time} MONTH), NOW())
+            </otherwise>
+        </choose> AS placeNavigationUseRate
+        FROM (
+        SELECT SUM(total_count) AS total_count
+        FROM (
+        SELECT COUNT(*) AS total_count
+        FROM user_active_select_place
+        WHERE addTime >=
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{start}</when>
+            <otherwise>DATE_SUB(NOW(), INTERVAL #{time} MONTH)</otherwise>
+        </choose>
+        AND addTime &lt;=
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{end}</when>
+            <otherwise>NOW()</otherwise>
+        </choose>
+        and map=#{mapId}
+        UNION ALL
+
+        SELECT COUNT(*) AS total_count
+        FROM parking_info_statistics_recommend
+        WHERE start_time >=
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{start}</when>
+            <otherwise>DATE_SUB(NOW(), INTERVAL #{time} MONTH)</otherwise>
+        </choose>
+        AND start_time &lt;=
+        <choose>
+            <when test="start != null and end != null"><!--@ignoreSql-->#{end}</when>
+            <otherwise>NOW()</otherwise>
+        </choose>
+        and map=#{mapId}
+        ) AS subquery
+        ) AS subquery,
+        (SELECT COUNT(*) AS total_count FROM parking_place WHERE id IN (SELECT place FROM infrared) and map=#{mapId}) AS placeCount
+    </select>
+
+    <select id="getPerHourNullPlaceNumber" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        <!--生成小时范围的临时表-->
+        CREATE TEMPORARY TABLE HourRanges AS
+        SELECT
+            DATE_SUB(DATE_FORMAT(NOW(), '%Y-%m-%d %H:00:00'), INTERVAL a.i HOUR) AS hourStart,
+            DATE_SUB(DATE_FORMAT(NOW(), '%Y-%m-%d %H:00:00'), INTERVAL (a.i - 1) HOUR) AS hourEnd
+        FROM
+            (SELECT 0 AS i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+             UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+             UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11
+             UNION ALL SELECT 12 UNION ALL SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15
+             UNION ALL SELECT 16 UNION ALL SELECT 17 UNION ALL SELECT 18 UNION ALL SELECT 19
+             UNION ALL SELECT 20 UNION ALL SELECT 21 UNION ALL SELECT 22 UNION ALL SELECT 23
+            ) AS a;
+
+        <!--计算总数-->
+        CREATE TEMPORARY TABLE TotalCount AS
+        SELECT COUNT(*) AS total_count
+        FROM parking_place
+                 LEFT JOIN infrared
+                           ON parking_place.id = infrared.place
+                               AND parking_place.map != 178
+        WHERE (parking_place.map = 178)
+           OR (parking_place.map != 178 AND infrared.map = parking_place.map);
+
+      <!--计算每个小时段内的空闲停车位-->
+        CREATE TEMPORARY TABLE NullPlaceNumbers AS
+        SELECT hr.hourStart,
+               hr.hourEnd,
+               COUNT(DISTINCT pur.place) AS nullPlaceNumber
+        FROM HourRanges hr
+                 LEFT JOIN
+             place_userecord pur
+             ON pur.start &lt; hr.hourEnd
+                 AND ((pur.map = 178)
+                     OR (pur.map != 178
+                         AND EXISTS (SELECT 1 FROM infrared inf WHERE inf.place = pur.place AND inf.map = pur.map)))
+        WHERE (pur.start > hr.hourStart AND pur.start &lt; hr.hourEnd)
+           OR (pur.end > hr.hourStart AND pur.end &lt; hr.hourEnd)
+           OR (pur.end IS NULL AND pur.start &lt; hr.hourEnd)
+        GROUP BY hr.hourStart, hr.hourEnd;
+
+        <!--查询最终结果-->
+        SELECT hr.hourStart,
+               hr.hourEnd,
+               tc.total_count - IFNULL(np.nullPlaceNumber, 0) AS nullPlaceNumber
+        FROM HourRanges hr
+                 CROSS JOIN
+             TotalCount tc
+                 LEFT JOIN
+             NullPlaceNumbers np
+             ON hr.hourStart = np.hourStart
+                 AND hr.hourEnd = np.hourEnd
+        ORDER BY hr.hourStart;
+
+        <!--清理临时表-->
+        DROP TEMPORARY TABLE IF EXISTS HourRanges;
+        DROP TEMPORARY TABLE IF EXISTS NullPlaceNumbers;
+        DROP TEMPORARY TABLE IF EXISTS TotalCount;
+
+    </select>
+
+    <select id="getPerHourNullPlaceNumber2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        <!--生成小时范围的临时表-->
+        CREATE TEMPORARY TABLE HourRanges AS
+        SELECT
+            DATE_SUB(DATE_FORMAT(NOW(), '%Y-%m-%d %H:00:00'), INTERVAL a.i HOUR) AS hourStart,
+            DATE_SUB(DATE_FORMAT(NOW(), '%Y-%m-%d %H:00:00'), INTERVAL (a.i - 1) HOUR) AS hourEnd
+        FROM
+            (SELECT 0 AS i UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+             UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+             UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11
+             UNION ALL SELECT 12 UNION ALL SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15
+             UNION ALL SELECT 16 UNION ALL SELECT 17 UNION ALL SELECT 18 UNION ALL SELECT 19
+             UNION ALL SELECT 20 UNION ALL SELECT 21 UNION ALL SELECT 22 UNION ALL SELECT 23
+            ) AS a;
+
+        <!--计算总数-->
+        CREATE TEMPORARY TABLE TotalCount AS
+        SELECT COUNT(*) AS total_count
+        FROM parking_place
+                 LEFT JOIN infrared
+                           ON parking_place.id = infrared.place
+                               AND #{mapId} != 178
+        WHERE (#{mapId} = 178 AND parking_place.map = #{mapId})
+           OR (#{mapId} != 178 AND parking_place.map = #{mapId} AND infrared.map = #{mapId});
+
+        <!--计算每个小时段内的空闲停车位-->
+        CREATE TEMPORARY TABLE NullPlaceNumbers AS
+        SELECT hr.hourStart,
+               hr.hourEnd,
+               COUNT(DISTINCT pur.place) AS nullPlaceNumber
+        FROM HourRanges hr
+                 LEFT JOIN
+             place_userecord pur
+             ON pur.start &lt; hr.hourEnd
+                 AND ((pur.map = #{mapId} AND pur.map = 178)
+                     OR (pur.map = #{mapId} AND pur.map != 178
+                         AND EXISTS (SELECT 1 FROM infrared inf WHERE inf.place = pur.place AND inf.map = #{mapId})))
+        WHERE (pur.start > hr.hourStart AND pur.start &lt; hr.hourEnd)
+           OR (pur.end > hr.hourStart AND pur.end &lt; hr.hourEnd)
+           OR (pur.end IS NULL AND pur.start &lt; hr.hourEnd)
+        GROUP BY hr.hourStart, hr.hourEnd;
+
+        <!--查询最终结果-->
+        SELECT hr.hourStart,
+               hr.hourEnd,
+               tc.total_count - IFNULL(np.nullPlaceNumber, 0) AS nullPlaceNumber
+        FROM HourRanges hr
+                 CROSS JOIN
+             TotalCount tc
+                 LEFT JOIN
+             NullPlaceNumbers np
+             ON hr.hourStart = np.hourStart
+                 AND hr.hourEnd = np.hourEnd
+        ORDER BY hr.hourStart;
+
+        <!--清理临时表-->
+        DROP TEMPORARY TABLE IF EXISTS HourRanges;
+        DROP TEMPORARY TABLE IF EXISTS NullPlaceNumbers;
+        DROP TEMPORARY TABLE IF EXISTS TotalCount;
+
+    </select>
+
+    <select id="getLocationShareTotal" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT count(lslt.l_s_log_id) locationShareTotal
+        FROM
+        location_sharing_log lsl
+        left JOIN location_sharing_log_time lslt ON lsl.id = lslt.l_s_log_id
+        WHERE
+        lslt.time >=
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                #{start}
+            </when>
+            <otherwise>
+                DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+            </otherwise>
+        </choose>
+        AND lslt.time &lt;=
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                #{end}
+            </when>
+            <otherwise>
+                NOW()
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getLocationShareTotal2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT count(lslt.l_s_log_id) locationShareTotal
+        FROM
+        location_sharing_log lsl
+        left JOIN location_sharing_log_time lslt ON lsl.id = lslt.l_s_log_id
+        WHERE map = #{mapId}
+        and lslt.time >=
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                #{start}
+            </when>
+            <otherwise>
+                DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+            </otherwise>
+        </choose>
+        AND lslt.time &lt;=
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                #{end}
+            </when>
+            <otherwise>
+                NOW()
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getReverseCarSearchTotal" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        select count(p.map) as reverseCarSearchTotal from parking_info_statistics_findcar p
+        WHERE
+        <choose>
+            <when test="start != null and end != null">
+                p.start_time >= #{start} AND p.start_time &lt;= #{end}
+            </when>
+            <when test="time != null">
+                <!--@ignoreSql-->p.start_time >= DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+                AND p.start_time &lt;= NOW()
+            </when>
+        </choose>
+    </select>
+    <select id="getReverseCarSearchTotal2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        select count(p.map) as reverseCarSearchTotal from parking_info_statistics_findcar p
+        WHERE
+        <choose>
+            <when test="start != null and end != null">
+                p.start_time > #{start} AND p.start_time &lt; #{end}
+            </when>
+            <when test="time != null">
+                <!--@ignoreSql-->
+                p.start_time >= DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+                AND p.start_time &lt;= NOW()
+            </when>
+        </choose> and map =#{mapId}
+    </select>
+
+    <select id="getUserSearchTotal" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        select count(uslt.u_s_log_id ) userSearchTotal
+        from user_search_log usl
+        left JOIN user_search_log_time uslt ON usl.id = uslt.u_s_log_id
+        where
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                 uslt.time >= #{start} AND uslt.time &lt;= #{end}
+            </when>
+            <when test="time != null">
+                 uslt.time >= DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+                AND uslt.time &lt;= NOW()
+            </when>
+        </choose>
+    </select>
+    <select id="getUserSearchTotal2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        select count(uslt.u_s_log_id ) userSearchTotal
+        from user_search_log usl
+        left JOIN user_search_log_time uslt ON usl.id = uslt.u_s_log_id
+        where
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                uslt.time >= #{start} AND uslt.time &lt;= #{end}
+            </when>
+            <when test="time != null">
+                uslt.time >= DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+                AND uslt.time &lt;= NOW()
+            </when>
+        </choose>
+        and map =#{mapId}
+    </select>
+    <select id="getActiveUserTotal" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT COUNT(DISTINCT userid) AS activeUsers,
+        DATE_FORMAT(loginTime, '%Y-%m') AS perMonth
+        FROM monthActiveUserRecord
+        where loginTime >= DATE_SUB( NOW(), INTERVAL #{time} MONTH ) AND loginTime &lt;= NOW()
+        GROUP BY perMonth;
+    </select>
+    <select id="getActiveUserTotal2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT COUNT(DISTINCT userid) AS activeUsers
+        FROM map_monthactiveuserrecord
+        WHERE loginTime >= DATE_SUB( NOW(), INTERVAL #{time} MONTH ) AND loginTime &lt;= NOW()
+        and map =#{mapId}
+    </select>
+
+    <select id="getIdlePlaceNumber" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT
+        now() time,
+        p.map,
+        count(*) idlePlaceNumber
+        FROM
+        parking_place p
+        LEFT JOIN map_2d m ON p.map = m.id
+        WHERE
+        p.state = 0
+        GROUP BY
+        p.map
+        order by idlePlaceNumber desc
+        limit 10
+    </select>
+
+    <select id="getMapUsersTotal" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        select count(distinct userid) userTotal
+        from map_monthactiveuserrecord
+        where
+        <choose>
+            <when test="start != null and end != null">
+                <!--@ignoreSql-->
+                 loginTime >= #{start} AND loginTime &lt;= #{end}
+            </when>
+            <when test="time != null">
+                 loginTime >= DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+                AND loginTime &lt;= NOW()
+            </when>
+        </choose>
+        and map =#{mapId}
+    </select>
+
+
+    <select id="getCarBitAndHardwareInfo2" resultType="com.tgy.rtls.data.entity.view.ViewVo">
+        select
+        (select count(*) from parking_place where map=#{mapId})                 AS carBitCount,
+        IF(#{mapId} = 178,(select count(distinct id) from parking_place where map = #{mapId} and state = 0),
+            (select count(distinct place) from infrared where map = #{mapId} and status = 0)
+        ) AS carBitIdle,
+        IF(#{mapId} = 178, (select count(distinct id) from parking_place where map = #{mapId} and state = 1),
+            (select count(distinct place) from infrared where map = #{mapId} and status = 1)
+        ) AS carBitOccupy,
+        (select count(CASE state WHEN '2' THEN '已预约' END) from parking_place where map=#{mapId})  as carBitReserved,
+        (select count(CASE type WHEN '2' THEN '专用' END) from parking_place where map=#{mapId})    as carBitExclusive,
+        (SELECT COUNT(*) AS total_count FROM parking_place WHERE (carbittype = 1) and map=#{mapId}) as carBitVIP,
+        (select count(CASE type WHEN '1' THEN '充电车位' END) from parking_place where map=#{mapId})  as carBitChargePark,
+        (select count(*) from infrared where map is not null and map=#{mapId})                                        AS detectorCount,
+        (select count(CASE networkstate WHEN '0' THEN '离线' END) from infrared where map is not null and map=#{mapId}) as detectorOffLine,
+        (select count(CASE networkstate WHEN '1' THEN '在线' END) from infrared where map is not null and map=#{mapId}) as detectorOnLine,
+        (select count(*) from infrared where power &lt;= 1 and map is not null and map=#{mapId})                       as detectorLowPower,
+        (select count(*) from substation where map=#{mapId} and type=1)                                                            AS subCount,
+        (select count(CASE networkstate WHEN '0' THEN '离线' END) from substation where num != '0112' and map=#{mapId} and type=1) as subOffLine,
+        (select count(CASE networkstate WHEN '1' THEN '在线' END) from substation where map=#{mapId} and type=1)                     as subOnLine,
+        (select count(*) from substation where batteryVolt &lt;= 1 and map=#{mapId})                                       as subLowPower,
+        (select count(*) from substation where map=#{mapId} and type=7)                                                            AS roadSpikeCount,
+        (select count(CASE networkstate WHEN '0' THEN '离线' END) from substation where num != '0112' and map=#{mapId} and type=7) as rsOnLine,
+        (select count(CASE networkstate WHEN '1' THEN '在线' END) from substation where map=#{mapId} and type=7)                     as rsOffLine,
+        (select count(*) from gateway_lora where map=#{mapId})                                                              AS gatewayCount,
+        (select count(CASE networkstate WHEN '0' THEN '离线' END) from gateway_lora where map is not null and map=#{mapId}) as gatewayOffLine,
+        (select count(CASE networkstate WHEN '1' THEN '在线' END) from gateway_lora where map=#{mapId})                      as gatewayOnLine
+        from dual
+    </select>
+
+    <select id="getWithinThreeMonthsNewUsers2" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        select count(distinct userid) as newUserTotal
+        from map_monthactiveuserrecord
+        where  map = #{mapId} and DATE(DATE_FORMAT(loginTime, '%Y-%m-%d')) >= DATE_SUB(CURDATE(), INTERVAL #{time} MONTH);
+    </select>
+<!--    <select id="getUserTotal" resultType="com.tgy.rtls.data.entity.view.ViewVo2">-->
+<!--        sELECT userid userIds,loginTime loginTimes FROM map_monthactiveuserrecord where 1=1-->
+<!--        <if test='mapId != null'>and map=#{mapId} </if>-->
+<!--        <if test='ti
+me != null'>and loginTime >= DATE_SUB(NOW(),INTERVAL #{time} MONTH) AND loginTime =NOW() </if>-->
+<!--    </select>-->
+
+
+
+    <select id="aa">
+        SELECT (SELECT NAME FROM parking_place WHERE id = place) AS placeName,
+        (#{monthSecond} - SUM(
+        TIMESTAMPDIFF(
+        SECOND,
+        GREATEST(start, DATE_SUB(NOW(), INTERVAL #{time} MONTH)),
+        LEAST(COALESCE(end, DATE_SUB(NOW(), INTERVAL 1 DAY)), DATE_SUB(NOW(), INTERVAL 1 DAY))
+        )
+        )) / 3600                                     AS totalVacantDuration
+        FROM (SELECT place, start, end
+        FROM place_userecord
+        WHERE map = #{mapId}
+        AND (
+        (GREATEST(start, DATE_SUB(NOW(), INTERVAL #{time} MONTH)) >=DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+        AND
+        GREATEST(start, DATE_SUB(NOW(), INTERVAL #{time} MONTH)) &lt;= DATE_SUB(NOW(), INTERVAL 1 DAY))
+        OR (COALESCE(end, DATE_SUB(NOW(), INTERVAL 1 DAY)) >= DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+        AND COALESCE(end, DATE_SUB(NOW(), INTERVAL 1 DAY)) &lt;= DATE_SUB(NOW(), INTERVAL 1 DAY))
+        OR (GREATEST(start, DATE_SUB(NOW(), INTERVAL #{time} MONTH)) &lt;=
+        DATE_SUB(NOW(), INTERVAL #{time} MONTH)
+        AND COALESCE(end, DATE_SUB(NOW(), INTERVAL 1 DAY)) >= DATE_SUB(NOW(), INTERVAL 1 DAY))
+        )
+        UNION ALL
+        SELECT pp.id                                   AS place,
+        DATE_SUB(NOW(), INTERVAL #{time} MONTH) AS start,
+        DATE_SUB(NOW(), INTERVAL 1 DAY)         AS end
+        FROM parking_place pp
+        LEFT JOIN
+        place_userecord pur ON pp.id = pur.place
+        WHERE pur.place IS NULL
+        AND pp.map = #{mapId}) AS records
+        GROUP BY place
+        ORDER BY totalVacantDuration DESC
+        LIMIT 10;
+    </select>
+
+    <select id="getActiveUserNumber" resultType="com.tgy.rtls.data.entity.view.ViewVo2">
+        SELECT COUNT(DISTINCT userid) AS activeUsers
+        FROM map_monthactiveuserrecord
+        WHERE map = #{mapId}
+        <choose>
+            <when test='start != null and end != null'>
+                AND loginTime >= #{start} AND loginTime &lt;= #{end}
+            </when>
+            <otherwise>
+                AND loginTime >= DATE_SUB(NOW(), INTERVAL #{time} MONTH) AND loginTime &lt;= NOW()
+            </otherwise>
+        </choose>
+    </select>
+</mapper>
+

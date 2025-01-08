@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.map.QrCodeLocationMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.map.QrCodeLocation">
+    <!--@mbg.generated-->
+    <!--@Table qr_code_location-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="area_name" jdbcType="VARCHAR" property="areaName" />
+    <result column="map" jdbcType="VARCHAR" property="map" />
+    <result column="mapName" jdbcType="VARCHAR" property="mapName" />
+    <result column="floor" jdbcType="VARCHAR" property="floor" />
+    <result column="floorName" jdbcType="VARCHAR" property="floorName" />
+    <result column="qr_code_url" jdbcType="VARCHAR" property="qrCodeUrl" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="area_info" jdbcType="VARCHAR" property="areaInfo"/>
+    <result column="appName" jdbcType="VARCHAR" property="appName" />
+    <result column="mapKey" jdbcType="VARCHAR" property="mapKey" />
+    <result column="fmapID" jdbcType="VARCHAR" property="fmapID" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    <!--@sql select-->
+        q.id,q.area_name,q.`map`,q.`floor`,q.qr_code_url,q.create_time,q.update_time,q.area_info,m.name mapName,mrf.name floorName,m.appName,m.mapKey,m.fmapID
+    <!--@sql from qr_code_location q left join map_2d m on q.map = m.id left join map_relevance_floor mrf on mrf.map = m.id AND mrf.level = q.floor-->
+  </sql>
+
+  <!--$var desc=1-->
+    <select id="getAllQrCodeLocationOrConditionQuery" resultMap="BaseResultMap">
+      select
+        <include refid="Base_Column_List"/>
+      from qr_code_location q
+           left join map_2d m on q.map = m.id
+           left join map_relevance_floor mrf on mrf.map = m.id AND mrf.level = q.floor
+    <where>
+        <if test="map != null and map != ''">
+            q.map=#{map}
+        </if>
+        <if test="areaName != null and areaName != ''">
+            and q.area_name like concat('%',#{areaName},'%')
+        </if>
+        <if test="floorName != null and floorName != ''">
+            and mrf.name like concat('%',#{floorName},'%')
+        </if>
+    </where>
+        <if test="desc != null and desc != ''">
+            order by ${desc}
+        </if>
+  </select>
+
+  <select id="getQrCodeLocationById" resultMap="BaseResultMap">
+      select <include refid="Base_Column_List"/>
+      from qr_code_location q
+      left join map_2d m on q.map = m.id
+      left join map_relevance_floor mrf on mrf.map = m.id AND mrf.level = q.floor
+      where q.id=#{id}
+  </select>
+
+  <select id="getByMapId" resultType="com.tgy.rtls.data.entity.excel.QrCodeLocationDTO">
+      select m.name mapName,q.area_name areaName,mrf.name floorName,q.qr_code_url qrCodeUrl
+      from qr_code_location q
+      left join map_2d m on q.map = m.id
+      left join map_relevance_floor mrf on mrf.map = m.id AND mrf.level = q.floor
+      where q.map=#{mapId}
+  </select>
+</mapper>

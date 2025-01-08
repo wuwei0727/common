@@ -1,0 +1,1236 @@
+html,
+body,
+div,
+input,
+span,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+a,
+em,
+img,
+i,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+table,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+ol,
+ul {
+    list-style: none;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+input:focus {
+    border-color: #4a60cf;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+::-webkit-input-placeholder {
+    /* WebKit, Blink, Edge */
+    color: #9F9F9F;
+}
+
+:-moz-placeholder {
+    /* Mozilla Firefox 4 ~ 18 */
+    color: #9F9F9F;
+    opacity: 1;
+}
+
+::-moz-placeholder {
+    /* Mozilla Firefox 19+ */
+    color: #9F9F9F;
+    opacity: 1;
+}
+
+:-ms-input-placeholder {
+    /* Internet Explorer 10 ~ 11 */
+    color: #9F9F9F;
+}
+
+::-ms-input-placeholder {
+    /* Microsoft Edge */
+    color: #9F9F9F;
+}
+
+.hide {
+    display: none;
+}
+
+.clearfix:after {
+    content: '';
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+.clearfix {
+    *zoom: 1;
+}
+
+@font-face {
+    font-family: YouSheBiaoTiHei;
+    src: url(../font/YouSheBiaoTiHei-2.ttf);
+}
+
+html {
+    width: 100%;
+    height: 100%;
+    min-width: 1024px;
+    min-height: 768px;
+    /* min-height: 16rem; */
+    background: url(../image/common/大屏背景图.png) no-repeat;
+    background-size: 100% 100%;
+}
+
+body {
+    min-width: 1024px;
+    width: 100%;
+    /* height: 13.5rem; */
+    height: 100%;
+}
+
+.header {
+    width: 100%;
+    height: 1.375rem;
+    box-sizing: border-box;
+    background: url(../image/common/标题栏.png) no-repeat;
+    background-size: 100% 1.6625rem;
+    text-align: center;
+    color: #fff;
+    position: relative;
+}
+
+.headerTitle {
+    height: .875rem;
+    font-size: .725rem;
+    font-family: "YouSheBiaoTiHei";
+    text-shadow: 0px 7px 14px rgba(6, 24, 61, 0.3);
+}
+
+.headerTime {
+    font-size: .275rem;
+}
+
+.headerTime span {
+    margin: 0 .1rem;
+}
+
+.main {
+    display: flex;
+    /* height: 14.625rem; */
+    height: calc(100% - 1.375rem);
+    position: relative;
+}
+
+.mainMiddle {
+    flex: 52;
+    /* height: 14rem; */
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.chinaMap {
+    width: 12.5rem;
+    /* height: 100%; */
+    height: 9.35rem;
+    margin: 0 auto;
+}
+
+.mainLeft,
+.mainRight {
+    flex: 37;
+    min-width: 3.8rem;
+    height: 100%;
+    padding-left: .2333rem;
+    box-sizing: border-box;
+}
+
+.mainRight {
+    padding: 0 .2333rem 0 0;
+}
+
+.bigArea {
+    width: 100%;
+    height: 4.7833rem;
+    background: url(../image/common/大框.png);
+    background-size: 100% 100%;
+}
+
+.small {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    /* height: 3.7rem; */
+}
+
+.smallArea {
+    width: 4.5rem;
+    /* height: 3.7rem; */
+    height: 4.7833rem;
+    background: url(../image/common/小框.png);
+    background-size: 100% 100%;
+}
+
+.bigAreaer {
+    height: 3.7rem;
+}
+
+.carCount {
+    position: relative;
+
+}
+
+.areaT {
+    /* margin: .025rem; */
+    line-height: .6333rem;
+    height: .6333rem;
+    font-size: .225rem;
+    font-weight: 700;
+    font-family: "Microsoft YaHei";
+    color: #fff;
+}
+
+.areaTIcon {
+    width: .6333rem;
+    height: .6333rem;
+    vertical-align: middle;
+    margin-right: -0.1rem;
+}
+
+.carCountM {
+    position: absolute;
+    top: 1.1rem;
+    left: 1.175rem;
+    width: 5.9rem;
+    height: .5rem;
+    line-height: .475rem;
+    background: url(../image/common/车位总数底色.png);
+    background-size: cover;
+    text-align: center;
+}
+
+.carCountMC {
+    height: 100%;
+    line-height: 100%;
+    margin-left: .2rem;
+    color: #fff;
+}
+
+.carCountMCT {
+    font-size: .225rem;
+    margin-left: .2rem;
+    margin-right: .075rem;
+}
+
+.countTLine {
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    width: 3.25rem;
+    height: .075rem;
+    margin-left: .125rem;
+}
+
+.countTLineT {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: .25rem;
+    height: .0375rem;
+    background-color: #4DA3FF;
+}
+
+.countTLineB {
+    position: absolute;
+    top: .025rem;
+    left: 0;
+    width: 3.25rem;
+    height: .025rem;
+    background: linear-gradient(90deg, rgba(77, 163, 255, 1), rgba(77, 163, 255, 0));
+}
+
+.shortline {
+    width: 1.625rem;
+}
+
+.shorterline {
+    width: 1.85rem;
+}
+
+.shorterline2 {
+    width: 1.6rem;
+}
+
+.dayTitle2,
+.dayTitle {
+    font-weight: 400;
+    font-size: .1667rem;
+    color: #FFFFFF;
+    position: absolute;
+    top: -0.4667rem;
+    left: 0;
+    z-index: 2;
+}
+
+.countBorder {
+    display: inline-block;
+    width: .2625rem;
+    height: .35rem;
+    line-height: .35rem;
+    border: .0125rem solid #4cf6f3;
+    border-radius: .05rem;
+    font-size: .275rem;
+    margin-right: .075rem;
+}
+
+.countDou {
+    margin-right: .075rem;
+    vertical-align: middle;
+    color: #4CF6F3;
+    font-size: .225rem;
+}
+
+.carYi {
+    /* position: absolute;
+    top: 2.25rem;
+    left: .5125rem;
+    width: 1.65rem;
+    height: 1.375rem; */
+    width: 1.6667rem;
+    height: 1.6667rem;
+}
+
+.carYi2 {
+    text-align: center;
+    font-weight: 500;
+    font-size: .3rem;
+    margin-bottom: .1333rem;
+    height: .5rem;
+}
+
+#carYiOccupy2 {
+    color: #FFD725;
+}
+
+#carYiFree2 {
+    color: #00FF00;
+}
+
+#carBitChargePark2 {
+    color: #1FEDBD;
+}
+
+#carYiSpecial2 {
+    color: #DF6AE9;
+}
+
+#carYiVip2 {
+    color: #00FFFC;
+}
+
+.carYiSecond {
+    left: 2.625rem;
+}
+
+.carYiThird {
+    left: 4.75rem;
+}
+
+.carYiFour {
+    left: 7rem;
+}
+
+.carYiNum {
+    width: 2.25rem;
+    height: .5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    /* position: absolute;
+    top: 3.75rem;
+    left: .375rem; */
+    color: #fff;
+    font-size: .175rem;
+    text-align: center;
+}
+
+.carYiNumSecond {
+    left: 2.55rem;
+}
+
+.freeTitle {
+    color: #00FF00;
+}
+
+.occupyTitle {
+    color: #FFD725;
+}
+
+.carYiNumThird {
+    left: 4.625rem;
+}
+
+.chargeTitle {
+    color: #1FEDBD;
+}
+
+.specialTitle {
+    color: #DF6AE9;
+}
+
+.carYiNumFour {
+    left: 6.875rem;
+}
+
+.monthZhe {
+    width: 90%;
+    height: 2.625rem;
+    height: 2.625rem;
+    margin: 0 auto;
+}
+
+.findCarBar {
+    width: 90%;
+    height: 2.625rem;
+    margin: 0 auto;
+}
+
+.userTotal,
+.userDaily,
+.visits {
+    width: 100%;
+    height: .75rem;
+    margin: .2rem auto .45rem;
+    text-align: center;
+    font-size: .2rem;
+}
+
+.userTotalT {
+    height: .35rem;
+    margin-bottom: .075rem;
+}
+
+.userTotalT span {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: .025rem;
+
+}
+
+.userTotalTL,
+.userTotalTR {
+    width: 1rem;
+    height: .05rem;
+    background: linear-gradient(90deg, #45FCFF 0%, rgba(1, 9, 42, 0) 100%);
+    border-radius: .025rem;
+}
+
+.userTotalTL {
+    background: linear-gradient(-90deg, #45FCFF 0%, rgba(1, 9, 42, 0) 100%);
+}
+
+.userContent {
+    color: #fff;
+}
+
+.carUseBar {
+    width: 100%;
+    height: calc(100% - 1.3333rem);
+}
+
+.carRecommendBar {
+    width: 90%;
+    height: 2.625rem;
+    margin: 0 auto;
+}
+
+.vipTitle {
+    color: #67FFE8;
+}
+
+.hardwareCount {
+    width: 100%;
+    height: 4.75rem;
+    padding: 0 .25rem;
+    box-sizing: border-box;
+}
+
+.harwareContent {
+    margin-top: .125rem;
+    display: flex;
+    justify-content: space-around;
+}
+
+.harwareBox {
+    width: 2.75rem;
+    height: 3.75rem;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: .125rem;
+    font-size: .175rem;
+    text-align: center;
+    color: #fff;
+    padding: .125rem 0;
+    box-sizing: border-box;
+}
+
+.hardwareTitleL,
+.hardwareTitleR {
+    display: inline-block;
+    vertical-align: middle;
+    width: .575rem;
+    height: .05rem;
+    background: linear-gradient(-90deg, #45FCFF 0%, rgba(1, 9, 42, 0) 100%);
+    border-radius: .025rem;
+}
+
+.hardwareTitleR {
+    background: linear-gradient(90deg, #45FCFF 0%, rgba(1, 9, 42, 0) 100%);
+}
+
+.hardwareTitleC {
+    margin: 0 .025rem;
+}
+
+.jiancePie,
+.xinbiaoPie,
+.wangguanPie {
+    width: 2.5rem;
+    height: 3.1667rem;
+    margin: 0 auto;
+}
+
+.carRealTime {
+    position: relative;
+}
+
+.carTable {
+    position: absolute;
+    top: .65rem;
+    left: -0.05rem;
+    width: 100%;
+    height: 2.75rem;
+    text-align: center;
+    color: #B8D3F1;
+    font-size: .175rem;
+    overflow: hidden;
+}
+
+.carTitle {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    margin-bottom: .175rem;
+    color: #0E70EA;
+}
+
+.carRealTimeTable {
+    width: 100%;
+    height: 2.5rem;
+}
+
+.carRealTimeTable ul li {
+    display: flex;
+    text-align: center;
+    margin-bottom: .15rem;
+}
+
+.carRealTimeTable ul li span,
+.carTitle span {
+    flex: 3;
+    text-align: center;
+}
+
+.carRealTimeTable ul li span:nth-child(2),
+.carTitle span:nth-child(2) {
+    flex: 2;
+    width: 2.7rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.carRealTimeTable ul li span:nth-child(3),
+.carTitle span:nth-child(3) {
+    flex: 1.8;
+    text-align: center;
+}
+
+.carTable .green {
+    font-style: normal;
+    color: #00B500;
+}
+
+.carTable .orange {
+    font-style: normal;
+    color: #FF970D;
+}
+
+.str_wrap {
+    overflow: hidden;
+    width: 100%;
+    line-height: 16px;
+    position: relative;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.str_move {
+    white-space: nowrap;
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: move;
+}
+
+.str_move_clone {
+    display: inline-block;
+    vertical-align: top;
+    position: absolute;
+    left: 100%;
+    top: 0;
+}
+
+.str_vertical .str_move_clone {
+    left: 0;
+    top: 100%;
+}
+
+.str_down .str_move_clone {
+    left: 0;
+    bottom: 100%;
+}
+
+.str_vertical .str_move,
+.str_down .str_move {
+    white-space: normal;
+    width: 100%;
+}
+
+.str_static .str_move,
+.no_drag .str_move,
+.noStop .str_move {
+    cursor: inherit;
+}
+
+.str_wrap img {
+    max-width: none !important;
+}
+
+@media screen and (max-width: 1024px) {
+    html {
+        font-size: 32px !important;
+        height: 100%;
+        background-size: cover;
+    }
+}
+
+.mainMiddleTop {
+    width: 12.5833rem;
+    height: 3.0333rem;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, 0);
+    z-index: 2;
+    overflow: hidden;
+    margin: 0 auto;
+    cursor: pointer;
+    user-select: none;
+}
+
+.mainMiddleFooter {
+    width: 12.5833rem;
+    height: 4.7833rem;
+    /* position: absolute;
+top: 9.35rem;
+left: 50%;
+transform: translate(-50%, 0);
+z-index: 2; */
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+.footerView {
+    display: flex;
+    /* transition: all .8s; */
+}
+
+.viewBGImage {
+    width: 100%;
+    height: 100%;
+    /* background: url(../image/common/大框.png);
+    background-size: 100% 100%; */
+
+    /* transition: all .8s; */
+}
+
+.viewBGImage1 {
+    width: 6.1833rem;
+    height: 4.7833rem;
+    background: url(../image/common/小框.png);
+    background-size: 100% 100%;
+}
+
+.marginLeft14 {
+    margin-left: .2333rem;
+}
+
+.marginTop20 {
+    margin-top: .2333rem;
+}
+
+.userViewFlex {
+    width: 100%;
+    height: calc(100% - .6333rem);
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.userInfoItem {
+    width: 2.75rem;
+    height: 1.55rem;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: .1333rem;
+    text-align: center;
+    font-weight: 400;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.userInfoNum {
+    font-size: .45rem;
+    color: #00DBF9;
+}
+
+.usreInfoName {
+    font-size: .25rem;
+    color: #FFFFFF;
+    margin-top: .1333rem;
+}
+
+.mainMiddleTop .MTHeader {
+    width: 100%;
+    height: .8333rem;
+    display: flex;
+}
+
+.mainMiddleTop .Hitem {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.mainMiddleTop .HitemName {
+    display: flex;
+    align-items: center;
+}
+
+.mainMiddleTop .HitemNL {
+    width: 1.2333rem;
+    height: .05rem;
+    background: linear-gradient(-90deg, #45FCFF 0%, rgba(1, 9, 42, 0) 100%);
+    border-radius: .0333rem;
+}
+
+.mainMiddleTop .HitemN {
+    font-weight: 400;
+    font-size: .25rem;
+    color: #FFFFFF;
+    line-height: .5rem;
+    margin: 0 .1667rem;
+}
+
+.mainMiddleTop .HitemNR {
+    width: 1.2333rem;
+    height: .05rem;
+    border-radius: .0333rem;
+    background: linear-gradient(90deg, #45FCFF 0%, rgba(1, 9, 42, 0) 100%);
+}
+
+.mainMiddleTop .HitemNum {
+    font-weight: 400;
+    font-size: .4rem;
+    color: #00DBF9;
+    line-height: .3167rem;
+}
+
+.mainMiddleTop .MTMain {
+    width: 100%;
+    margin-top: .1667rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.MTMain .MTMainItem {
+    width: 2.3333rem;
+    /* height: 2.1667rem; */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.openANDclose {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, 0);
+    z-index: 99;
+    color: red;
+    cursor: pointer;
+}
+
+.mainMiddleFooter .openANDclose {
+    top: unset;
+    bottom: .3333rem;
+}
+
+.closeClass1 {
+    transform: translate(0%, -100%);
+}
+
+.closeClass2 {
+    transition: all .8s;
+    transform: translate(0%, 100%);
+}
+
+.userViewFlex .usericon1 {
+    background-image: url(../image/common/usericon1.png);
+    background-repeat: no-repeat;
+    background-position: 88% 84%;
+}
+
+.userViewFlex .usericon2 {
+    background-image: url(../image/common/usericon2.png);
+    background-repeat: no-repeat;
+    background-position: 88% 84%;
+}
+
+.userViewFlex .usericon3 {
+    background-image: url(../image/common/usericon3.png);
+    background-repeat: no-repeat;
+    background-position: 88% 84%;
+}
+
+.userViewFlex .usericon4 {
+    background-image: url(../image/common/usericon4.png);
+    background-repeat: no-repeat;
+    background-position: 88% 84%;
+}
+
+.userViewFlex .usericon5 {
+    background-image: url(../image/common/usericon5.png);
+    background-repeat: no-repeat;
+    background-position: 88% 84%;
+}
+
+.userViewFlex .usericon6 {
+    background-image: url(../image/common/usericon6.png);
+    background-repeat: no-repeat;
+    background-position: 88% 84%;
+}
+
+.ymtlTotal {
+    font-weight: 400;
+    font-size: .1833rem;
+    color: #B8D3F1;
+    line-height: .2333rem;
+    margin-top: .1333rem;
+}
+
+.ymtlTotalNum {
+    color: #FFC600;
+    font-size: .2333rem;
+    font-weight: bold;
+    margin-left: .1333rem;
+}
+
+.sphericalAnimation {
+    width: .8833rem;
+    height: .8833rem;
+    border-radius: 50%;
+    border: .0333rem solid #FFFFFF;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.sphericalAnimation .sphearicA {
+    width: 150%;
+    height: 0%;
+    border-radius: 70%;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, 0);
+    z-index: 2;
+}
+
+.carParkFlexView {
+    width: 100%;
+    height: calc(100% - .6333rem);
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.carParkIcon1 {
+    background-image: url(../image/common/carParkicon1.png) !important;
+    background-repeat: no-repeat !important;
+    background-position: 88% 84% !important;
+}
+
+.carParkIcon2 {
+    background-image: url(../image/common/carParkicon2.png) !important;
+    background-repeat: no-repeat !important;
+    background-position: 88% 84% !important;
+}
+
+.carParkIcon3 {
+    background-image: url(../image/common/carParkicon3.png) !important;
+    background-repeat: no-repeat !important;
+    background-position: 88% 84% !important;
+}
+
+.carParkFlexView .carParkItem {
+    width: 2.75rem;
+    height: 1.55rem;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: .1333rem;
+    text-align: center;
+    font-weight: 400;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.carParkFlexView .carParkrInfoNum {
+    width: 100%;
+    height: .9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-weight: 400;
+    font-size: .45rem;
+    color: #00DBF9;
+}
+
+.carParkFlexView .carParkrInfoRound {
+    width: 100%;
+    height: .9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carParkFlexView .carParkrInfoNum2 {
+    font-weight: 400;
+    font-size: .3833rem;
+    color: #00DBF9;
+    margin-left: .2rem;
+
+    max-width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-break: break-all;
+    white-space: nowrap;
+
+    cursor: pointer;
+}
+
+.carParkFlexView .carParkInfoName {
+    font-weight: 400;
+    font-size: .2333rem;
+    color: #FFFFFF;
+    margin-top: .1333rem;
+}
+
+.sphearicColor1 {
+    background: linear-gradient(0deg, #0A6BE9, #49ACFE);
+}
+
+.sphearicColor2 {
+    background: linear-gradient(0deg, #8561FF, #5D2DFE);
+}
+
+.sphearicColor3 {
+    background: linear-gradient(0deg, #11ECBB, #2190DD);
+}
+
+.tableListView {
+    width: 100%;
+    height: calc(100% - .6667rem);
+    padding: 0 .25rem;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.tableListView .tableH {
+    width: 100%;
+    height: .2833rem;
+    line-height: .2833rem;
+    display: flex;
+    font-weight: bold;
+    font-size: .1833rem;
+    color: #0E70EA;
+    text-align: center;
+    margin-top: -0.1333rem;
+}
+
+.tableListView .tableHItme1 {
+    width: 15%;
+}
+
+.tableListView .tableHItme2 {
+    flex: 1;
+}
+
+.tableListView .tableHItme3 {
+    width: 15%;
+}
+
+.tableListView .tableMain {
+    width: 100%;
+    height: calc(100% - .2833rem);
+    margin-top: .1333rem;
+}
+
+.tableListView .tableUl {
+    width: 100%;
+    height: calc(100% / 10);
+    display: flex;
+    font-size: .1833rem;
+    color: #B8D3F1;
+    text-align: center;
+}
+
+.tableListView .tableLi1,
+.tableListView .tableLi2,
+.tableListView .tableLi3 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.tableListView .tableLi1,
+.tableListView .tableLi3 {
+    width: 15%;
+}
+
+.tableListView .tableLi2 {
+    /* flex: 1; */
+    width: 70%;
+}
+
+.emptyParkingSpaceData .tableLi2 {
+    width: 45%;
+}
+
+.emptyParkingSpaceData .tableHItme1,
+.emptyParkingSpaceData .tableLi1 {
+    width: 35%;
+}
+
+.emptyParkingSpaceData .tableHItme3,
+.emptyParkingSpaceData .tableLi3 {
+    width: 20%;
+}
+
+#emptyParkingSpaceData {
+    overflow: auto !important;
+}
+
+.emptyParkingSpaceData ::-webkit-scrollbar {
+    width: 4px;
+    background-color: #F5F5F5;
+}
+
+/*定义滚动条轨道
+内阴影+圆角*/
+.emptyParkingSpaceData ::-webkit-scrollbar-track {
+    border-radius: 2px;
+    background-color: #F5F5F5;
+}
+
+/*定义滑块
+内阴影+圆角*/
+.emptyParkingSpaceData ::-webkit-scrollbar-thumb {
+    border-radius: 2px;
+    background-color: #4DA3FF;
+}
+
+.tableLi1 .tableLi1d,
+.tableLi2 .tableLi2d {
+    width: 100%;
+    overflow: hidden;
+}
+
+.tableLi1 .tableLi1d span,
+.tableLi2 .tableLi2d span {
+    width: 100%;
+    display: block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-break: break-all;
+    white-space: nowrap;
+}
+
+.tableMain .tableUl:nth-child(2n+1) {
+    background: #062259;
+}
+
+.tableMain .tableUl:hover {
+    background: #4DA3FF;
+}
+
+.tableMain img {
+    height: .2833rem;
+}
+
+.padding10 {
+    padding: 0 .1667rem;
+    box-sizing: border-box;
+}
+
+.mainH {
+    width: 100%;
+    height: calc(100% - 1rem);
+}
+
+.carUseBarNumV {
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    font-size: .3rem;
+    color: #FFFFFF;
+}
+
+.carUseBarNum {
+    margin: 0 .1333rem;
+    color: #FFC700;
+}
+
+.dropdownSelectionBox {
+    position: absolute;
+    top: .25rem;
+    left: calc(50% + 8.3333rem);
+    z-index: 2;
+
+    display: flex;
+}
+
+.dropdownSelectionBox .selectTitle {
+    height: .4333rem;
+    line-height: .4333rem;
+    font-weight: 400;
+    font-size: .2333rem;
+    color: #B8D3F1;
+    margin-right: .1667rem;
+}
+
+.dropdownSelectionBox .selectBox {
+    width: 2.5rem;
+    text-align: center;
+}
+
+.dropdownSelectionBox .selectNameBox {
+    width: 2.5rem;
+    height: .4333rem;
+    line-height: .4333rem;
+    background: #062259;
+    border-radius: 2px;
+    border: 1px solid #4DA3FF;
+    position: relative;
+    cursor: pointer;
+}
+
+.dropdownSelectionBox .selectNameIcon {
+    position: absolute;
+    top: 50%;
+    right: .3333rem;
+    z-index: 2;
+
+    display: inline-block;
+    width: .15rem;
+    height: .15rem;
+    border-top: .0333rem solid #4DA3FF;
+    border-right: .0333rem solid #4DA3FF;
+    transform: rotate(45deg) translate(0, -50%);
+}
+
+.dropdownSelectionBox .selectUl {
+    display: none;
+    cursor: pointer;
+}
+
+.dropdownSelectionBox .showSelect {
+    display: block;
+}
+
+.dropdownSelectionBox .selectLi {
+    width: 2.5rem;
+    height: .4333rem;
+    line-height: .4333rem;
+    background: #062259;
+    border: 1px solid #4DA3FF;
+    position: relative;
+}
+
+.newboxheight {
+    height: 4.1rem;
+}
+
+.smallText {
+    font-size: .2rem;
+    margin-left: .1333rem;
+}

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.map.FeedbackMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.map.Feedback">
+    <!--@mbg.generated-->
+    <!--@Table feedback-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="map" jdbcType="VARCHAR" property="map" />
+    <result column="mapName" jdbcType="VARCHAR" property="mapName" />
+    <result column="place_name" jdbcType="VARCHAR" property="placeName" />
+    <result column="contact_info" jdbcType="VARCHAR" property="contactInfo" />
+    <result column="feedback_type" jdbcType="VARCHAR" property="feedbackType" />
+    <result column="content" jdbcType="LONGVARCHAR" property="content" />
+    <result column="image_url" jdbcType="VARCHAR" property="imageUrl" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated--><!--@sql select -->
+    f.id,f.`map`,m2d.name as mapName,f.place_name,f.contact_info,f.feedback_type,f.content,f.image_url,f.user_id,f.create_time,f.`status`
+    <!--@sql  from feedback f left join feedback_type ft on ft.id = feedback_type left join map_2d m2d on f.map = m2d.id-->
+  </sql>
+
+  <!--$var desc=1-->
+  <select id="getFeedbackInfo" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+    from feedback f
+        left join map_2d m2d on f.map = m2d.id
+<!--    left join feedback_type ft on ft.id = f.feedback_type-->
+    WHERE 1=1
+    <if test="map != null">
+      and map = #{map}
+    </if>
+    <if test="placeName != null and placeName != ''">
+      and place_name like concat('%',#{placeName},'%')
+    </if>
+    <if test="feedbackType != null and feedbackType != ''">
+        and feedback_type like concat('%',#{feedbackType},'%')
+    </if>
+    <if test="contactInfo != null and contactInfo != ''">
+      and  contact_info like concat('%',#{content},'%')
+    </if>
+    <if test="content != null">
+      and content like concat('%',#{content},'%')
+    </if>
+    <if test="desc != null">
+      order by ${desc}
+    </if>
+
+  </select>
+</mapper>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.vip.VipAreaMapper">
+    <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.vip.VipArea">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="license" jdbcType="VARCHAR" property="license"/>
+        <result column="map" jdbcType="BIGINT" property="map"/>
+        <result column="binding_area" jdbcType="VARCHAR" property="vipArea"/>
+        <result column="device_num" jdbcType="VARCHAR" property="barrierGateNum"/>
+        <result column="vip_customers" jdbcType="VARCHAR" property="vipCustomers"/>
+        <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="duration" jdbcType="VARCHAR" property="duration"/>
+        <result column="state" jdbcType="TINYINT" property="state"/>
+        <result column="fid" jdbcType="VARCHAR" property="fid"/>
+        <result column="x" jdbcType="VARCHAR" property="x"/>
+        <result column="y" jdbcType="VARCHAR" property="y"/>
+        <result column="z" jdbcType="VARCHAR" property="z"/>
+        <result column="floor" jdbcType="TINYINT" property="floor"/>
+        <result column="floorName" jdbcType="VARCHAR" property="floorName"/>
+        <result column="mapName" jdbcType="VARCHAR" property="mapName"/>
+        <result column="appName" jdbcType="VARCHAR" property="appName"/>
+        <result column="mapKey" jdbcType="VARCHAR" property="mapKey"/>
+        <result column="fmapID" jdbcType="VARCHAR" property="fmapID"/>
+        <result column="mapImg" jdbcType="VARCHAR" property="mapImg"/>
+        <result column="themeImg" jdbcType="VARCHAR" property="themeImg"/>
+        <result column="barrierGateId" jdbcType="BIGINT" property="barrierGateId"/>
+        <result column="barrierGateArea" jdbcType="VARCHAR" property="barrierGateArea"/>
+    </resultMap>
+
+    <resultMap id="areaNameList" type="com.tgy.rtls.data.entity.park.ParkingCompanyVo">
+        <result property="mapId" column="mapId"/>
+        <result property="mapName" column="mapName"/>
+        <collection property="areaNameList" ofType="com.tgy.rtls.data.entity.park.ParkingCompanyVo">
+            <result property="barrierGateId" column="barrierGateId"/>
+            <result property="areaName" column="areaName"/>
+        </collection>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@sql select -->
+        v.id,
+        v.license,
+        v.`map`,
+        v.vip_customers,
+        v.phone,
+        v.start_time,
+        v.end_time,
+        CONCAT(DATE_FORMAT(v.start_time, '%Y-%m-%d %H:%i'), '至',
+               DATE_FORMAT(v.end_time, '%Y-%m-%d %H:%i')) AS appointmentSlot,
+        v.duration,
+        v.`state`,
+        m2d.name                                          as mapName,
+        m2d.mapKey,
+        m2d.appName,
+        m2d.fmapID,
+        m2d.mapImg,
+        m2d.themeImg,
+        bg.id                                             as barrierGateId,
+        bg.device_num,
+        bg.binding_area,
+        bg.floor                                          as floor,
+        mrf.name floorName,
+        bg.x                                              as x,
+        bg.y                                              as y,
+        bg.z                                              as z,
+        bg.fid                                            as fid,
+        bg.binding_area                                   as barrierGateArea
+        <!--@sql from vip_area v left join map_2d m2d on m2d.id = v.map
+        left join barrier_gate bg on v.barrier_gate_num = bg.device_num left join map_relevance_floor mrf on mrf.map = m2d.id-->
+    </sql>
+
+    <select id="getVipAreaInfo" resultMap="BaseResultMap">
+        select distinct
+        <include refid="Base_Column_List"/>,
+                                               (select GROUP_CONCAT(distinct CONCAT(bg.id, ':', bg.binding_area)
+                                                                    SEPARATOR ',')
+                                                from barrier_gate bg) as barrierGateAreaStr
+    from vip_area v
+             left join map_2d m2d on m2d.id = v.map
+             left join barrier_gate bg on v.barrier_gate_num = bg.id
+        left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = bg.floor
+    where 1 = 1
+        <if test="license != null and license != ''">
+            and v.license like concat('%', #{license}, '%')
+        </if>
+        <if test="map != null">
+            and v.map = #{map}
+        </if>
+        <if test="floorName != null and floorName != ''">
+            and mrf.name like concat('%',#{floorName},'%')
+        </if>
+        <if test="phone != null and phone != ''">
+            and v.phone like concat('%', #{phone}, '%')
+        </if>
+        <if test="barrierGateNum != null and barrierGateNum != ''">
+            and v.barrier_gate_num like concat('%', #{barrierGateNum}, '%')
+        </if>
+        <if test="mapids != null and mapids != ''">
+            and m2d.id in
+            <foreach close=")" collection="mapids" item="maps" open="(" separator=",">
+                #{maps}
+            </foreach>
+        </if>
+        <if test="desc != null and desc != ''">
+            order by ${desc}
+        </if>
+    </select>
+
+    <insert id="addVipAreaInfo">
+        insert into vip_area (map, floor, barrier_gate_num, vip_area, license, vip_customers, phone, start_time,
+                              end_time)
+        values (#{map}, #{floor}, #{barrierGateId}, #{vipArea}, #{license}, #{vipCustomers}, #{phone}, #{startTime},
+                #{endTime});
+    </insert>
+
+    <update id="editVipAreaInfo">
+        update vip_area
+        set
+        <if test="map != null">
+            map = #{map},
+        </if>
+        <if test="barrierGateId != null">
+            barrier_gate_num = #{barrierGateId},
+        </if>
+        <if test="vipArea != null and vipArea != ''">
+            vip_area = #{vipArea},
+        </if>
+        <if test="license != null and license != ''">
+            license = #{license},
+        </if>
+        <if test="vipCustomers != null and vipCustomers != ''">
+            vip_customers = #{vipCustomers},
+        </if>
+        <if test="phone != null and phone != ''">
+            phone = #{phone},
+        </if>
+        <if test="startTime != null">
+            start_time = #{startTime},
+        </if>
+        <if test="endTime != null">
+            end_time = #{endTime}
+        </if>
+        where id = #{id}
+    </update>
+
+    <delete id="delVipAreaInfo">
+        delete
+        from vip_area
+        where id = #{id}
+    </delete>
+
+    <select id="getVipAreaInfoInfoById" resultMap="BaseResultMap">
+        select distinct
+        <include refid="Base_Column_List"/>,
+        (select GROUP_CONCAT(distinct CONCAT(bg.id, ':', bg.binding_area) SEPARATOR ',') from barrier_gate bg) as barrierGateAreaStr
+    from vip_area v
+            left join map_2d m2d on m2d.id = v.map
+            left join barrier_gate bg on v.barrier_gate_num = bg.id
+        left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = v.floor
+        where v.id = #{id}
+    </select>
+
+    <select id="gateLicense" resultMap="BaseResultMap">
+        select distinct
+        <include refid="Base_Column_List"/>
+        from vip_area v
+                 left join map_2d m2d on m2d.id = v.map
+                 left join barrier_gate bg on v.barrier_gate_num = bg.id
+        where v.license = #{license} AND v.barrier_gate_num = #{barrierGateNum}
+    </select>
+
+    <select id="gateCmd" resultType="com.tgy.rtls.data.entity.vip.VipArea">
+        select distinct v.map                                          as mapName,
+                        v.barrier_gate_num                             as barrierGateNum,
+                        v.state,
+                        v.start_time                                   as startTime,
+                        v.end_time                                     as endTime,
+                        (select GROUP_CONCAT(distinct v.license SEPARATOR ',')
+                         from vip_area v
+                         where v.barrier_gate_num = #{barrierGateNum}) as license
+        from vip_area v
+                 left join map_2d m2d
+                           on m2d.id = v.map
+                 left join barrier_gate bg on v.barrier_gate_num = bg.id
+        where v.barrier_gate_num = #{barrierGateNum}
+          and v.map = #{map}
+    </select>
+
+    <select id="getBarrierGateInfo" resultType="java.lang.String">
+        select GROUP_CONCAT(distinct CONCAT(bg.id, ':', bg.binding_area) SEPARATOR ',') as barrierGateAreaStr
+        from barrier_gate bg
+    </select>
+
+    <select id="gateCmdWhetherOvertime" resultMap="BaseResultMap">
+        select distinct v.map                        as mapName,
+                        v.barrier_gate_num           as barrierGateNum,
+                        v.state,
+                        (select GROUP_CONCAT(distinct v.license SEPARATOR ',')
+                         from vip_area v
+                         where v.barrier_gate_num = #{barrierGateId}
+                           AND v.start_time &lt;= NOW()
+                           AND v.end_time &gt;= NOW()) as license
+        from vip_area v
+                 left join map_2d m2d
+                           on m2d.id = v.map
+                 left join barrier_gate bg on v.barrier_gate_num = bg.id
+        where v.barrier_gate_num = #{barrierGateId}
+          and v.map = #{map}
+    </select>
+
+
+    <select id="getMapIdByAllAreaName" resultMap="areaNameList">
+        select m.id    as mapId,
+               m.name  as mapName,
+               bg.id   as barrierGateId,
+               bg.binding_area as areaName
+        from map_2d as m
+                 left join barrier_gate bg on m.id = bg.map
+        where 1 = 1
+          and m.enable != 0
+        <if test="mapIds != '' and mapIds != null">
+            and m.id in
+            <foreach collection="mapIds" open="(" close=")" separator="," item="mapIds">
+                #{mapIds}
+            </foreach>
+        </if>
+    </select>
+</mapper>

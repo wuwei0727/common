@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.park.CrossLevelCorridorMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.park.CrossLevelCorridor">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="x" jdbcType="VARCHAR" property="x" />
+    <result column="y" jdbcType="VARCHAR" property="y" />
+    <result column="fid" jdbcType="VARCHAR" property="fid" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="map" jdbcType="BIGINT" property="map" />
+    <result column="access_status" jdbcType="BIGINT" property="accessStatus" />
+    <result column="floor" jdbcType="VARCHAR" property="floor" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+
+    <result column="mapName" jdbcType="VARCHAR" property="mapName"/>
+    <result column="mapKey" jdbcType="VARCHAR" property="mapKey"/>
+    <result column="appName" jdbcType="VARCHAR" property="appName"/>
+    <result column="fmapID" jdbcType="VARCHAR" property="fmapID"/>
+    <result column="mapImg" jdbcType="VARCHAR" property="mapImg"/>
+    <result column="themeImg" jdbcType="VARCHAR" property="themeImg"/>
+  </resultMap>
+  <sql id="Base_Column_List">
+      <!--@sql select -->
+      c.id,
+      c.x,
+      c.y,
+      c.fid,
+      c.`name`,
+      c.`map`,
+      c.access_status,
+      c.`floor`,
+    mrf.name floorName,
+      c.`type`,
+      m2d.name mapName,
+      m2d.mapKey,
+      m2d.appName,
+      m2d.fmapID,
+      m2d.mapImg,
+      m2d.themeImg
+      <!--@sql from cross_level_corridor c left join map_2d m2d on c.map = m2d.id left join map_relevance_floor mrf on mrf.map = m2d.id-->
+  </sql>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.tgy.rtls.data.entity.park.CrossLevelCorridor" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into cross_level_corridor
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="x != null and x != ''">
+        x,
+      </if>
+      <if test="y != null and y != ''">
+        y,
+      </if>
+      <if test="fid != null and fid != ''">
+        fid,
+      </if>
+      <if test="name != null and name != ''">
+        `name`,
+      </if>
+      <if test="map != null">
+        `map`,
+      </if>
+      <if test="accessStatus != null">
+        access_status,
+      </if>
+      <if test="floor != null and floor != ''">
+        `floor`,
+      </if>
+      <if test="type != null">
+        `type`,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="x != null and x != ''">
+        #{x,jdbcType=VARCHAR},
+      </if>
+      <if test="y != null and y != ''">
+        #{y,jdbcType=VARCHAR},
+      </if>
+      <if test="fid != null and fid != ''">
+        #{fid,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null and name != ''">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="map != null">
+        #{map,jdbcType=BIGINT},
+      </if>
+      <if test="accessStatus != null">
+        #{accessStatus,jdbcType=BIGINT},
+      </if>
+      <if test="floor != null and floor != ''">
+        #{floor,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.tgy.rtls.data.entity.park.CrossLevelCorridor">
+    <!--@mbg.generated-->
+    update cross_level_corridor
+    <set>
+      <if test="x != null and x != ''">
+        x = #{x,jdbcType=VARCHAR},
+      </if>
+      <if test="y != null and y != ''">
+        y = #{y,jdbcType=VARCHAR},
+      </if>
+        fid = #{fid,jdbcType=VARCHAR},
+      <if test="name != null and name != ''">
+        `name` = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="map != null">
+        `map` = #{map,jdbcType=BIGINT},
+      </if>
+      <if test="accessStatus != null">
+        access_status = #{accessStatus,jdbcType=BIGINT},
+      </if>
+      <if test="floor != null and floor != ''">
+        `floor` = #{floor,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        `type` = #{type,jdbcType=TINYINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <!--$var desc=1-->
+  <select id="getAllOrConditionalQuery" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from cross_level_corridor c
+           left join map_2d m2d on c.map = m2d.id
+    left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = c.floor
+    <where>
+      <if test="mapIds != null and mapIds != ''">
+        and m2d.id in
+        <foreach collection="mapIds" open="(" close=")" separator="," item="mapIds">
+          #{mapIds}
+        </foreach>
+      </if>
+      <if test="floorName != null and floorName != ''">
+        and mrf.name like concat('%',#{floorName},'%')
+      </if>
+      <if test="name != null and name != ''">
+        <bind name="name" value="'%' + name + '%'"/>
+        and c.name like #{name}
+      </if>
+      <if test="map != null">
+        and c.map = #{map}
+      </if>
+      <if test="type != null">
+        and c.type = #{type}
+      </if>
+    </where>
+    <if test="desc != null and desc != ''">
+      order by ${desc}
+    </if>
+  </select>
+
+  <select id="getConditionalById" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from cross_level_corridor c
+    left join map_2d m2d on c.map = m2d.id
+    left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = c.floor
+    where
+      <if test="id != null">
+        c.id = #{id}
+      </if>
+  </select>
+</mapper>

@@ -1,0 +1,88 @@
+package com.tgy.rtls.web.shiro;
+
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationInfo;
+import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
+import org.apache.shiro.realm.Realm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
+/**
+ * @BelongsProject: 智慧停车场
+ * @BelongsPackage: com.tgy.rtls.web.shiro
+ * @Author: wuwei
+ * @CreateTime: 2022-08-01 12:53
+ * @Description: TODO
+ * @Version: 1.0
+ * shiro在多realm的情况下，会出现异常只返回AuthenticationException的情况，此方法作用为阻止这种情况。
+ */
+ 
+ public class UserToken extends UsernamePasswordToken {
+    //登录类型，判断网页登录，小程序登录
+    private String loginType;
+
+    public UserToken(final String username, final String password,String loginType) {
+        super(username,password);
+        this.loginType = loginType;
+    }
+
+    public String getLoginType() {
+        return loginType;
+    }
+    public void setLoginType(String loginType) {
+        this.loginType = loginType;
+    }
+}
+
+
+
+/**
+ * 当配置了多个Realm时，我们通常使用的 认证器 是shiro自带的org.apache.shiro.authc.pam.ModularRealmAuthenticator，
+ * 其中决定使用的Realm的是doAuthenticate()方法。
+ * 
+ * 自定义Authenticator
+ * 注意，当需要分别定义处理 普通用户和系统管理员验证的Realm时，对应Realm的全类名应该包含字符串“Member”或者“User”。
+ * 并且，他们不能相互包含，例如 处理 普通用户的Realm的全类名中不应该包含字符串“User”
+ * 
+ * @author Administrator
+ *
+ */
+public class MultiRealmAuthenticator extends ModularRealmAuthenticator {
+    private static final Logger log = LoggerFactory.getLogger(MultiRealmAuthenticator.class);
+
+
+    @Override
+    public AuthenticationInfo doAuthenticate(AuthenticationToken authenticationToken) throws AuthenticationException {
+        //判断getRealms()是否返回为空
+   		 assertRealmsConfigured();
+   		//强制转换回自定义的UserToken
+   		UserToken token = (UserToken) authenticationToken;
+   		//获取登录类型
+   		String loginType = userToken.getLoginType();
+		
+            //所有Realm
+            Collection<Realm> realms = getRealms();
+ //登录类型对应的所有Realm
+            Collection<Realm> authRealms = new ArrayList<>();
+            for(Realm realm : realms){
+                if(realm.getName().equals(loginType)){
+                    authRealms.add(realm);
+                }
+            }
+//判断是 单Realm 还是 多Realm
+            if(authRealms.size() == 1){
+                return doSingleRealmAuthentication(authRealms.iterator().next(), token);
+            } else {
+                return doMultiRealmAuthentication(authRealms, token);
+            }
+        
+
+    }
+
+
+
+}

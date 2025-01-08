@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.park.GuideScreenDeviceMapper">
+    <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.park.GuideScreenDevice">
+        <!--@mbg.generated-->
+        <!--@Table guidescreendevice-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="deviceId" jdbcType="BIGINT" property="deviceId"/>
+        <result column="locationName" jdbcType="VARCHAR" property="locationName"/>
+        <result column="map" jdbcType="BIGINT" property="map"/>
+        <result column="x" jdbcType="VARCHAR" property="x"/>
+        <result column="y" jdbcType="VARCHAR" property="y"/>
+        <result column="floor" jdbcType="VARCHAR" property="floor"/>
+        <result column="networkStatus" jdbcType="TINYINT" property="networkStatus"/>
+        <result column="ip" jdbcType="VARCHAR" property="ip"/>
+        <result column="addTime" jdbcType="TIMESTAMP" property="addTime"/>
+        <result column="updateTime" jdbcType="TIMESTAMP" property="updateTime"/>
+
+        <result column="mapName" jdbcType="VARCHAR" property="mapName"/>
+        <result column="mapKey" jdbcType="VARCHAR" property="mapKey"/>
+        <result column="appName" jdbcType="VARCHAR" property="appName"/>
+        <result column="fmapID" jdbcType="VARCHAR" property="fmapID"/>
+        <result column="mapImg" jdbcType="VARCHAR" property="mapImg"/>
+        <result column="themeImg" jdbcType="VARCHAR" property="themeImg"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        <!--@sql select -->
+        g.id,
+        g.device_id      deviceId,
+        g.location_name  locationName,
+        g.`map`,
+        g.x,
+        g.y,
+        g.`floor`,
+        mrf.name floorName,
+        g.network_status networkStatus,
+        g.ip,
+        g.addTime,
+        g.updateTime,
+        m2d.name         mapName,
+        m2d.mapKey,
+        m2d.appName,
+        m2d.fmapID,
+        m2d.mapImg,
+        m2d.themeImg
+        <!--@sql from guidescreendevice g
+                left join map_2d m2d on g.map = m2d.id left join map_relevance_floor mrf on mrf.map = m2d.id-->
+    </sql>
+
+    <!--$var desc=id-->
+    <select id="getAllGuideScreenDeviceOrConditionQuery" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from guidescreendevice g
+                 left join map_2d m2d on g.map = m2d.id
+        left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = g.floor
+        where 1 = 1
+        <if test="map != null and map != ''">
+            and g.map = #{map}
+        </if>
+        <if test="deviceNum != null and deviceNum != ''">
+            and g.device_id like concat('%',#{deviceNum},'%')
+        </if>
+        <if test="floorName != null and floorName != ''">
+            and mrf.name like concat('%',#{floorName},'%')
+        </if>
+        <if test="ip != null and ip != ''">
+            and g.ip like concat('%',#{ip},'%')
+        </if>
+        <if test="locationName != null and locationName != ''">
+            and g.location_name = concat('%',#{locationName},'%')
+        </if>
+        <if test="networkStatus != null and networkStatus != ''">
+            and g.network_status = #{networkStatus}
+        </if>
+
+        <if test="mapids != null and mapids != ''">
+            and m2d.id in
+            <foreach close=")" collection="mapids" item="mapids" open="(" separator=",">
+                #{mapids}
+            </foreach>
+        </if>
+        <if test="desc != null and desc != ''">
+            order by ${desc}
+        </if>
+    </select>
+
+    <insert id="addGuideScreenDevice">
+        insert into guidescreendevice (device_id, location_name, map, x, y, floor, addTime)
+        values (#{deviceId}, #{locationName}, #{map}, #{x}, #{y}, #{floor}, #{addTime});
+    </insert>
+
+    <update id="updateByDeviceIdShowScreenConfigIsNull">
+        UPDATE showscreenconfig
+        SET guide_screen_id=null
+        WHERE guide_screen_id = #{id}
+    </update>
+
+    <delete id="delGuideScreenDevice">
+        delete
+        from guidescreendevice
+        where id = #{id};
+    </delete>
+
+    <update id="updateGuideScreenDevice">
+        UPDATE guidescreendevice
+        SET
+        <if test="deviceId != null">
+            device_id = #{deviceId},
+        </if>
+        <if test="locationName != null and locationName != ''">
+            location_name = #{locationName},
+        </if>
+        <if test="map != null">
+            map = #{map},
+        </if>
+        <if test="x != null and x != ''">
+            x = #{x},
+        </if>
+        <if test="y != null and y != ''">
+            y = #{y},
+        </if>
+        <if test="floor != null and floor != ''">
+            floor = #{floor},
+        </if>
+        <if test="ip != null and ip != ''">
+            ip = #{ip},
+        </if>
+        <if test="networkStatus != null ">
+            network_status = #{networkStatus},
+        </if>
+        <if test="updateTime != null">
+            updateTime = #{updateTime}
+        </if>
+        WHERE id = #{id}
+    </update>
+
+    <select id="getGuideScreenDeviceById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from guidescreendevice g
+                 left join map_2d m2d on g.map = m2d.id
+        left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = g.floor
+        where 1=1
+        <if test="desc == null">
+            <if test="id!=null">
+                and g.id = #{id}
+            </if>
+        </if>
+        <if test="desc != null and desc != '' and desc.equals('edit') ">
+            and g.id != #{id}
+            <if test="deviceId != null and deviceId != ''">
+                and g.device_id = #{deviceId}
+            </if>
+        </if>
+
+        <if test="desc != null and desc != '' and desc.equals('add') ">
+            <if test="deviceId != null and deviceId != ''">
+                and g.device_id = #{deviceId}
+            </if>
+        </if>
+
+    </select>
+    <select id="selectAreaIdByPlaceId" resultType="java.lang.Integer">
+        select areaId
+        from showscreenconfigareaplace g
+        where g.placeId = #{placeId}
+    </select>
+    <select id="selectPlaceBindAreaId" resultType="java.lang.Integer">
+        select placeId
+        from showscreenconfigareaplace g
+        where g.areaId = #{areaId}
+    </select>
+
+    <select id="selectScreenDeviceByAreaId" resultType="com.tgy.rtls.data.entity.park.ShowScreenConfig">
+        select g.screennum,s.device_id as guideScreenId
+        from showscreenconfig g  left join guidescreendevice s on g.guide_screen_id=s.id
+        where g.id = #{areaId}
+    </select>
+
+    <select id="getAllGuideScreenDeviceByNum" resultType="com.tgy.rtls.data.entity.park.GuideScreenDevice">
+        select    g.id,
+        g.device_id      deviceId,
+        g.network_status networkStatus,
+        g.ip
+        from guidescreendevice g
+        where 1 = 1
+            and g.device_id =#{deviceNum}
+
+    </select>
+
+
+    <select id="get4GDeviceNameByScreenName" resultType="java.lang.Integer">
+        select    g.guide_screen_id
+        from showscreenconfig g
+        where 1 = 1
+            and g.screennum =#{ScreenName}
+        <if test="map != null and map != ''">
+          and  map = #{map}
+        </if>
+    </select>
+
+
+</mapper>

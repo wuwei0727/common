@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.Camera.CameraPlaceMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.Camera.CameraPlace">
+    <!--@mbg.generated-->
+    <!--@Table camera_place-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="camera_vehicle_capture_id" jdbcType="BIGINT" property="cameraVehicleCaptureId" />
+    <result column="place_id" jdbcType="BIGINT" property="placeId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, camera_vehicle_capture_id, place_id, create_time, update_time
+  </sql>
+</mapper>

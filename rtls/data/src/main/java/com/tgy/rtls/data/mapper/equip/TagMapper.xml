@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.equip.TagMapper">
+    <select id="findByAll" resultType="com.tgy.rtls.data.entity.equip.Tag">
+        select *,
+        (select ${name} from tagtype where id=t.type)as typeName,
+        (select hardware from tagfirmware where tagid=t.num)as hardwareVersion,
+        (select firmware from tagfirmware where tagid=t.num)as appVersion,
+        (select updatestate from tagfirmware where tagid=t.num)as updatestate
+        from tag t
+        where instanceid=#{instanceid}
+        <if test="num != null and num != ''">
+            and num like concat('%',#{num},'%')
+        </if>
+        <if test="binding == 0">
+            and id NOT IN (SELECT tagid FROM person WHERE tagid IS NOT NULL)
+        </if>
+        <if test="binding == 1">
+            and id IN (SELECT tagid FROM person WHERE tagid IS NOT NULL)
+        </if>
+        <if test="desc != null and desc != ''">
+            order by ${desc}
+        </if>
+    </select>
+
+    <select id="findByTagOnLine" resultType="com.tgy.rtls.data.entity.equip.Tag">
+        select *
+        from tag t
+        where id in (select tagid
+        from person p
+        where tagid in (select id from tag where status=1)
+        <if test="map != null">
+            and map=#{map}
+        </if>
+        )
+    </select>
+
+    <select id="findByNameId" resultType="string">
+        select group_concat(num)
+        from tag
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="findById" resultType="com.tgy.rtls.data.entity.equip.Tag">
+        select *,
+        (select ${name} from tagtype where id=t.type)as typeName,
+        (select hardware from tagfirmware where tagid=t.num)as hardwareVersion,
+        (select firmware from tagfirmware where tagid=t.num)as appVersion,
+        (select updatestate from tagfirmware where tagid=t.num)as updatestate
+        from tag t
+        where id=#{id}
+    </select>
+
+    <select id="findByNum" resultType="com.tgy.rtls.data.entity.equip.Tag">
+        select *
+        from tag
+        where num=#{num}
+    </select>
+
+    <insert id="addNb" keyProperty="id" useGeneratedKeys="true">
+        insert into nb_park(mac,voltage,berthcode,`status`,instanceid,uploadtime)
+        value
+        (#{nb_device.mac},#{nb_device.voltage},#{nb_device.berthcode},#{nb_device.status},#{nb_device.instanceid},#{nb_device.uploadtime})
+    </insert>
+
+
+    <insert id="addTag" keyProperty="id" useGeneratedKeys="true">
+        insert into tag (num,frequency,power,`type`,instanceid)
+        value (#{tag.num},#{tag.frequency},#{tag.power},#{tag.type},#{tag.instanceid})
+    </insert>
+
+    <update id="updateNb">
+        update nb_park
+        <set>
+            mac=#{nb_device.mac},
+            <if test="nb_device.status != null">
+                status=#{nb_device.status},
+            </if>
+            <if test="nb_device.voltage != null and nb_device.voltage != ''">
+                voltage=#{nb_device.voltage},
+            </if>
+            <if test="nb_device.berthcode != null">
+                berthcode=#{nb_device.berthcode},
+            </if>
+            <if test="nb_device.uploadtime != null and nb_device.uploadtime != ''">
+                uploadtime=#{nb_device.uploadtime},
+            </if>
+            <if test="nb_device.place != null">
+                place=#{nb_device.place}
+            </if>
+        </set>
+        where id=#{nb_device.id}
+    </update>
+
+    <update id="updateTag">
+        update tag
+        <set>
+            updateTime=#{tag.updateTime},
+            <if test="tag.num != null and tag.num != ''">
+                num=#{tag.num},
+            </if>
+            <if test="tag.type != null and tag.type != ''">
+                type=#{tag.type},
+            </if>
+            <if test="tag.frequency != null and tag.frequency != ''">
+                frequency=#{tag.frequency},
+            </if>
+            <if test="tag.power != null and tag.power != ''">
+                power=#{tag.power},
+            </if>
+            <if test="tag.type != null and tag.type != ''">
+                `type`=#{tag.type},
+            </if>
+        </set>
+        where id=#{tag.id}
+    </update>
+
+    <delete id="delTag">
+        DELETE tag,tagfirmware FROM tag LEFT JOIN tagfirmware ON tag.num=tagfirmware.tagid
+        where tag.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="delTagInstance">
+        delete tag,tagfirmware FROM tag LEFT JOIN tagfirmware ON tag.num=tagfirmware.tagid
+        where instanceid=#{instanceid}
+    </delete>
+
+    <update id="updateTagStatus">
+        update tag
+        set status=#{status}
+        where num=#{num}
+    </update>
+
+    <update id="updateTagBatteryTime">
+        update tag
+        <set>
+            batteryTime=#{batteryTime},
+            <if test="batteryVolt != null and batteryVolt != ''">
+                batteryVolt=#{batteryVolt}
+            </if>
+        </set>
+        where num=#{num}
+    </update>
+
+    <update id="updateLocaInval">
+        update tag
+        set frequency=#{loca_inval}
+        where num=#{tagid}
+    </update>
+    <insert id="addSub1GVolt" keyProperty="id" useGeneratedKeys="true">
+        insert into tagvolt(num,adc,`time`,rssi)
+        value (#{tag.num},#{tag.adc},#{tag.time},#{tag.rssi})
+    </insert>
+
+    <insert id="addBleRssi" keyProperty="id" useGeneratedKeys="true">
+        insert into blebeacon(num,beacon,rssi,dis,rssi_1)
+        value (#{tag.num},#{tag.beacon},#{tag.rssi},#{tag.dis},#{tag.rssi_1})
+    </insert>
+
+    <select id="findByCodeNum" resultType="com.tgy.rtls.data.entity.equip.Tag">
+        select *,
+        (select ${name} from tagtype where id=t.type)as typeName
+        from tag t
+        where num=#{num}
+        and instanceid=(select id from instance where code1=#{code1} and code2=#{code2})
+    </select>
+    <select id="findByTagid" resultType="com.tgy.rtls.data.entity.equip.TagPara">
+        select *
+        from tagpara
+        where 1=1
+        <if test="tagid != null and tagid != ''">
+            and tagid =#{tagid}
+        </if>
+    </select>
+    <select id="findByTagMac" resultType="com.tgy.rtls.data.entity.equip.TagPara">
+        select *
+        from tagpara
+        where 1=1
+        <if test="mac != null and mac != ''">
+            and mac =#{mac}
+        </if>
+    </select>
+    <select id="findByNbMac" resultType="com.tgy.rtls.data.entity.nb_device.Nb_device">
+        select nb_park.*,parking_place.map,FROM_UNIXTIME( nb_park.uploadtime, '%Y-%m-%d %H:%i:%s' ) as
+        time,parking_place.license
+        from nb_park left join parking_place on nb_park.place=parking_place.id
+        where 1=1
+        <if test="mac != null and mac != ''">
+            and mac =#{mac}
+        </if>
+        <if test="license != null and license != ''">
+            and license =#{license}
+        </if>
+        <if test="map != null and map != ''">
+            and map =#{map}
+        </if>
+    </select>
+    <select id="findByNbMacName" resultType="com.tgy.rtls.data.entity.nb_device.Nb_device">
+        select nb_park.*,parking_place.map,FROM_UNIXTIME( nb_park.uploadtime, '%Y-%m-%d %H:%i:%s' ) as
+        time,parking_place.license,
+        parking_place.name as placeName
+        from nb_park left join parking_place on nb_park.place=parking_place.id
+        where 1=1
+        <if test="mac != null and mac != ''">
+            and mac like concat('%',#{mac},'%')
+        </if>
+        <if test="license != null and license != ''">
+            and license like concat('%',#{license},'%')
+        </if>
+        <if test="map != null and map != ''">
+            and map =#{map}
+        </if>
+    </select>
+    <select id="findByNbId" resultType="com.tgy.rtls.data.entity.nb_device.Nb_device">
+        select nb_park.*,parking_place.map,FROM_UNIXTIME( nb_park.uploadtime, '%Y-%m-%d %H:%i:%s' ) as
+        time,parking_place.license,
+        parking_place.name as placeName
+        from nb_park left join parking_place on nb_park.place=parking_place.id
+        where 1=1
+        <if test="id != null and id != ''">
+            and nb_park.id=#{id}
+        </if>
+    </select>
+
+    <select id="findByAllInfrared" resultType="com.tgy.rtls.data.entity.equip.Infrared">
+        SELECT s.*,m.mapKey,m.appName,m.fmapID,m.themeImg,
+        (SELECT NAME FROM map_2d WHERE id=s.map)AS mapName,
+        parking_place.name AS placeName,
+        parking_place.x,parking_place.y,parking_place.floor,
+        (SELECT ${name} FROM status WHERE TYPE='network' AND typeid=s.networkstate)AS networkName
+        FROM infrared s
+        left join parking_place on parking_place.id=s.place
+        left join map_2d m ON s.map = m.id
+        where 1=1
+        <!--   <if test="instanceid!=null and instanceid!=''">
+               and  instanceid=#{instanceid}
+           </if>
+   -->
+        <if test="num != null and num != ''">
+            and num like concat('%',#{num},'%')
+        </if>
+        <if test="mapName != null and mapName != ''">
+            and m.name like concat('%',#{mapName},'%')
+        </if>
+        <if test="networkstate != null">
+            and networkstate=#{networkstate}
+        </if>
+        <if test="relevance == 1">
+            and parking_place.map is not null
+        </if>
+        <if test="relevance == 0">
+            and parking_place.map is null
+        </if>
+        <if test="map != null and map != ''">
+            and parking_place.map=#{map}
+        </if>
+        <if test="desc != null and desc != ''">
+            order by ${desc}
+        </if>
+    </select>
+
+    <!--$var desc=1-->
+    <select id="findByAllInfrared2" resultType="com.tgy.rtls.data.entity.equip.Infrared">
+        SELECT s.id,s.num, s.networkstate, s.power, s.map, s.status, s.place, s.hardware, s.firmware, s.batteryTime, s.count, s.rawProductId,
+        s.addTime,s.updateTime,m.mapKey,m.appName,m.fmapID,m.themeImg,
+        (SELECT NAME FROM map_2d WHERE id=s.map)AS mapName,
+        parking_place.name AS placeName,
+        parking_place.x,parking_place.y,parking_place.floor,
+        mrf.name floorName,
+        (SELECT ${name} FROM status WHERE TYPE='network' AND typeid=s.networkstate)AS networkName
+        FROM infrared s
+        left join parking_place on parking_place.id=s.place
+        left join map_2d m ON s.map = m.id
+        left join map_relevance_floor mrf on mrf.map = m.id AND mrf.level = parking_place.floor
+        where 1=1 and num != 0112
+        and s.map is not null
+        <if test="placeName != null and placeName != ''">
+            and parking_place.name like concat('%',#{placeName},'%')
+        </if>
+        <if test="floorName != null and floorName != ''">
+            and mrf.name like concat('%',#{floorName},'%')
+        </if>
+        <if test="maps != null and maps != ''">
+            and m.id in
+            <foreach collection="maps" open="(" close=")" separator="," item="maps">
+                #{maps}
+            </foreach>
+        </if>
+        <if test="num != null and num != ''">
+            and num like concat('%',#{num},'%')
+        </if>
+        <if test="status != null">
+            and status = #{status}
+        </if>
+        <if test="mapName != null and mapName != ''">
+            and s.map =#{mapName}
+        </if>
+        <if test="networkstate==2 and networkstate != null">
+            and power &lt;= 1
+        </if>
+        <if test="networkstate != 2 and networkstate != null">
+            and networkstate=#{networkstate}
+        </if>
+        <if test="relevance == 1">
+            and parking_place.map is not null
+        </if>
+        <if test="relevance == 0">
+            and parking_place.map is null
+        </if>
+        <if test="map != null and map != ''">
+            and parking_place.map=#{map}
+        </if>
+        <if test="infraredName != null and infraredName!=''">
+            <bind name="rawProductId" value="'%' + infraredName + '%'"/>
+            and s.rawProductId like #{rawProductId}
+        </if>
+        <if test="power != null">
+            <choose>
+                <when test="power == 100">
+                    and power = 100
+                </when>
+                <when test="power == 50">
+                    and power >= 50 and power &lt; 100
+                </when>
+                <when test="power == 30">
+                    and power >= 30 and power &lt;= 50
+                </when>
+                <when test="power == 10">
+                    and power >= 0 and power &lt;= 30
+                </when>
+            </choose>
+        </if>
+        <if test="desc != null and desc != ''">
+            order by ${desc}
+        </if>
+    </select>
+
+    <insert id="addInfrared" keyProperty="id" useGeneratedKeys="true">
+        insert into infrared(num,networkstate,power,map,status,place,rawProductId,addTime)
+        value (#{infrared.num},#{infrared.networkstate},#{infrared.power},
+        #{infrared.map},#{infrared.status},#{infrared.place},#{infrared.rawProductId},#{infrared.addTime})
+    </insert>
+
+    <insert id="addInfrared1" keyProperty="id" useGeneratedKeys="true">
+        insert into infrared(num,networkstate,power,map,status,place,rawProductId,addTime)
+        value (#{infrared.num},#{infrared.networkstate},#{infrared.power}, #{infrared.map},
+            #{infrared.status},#{infrared.place},#{infrared.rawProductId},#{infrared.addTime})
+    </insert>
+
+    <select id="findIredByIdAndName" resultType="com.tgy.rtls.data.entity.equip.Infrared">
+        select i.*,parking_place.id as placeId,parking_place.x,parking_place.y,parking_place.floor,parking_place.fid,
+        (SELECT name FROM status WHERE TYPE='network' AND typeid=i.networkstate)AS networkName,
+        (select m.name from map_2d m where i.map = m.id) AS mapName,
+        parking_place.name as placeName
+        from infrared i
+        left join parking_place on i.place=parking_place.id
+
+        where 1=1
+        <if test="id != null and id != ''">
+            and i.id=#{id}
+        </if>
+        <if test="num != null and num != ''">
+            and i.num=#{num}
+        </if>
+        <if test="map != null and map != ''">
+            and i.map=#{map}
+        </if>
+    </select>
+
+    <select id="findIredByIdAndName1" resultType="com.tgy.rtls.data.entity.equip.InfraredMessage">
+        select i.id,
+               i.num,
+               i.networkstate,
+               i.`power`,
+               i.`map`,
+               i.`status`,
+               i.place,
+               i.batteryTime,
+               i.rawProductId,
+               i.lifetime_months   lifetimeMonths,
+               i.addTime,
+               i.addTime           localDateTime,
+               parking_place.x,
+               parking_place.y,
+               parking_place.floor,
+               parking_place.fid,
+        (select m.name from map_2d m where i.map = m.id) AS mapName,
+        parking_place.name as placeName
+        from infrared i
+        left join parking_place on i.place=parking_place.id
+        where 1=1
+        <if test="num != null">
+            and i.num=#{num}
+        </if>
+    </select>
+
+    <update id="updateInfrared">
+        update infrared
+        <set>
+            <if test="infrared.num != null and infrared.num != ''">
+                num=#{infrared.num},
+            </if>
+            <if test="infrared.status != null">
+                status=#{infrared.status},
+            </if>
+            <if test="infrared.power != null">
+                power=#{infrared.power},
+            </if>
+            <if test="infrared.place != null">
+                place=#{infrared.place},
+            </if>
+            <if test="infrared.map != null">
+                map=#{infrared.map},
+            </if>
+            <if test="infrared.hardware != null and infrared.hardware != ''">
+                hardware=#{infrared.hardware},
+            </if>
+            <if test="infrared.firmware != null">
+                firmware=#{infrared.firmware},
+            </if>
+            <if test="infrared.count != null">
+                count=#{infrared.count},
+            </if>
+            <if test="infrared.networkstate != null">
+                networkstate=#{infrared.networkstate},
+            </if>
+            <if test="infrared.batteryTime != null">
+                batteryTime=#{infrared.batteryTime},
+            </if>
+            <if test="infrared.addTime != null">
+                addTime=#{infrared.addTime},
+            </if>
+            <if test="infrared.rawProductId!= null">
+                rawProductId=#{infrared.rawProductId}
+            </if>
+        </set>
+        where id=#{infrared.id}
+    </update>
+
+    <update id="updateInfrared1">
+        update infrared
+        <set>
+            <if test="infrared.num != null">
+                num=#{infrared.num},
+            </if>
+            <if test="infrared.status != null">
+                status=#{infrared.status},
+            </if>
+            <if test="infrared.power != null">
+                power=#{infrared.power},
+            </if>
+            <if test="infrared.place != null">
+                place=#{infrared.place},
+            </if>
+            <if test="infrared.map != null">
+                map=#{infrared.map},
+            </if>
+            <if test="infrared.count != null">
+                count=#{infrared.count},
+            </if>
+            <if test="infrared.networkstate != null">
+                networkstate=#{infrared.networkstate},
+            </if>
+            <if test="infrared.batteryTime != null">
+                batteryTime=#{infrared.batteryTime},
+            </if>
+            <if test="infrared.addTime != null">
+                addTime=#{infrared.addTime},
+            </if>
+            <if test="infrared.rawProductId!= null">
+                rawProductId=#{infrared.rawProductId}
+            </if>
+        </set>
+        where id=#{infrared.id}
+    </update>
+
+
+    <delete id="delInfrared">
+        delete FROM infrared
+        where infrared.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getInfraredAcount" resultType="com.tgy.rtls.data.entity.park.BeaconCount">
+        SELECT (SELECT COUNT(id)
+        FROM infrared
+        WHERE map=#{map} AND networkstate=0) AS offLine,
+        (SELECT COUNT(id)
+        FROM infrared
+        WHERE map=#{map}) AS total,
+        (SELECT COUNT(id)
+        FROM infrared
+        WHERE map=#{map} AND networkstate=1) AS onLine,
+        (select count(*) from infrared where power &lt;= 1 and map is not null and map=#{map}) as detectorLowPower
+    </select>
+    <select id="findInfraredByNum" resultType="com.tgy.rtls.data.entity.equip.Infrared">
+        select *
+        from infrared
+        where num=#{num}
+    </select>
+
+    <select id="getPlace" resultType="com.tgy.rtls.data.entity.park.ParkingPlace">
+        select p.id, p.name, p.x, p.y, p.z, p.map, p.company, p.floor, p.state, p.license, p.instanceid,
+        p.fid, p.type, p.charge, p.role
+        from parking_place p left join infrared i on p.id = i.place
+        where i.num = #{num}
+    </select>
+
+    <select id="getInfraredPlace" resultType="java.lang.String">
+        select *
+        from parking_place p
+        left join infrared i on p.id = i.place
+        where i.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <update id="updatePlace">
+        update parking_place
+        set state =#{placeState}
+        where id in
+            <foreach collection="ids" separator="," open="(" close=")" item="id">
+                #{id}
+            </foreach>
+
+    </update>
+
+    <select id="findInfraredId" resultType="com.tgy.rtls.data.entity.equip.Infrared">
+        select *
+        from infrared
+        where 1=1
+        <if test="placeId != null">
+            and place=#{placeId}
+        </if>
+        <if test="map != null">
+            and map=#{map}
+        </if>
+        <if test="num != null and num != ''">
+            and num!=#{num}
+        </if>
+    </select>
+
+    <select id="getAllInfraredLowPower" resultType="com.tgy.rtls.data.entity.equip.Infrared">
+        select * from infrared where power &lt; 85 and map is not null and networkstate != 2 and networkstate != 0 and batteryTime !='2023-06-06 13:14:20'
+    </select>
+
+    <update id="updateInfraredStateBecomesLowPower">
+        update infrared
+        <set>
+            <if test="state != null">networkstate=#{state},</if>
+            <if test="placeState != null">status=#{placeState}</if>
+        </set>
+        where id =#{id}
+    </update>
+
+    <delete id="delInfraredApp">
+        delete FROM infrared
+        where infrared.id = #{id}
+    </delete>
+
+    <delete id="deleteInfraredMapIsNull">
+        DELETE FROM infrared
+        WHERE map IS NULL
+    </delete>
+
+    <select id="getDetectorByMap" resultType="com.tgy.rtls.data.entity.equip.InfraredVo">
+        select i.id, i.num,m2d.name as mapName,
+               pp.name as placeName,mrf.name floor,i.rawProductId,i.batteryTime,i.status,i.networkstate,concat(i.power,'%') power, i.addTime, i.updateTime
+        from infrared i
+                left join parking_place pp on i.place = pp.id
+                left join map_2d m2d on i.map = m2d.id
+                left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = pp.floor
+        where i.map = #{map} and num != '0112' and i.map is not null
+    </select>
+
+    <select id="getMapName" resultType="java.lang.String">
+        select m2d.name mapName
+        from map_2d m2d
+        where m2d.id = #{map}
+    </select>
+
+    <select id="infraredBatteryTimeWarningLevelsQuery" resultType="com.tgy.rtls.data.entity.equip.DeviceVo">
+        SELECT i.id,
+               i.num,
+               i.map,
+               i.batterytime,
+               CASE
+                   WHEN TIMESTAMPDIFF(MINUTE, i.batterytime, NOW()) > 10 and TIMESTAMPDIFF(HOUR, i.batterytime, NOW()) &lt;= 1 THEN 3
+                   WHEN TIMESTAMPDIFF(HOUR, i.batterytime, NOW()) > 1 and TIMESTAMPDIFF(HOUR, i.batterytime, NOW()) &lt;= 24 THEN 2
+                   WHEN TIMESTAMPDIFF(HOUR, i.batterytime, NOW()) > 24 THEN 1
+                   WHEN i.batterytime is null THEN 1
+                   ELSE 12
+                   END AS level
+        FROM infrared i
+        WHERE i.networkstate = 0 and num != 0112 and map IS NOT NULL
+        ORDER BY level
+<!--        GROUP BY level,id-->
+<!--        ORDER BY id-->
+<!--        LIMIT 5-->
+    </select>
+
+    <select id="queryInfraredOfflineUpdatePlaceStateTask" resultType="com.tgy.rtls.data.entity.equip.Infrared">
+        select i.id,i.num,i.networkstate, i.map, i.status, i.place,pp.state
+        from infrared i
+            left join parking_place pp on i.place = pp.id
+        where i.networkstate = 0 and pp.state = 0
+    </select>
+
+    <insert id="addMag" keyProperty="id" useGeneratedKeys="true">
+        insert into mag(num,x,y,z,x_fix,y_fix,z_fix,x_diff,y_diff,z_diff,occupy_x,occupy_y,occupy_z,empty_x,empty_y,empty_z,state)
+            value
+            (
+            #{mag.num},
+            #{mag.x},
+            #{mag.y},
+            #{mag.z},
+            #{mag.x_fix},
+            #{mag.y_fix},
+            #{mag.z_fix},
+            #{mag.x_diff},
+            #{mag.y_diff},
+            #{mag.z_diff},
+            #{mag.occupy_x},
+            #{mag.occupy_y},
+            #{mag.occupy_z},
+            #{mag.empty_x},
+            #{mag.empty_y},
+            #{mag.empty_z},
+            #{mag.state})
+    </insert>
+    <insert id="addMagdiff" keyProperty="id" useGeneratedKeys="true">
+        insert into mag_diff(ned,ned_state,infrared,infrared_state)
+            value
+            (
+            #{magdiff.ned},
+            #{magdiff.ned_state},
+            #{magdiff.infrared},
+            #{magdiff.infrared_state})
+    </insert>
+    <update id="updateLifetimeByMap">
+        UPDATE infrared
+        SET lifetime_months = #{lifetimeMonths}
+        WHERE map = #{map}
+    </update>
+</mapper>

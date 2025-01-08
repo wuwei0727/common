@@ -1,0 +1,84 @@
+BiFunction<PlaceVo, ParkMapper, Void> function = (place, mapper) -> {
+                    if (place.getId() == null) {
+
+                    } else {
+                        mapper.updateBatchById2(place);
+                    }
+                    return null;
+                };
+                int integer =parkingService.batchUpdateOrInsert(placeList, ParkMapper.class, function);
+
+
+@Override
+    @Transactional
+    public <T,U,R> int batchUpdateOrInsert(List<T> data, Class<U> mapperClass, BiFunction<T, U, R> function) {
+        int i = 1;
+        try (SqlSession batchSqlSession = sqlSessionTemplate.getSqlSessionFactory().openSession(ExecutorType.BATCH,false)) {
+            U mapper = batchSqlSession.getMapper(mapperClass);
+            int size = data.size();
+            for (T element : data) {
+                function.apply(element, mapper);
+                if ((i % 1000 == 0) || i == size) {
+                    batchSqlSession.flushStatements();
+                    batchSqlSession.clearCache(); // 清理缓存以减少内存占用
+                }
+                i++;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e); // CustomException 可以替换为 RuntimeException 或自定义异常
+        }
+        return i - 1;
+    }
+
+    @Resource
+    private SqlSessionFactory sqlSessionFactory;
+    // 每次处理的最大条目数
+    private static final int BATCH_SIZE = 1000;
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public <T, U, R> int batchUpdateOrInsert2(List<T> data, Class<U> mapperClass, BiFunction<T, U, R> function) {
+        if (data == null || data.isEmpty() || mapperClass == null) {
+            throw new IllegalArgumentException("Invalid input parameters. Cannot be null or empty");
+        }
+
+        SqlSessionHolder sqlSessionHolder = (SqlSessionHolder) TransactionSynchronizationManager.getResource(sqlSessionFactory);
+        boolean transaction = TransactionSynchronizationManager.isSynchronizationActive();
+        if (sqlSessionHolder != null) {
+            SqlSession sqlSession = sqlSessionHolder.getSqlSession();
+            //原生无法支持执行器切换，当存在批量操作时，会嵌套两个session的，优先commit上一个session
+            //按道理来说，这里的值应该一直为false。
+            sqlSession.commit(!transaction);
+        }
+
+        int totalAffectedRows = 0;
+
+        SqlSession batchSqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+        if (!transaction) {
+            log.warn("SqlSession [" + batchSqlSession + "] Transaction not enabled");
+        }
+
+        try {
+            U mapper = batchSqlSession.getMapper(mapperClass);
+
+            for (int i = 0; i < data.size(); i++) {
+                function.apply(data.get(i), mapper);
+
+                // 每处理 BATCH_SIZE 条数据，或者已经处理到数据列表的最后一项，就执行一次刷新
+                if (i != 0 && (i % BATCH_SIZE == 0 || i == data.size() - 1)) {
+                    batchSqlSession.flushStatements();
+                }
+
+                totalAffectedRows++;
+            }
+            batchSqlSession.flushStatements();
+            // 如果当前没有处于 Spring 管理的事务中，那么这个 commit 就会执行。否则，这个 commit 是无效的，将由 Spring 来执行实际的 commit。
+            batchSqlSession.commit(!transaction);
+        } catch (Exception e) {
+            batchSqlSession.rollback();
+            throw e;
+        } finally {
+            batchSqlSession.close();
+        }
+
+        return totalAffectedRows;
+    }

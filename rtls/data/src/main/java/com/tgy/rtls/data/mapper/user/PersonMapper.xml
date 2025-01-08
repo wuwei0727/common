@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.user.PersonMapper">
+
+    <select id="findByAll" resultType="com.tgy.rtls.data.entity.user.PersonVO" >
+        select id,name,num,checkTime,finishTime,sex,`identity`,
+        (select name from job where id=p.job)as jobName,
+        (select name from department where id=p.department)as departmentName,
+        (select name from `level` where id=p.level)as levelName,
+        (select name from worktype where id=p.worktype)as worktypeName,
+        (select num from tag where id=p.tagid)as tagName,
+        (select ${name} from status where type='online' and typeid=(select status from tag where id=p.tagid))as statusName
+        from person p
+        where instanceid=#{instanceid}
+        <if test="keyword!=null and keyword!=''">
+            and (name like concat('%',#{keyword},'%')
+                or num like concat('%',#{keyword},'%'))
+        </if>
+        <if test="departmentid!=null and departmentid!=''">
+            and department=#{departmentid}
+        </if>
+        <if test="jobid!=null and jobid!=''">
+            and job=#{jobid}
+        </if>
+        <if test="worktypeid!=null and worktypeid!=''">
+            and worktype=#{worktypeid}
+        </if>
+        <if test="classid!=null and classid!=''">
+            and id in (select personid from sys_person_classgroup where classgroupid=#{classid})
+        </if>
+        <if test="status!=null">
+            and tagid in (select id from tag where status=#{status})
+        </if>
+        <if test="workorder!=null and workorder!=''">
+            and id not in (select personid from sys_person_classgroup)
+        </if>
+
+        order by id desc
+    </select>
+
+    <select id="findByNameId" resultType="string">
+        select group_concat(name)
+        from person
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+
+
+    <select id="retreatPerson" resultType="com.tgy.rtls.data.entity.user.Person">
+      select id,name,num,
+      (select num from tag where id=p.tagid)as tagName
+        from person p
+        where instanceid=#{instanceid}
+        and tagid in (select id from tag where status=1)
+    </select>
+
+    <select id="findByPersonOnLine" resultType="com.tgy.rtls.data.entity.user.Person" >
+        select *
+        from person p
+        where tagid in (select id from tag where status=1)
+        <if test="map!=null">
+            and map=#{map}
+        </if>
+    </select>
+
+    <select id="findByInCoal"  resultType="com.tgy.rtls.data.entity.user.Person">
+      select id,name,num,
+      (select num from tag where id=p.tagid)as tagName
+        from person p
+        where map=#{map} and minestate=0
+        and tagid in (select id from tag where status=1)
+    </select>
+
+    <select id="findByInCoalPerson" resultType="com.tgy.rtls.data.entity.user.Person">
+      select id,name,num,p.map,
+      (select num from tag where id=p.tagid)as tagName
+      from person p
+      where minestate=0
+    </select>
+
+    <select id="findByWhitelist" resultType="com.tgy.rtls.data.entity.user.PersonVO">
+        select id,name,num,
+        (select name from job where id=p.job)as jobName,
+        (select name from department where id=p.department)as departmentName,
+        (select name from `level` where id=p.level)as levelName,
+        (select name from worktype where id=p.worktype)as worktypeName,
+        (select num from tag where id=p.tagid)as tagName,
+        (select ${name} from status where type='online' and typeid=(select status from tag where id=p.tagid))as statusName
+        from person p
+        where id in (select personid from whitelist where turnoverid=#{turnoverid})
+        order by id desc
+    </select>
+
+    <select id="findByPersonOff" resultType="com.tgy.rtls.data.entity.user.Person" >
+      select *
+        from person p
+        where minestate=0 and offTime is not null
+        and tagid in (select id from tag where status=0)
+        <if test="map!=null">
+            and map=#{map}
+        </if>
+    </select>
+
+    <select id="findAllPerson" resultType="com.tgy.rtls.data.entity.user.Person" >
+        select *
+        from person p
+        where sex=0 and checkTime is not null and finishTime is null
+    </select>
+
+
+
+    <select id="findByOffLine" resultType="com.tgy.rtls.data.entity.user.Person" >
+      select p.*,
+        (select name from job where id=p.job)as jobName,
+        (select name from department where id=p.department)as departmentName,
+        (select name from `level` where id=p.level)as levelName,
+        (select name from worktype where id=p.worktype)as worktypeName,
+        (select num from tag where id=p.tagid)as tagName,
+        (select ${name} from status where type='online' and typeid=(select status from tag where id=p.tagid))as statusName,
+         TIMESTAMPDIFF(MINUTE ,`offTime`,NOW()) AS duration
+        from person p
+        where id=#{id}
+
+
+    </select>
+
+    <select id="findById" resultType="com.tgy.rtls.data.entity.user.Person" >
+ SELECT sss.*,(CASE WHEN sss.status_name IS NULL THEN #{offline} ELSE sss.status_name END ) AS statusName FROM (
+        SELECT p.*,
+        (SELECT name FROM job WHERE id=p.job)AS jobName,
+        (SELECT name FROM department WHERE id=p.department)AS departmentName,
+        (SELECT name FROM `level` WHERE id=p.level)AS levelName,
+        (SELECT name FROM worktype WHERE id=p.worktype)AS worktypeName,
+        (SELECT num FROM tag WHERE id=p.tagid)AS tagName,
+          (select  classgroup.name from classgroup left join  sys_person_classgroup on sys_person_classgroup.classgroupid=classgroup.id where sys_person_classgroup.personid=p.id)as orderName,
+        (SELECT name FROM `status` WHERE TYPE='online' AND typeid=(SELECT `status` FROM tag WHERE id=p.tagid))AS status_name,
+          TIMESTAMPDIFF(MINUTE ,p.time,NOW()) AS duration,
+        (SELECT name FROM area a WHERE a.id=p.worklocation)AS worklocationName,
+        (SELECT name FROM area_type WHERE id=(SELECT `type` FROM `area` WHERE id=p.`worklocation`))AS areaTypeName,
+        (select `type` from area where id=p.worklocation)as areaType
+        FROM person p
+        where id=#{id}
+         ) sss
+    </select>
+
+    <select id="findByNum" resultType="com.tgy.rtls.data.entity.user.Person">
+        select p.*,
+        (select name from job where id=p.job)as jobName,
+        (select name from department where id=p.department)as departmentName,
+        (select name from `level` where id=p.level)as levelName,
+        (select name from worktype where id=p.worktype)as worktypeName,
+        (select num from tag where id=p.tagid)as tagName
+        from person p
+        where num=#{num}
+    </select>
+
+    <insert id="addPerson" keyProperty="id" useGeneratedKeys="true">
+        insert into person(name,sex,tagid,birthday,num,department,job,level,worktype,phone,`identity`,photo,worklocation,instanceid,photolocal,checkTime,finishTime)
+        value (#{person.name},#{person.sex},#{person.tagid},#{person.birthday},#{person.num},#{person.department},#{person.job},#{person.level}
+        ,#{person.worktype},#{person.phone},#{person.identity},#{person.photo},#{person.worklocation},#{person.instanceid},#{person.photolocal},
+        #{person.checkTime},#{person.finishTime})
+    </insert>
+
+    <update id="updatePerson">
+        update person
+        <set>
+           <if test="person.name!=null and person.name!=''">
+            name=#{person.name},
+           </if>
+            <if test="person.sex!=null">
+                sex=#{person.sex},
+            </if>
+            <if test="person.tagid!=null and person.tagid!=''">
+                tagid=#{person.tagid},
+            </if>
+            <if test="person.birthday!=null and person.birthday!=''">
+                birthday=#{person.birthday},
+            </if>
+            <if test="person.num!=null and person.num!=''">
+                num=#{person.num},
+            </if>
+            <if test="person.department!=null and person.department!=''">
+                department=#{person.department},
+            </if>
+            <if test="person.job!=null and person.job!=''">
+                job=#{person.job},
+            </if>
+            <if test="person.level!=null and person.level!=''">
+                level=#{person.level},
+            </if>
+            <if test="person.worktype!=null and person.worktype!=''">
+                worktype=#{person.worktype},
+            </if>
+            <if test="person.phone!=null and person.phone!=''">
+                phone=#{person.phone},
+            </if>
+            <if test="person.worklocation!=null and person.worklocation!=''">
+                worklocation=#{person.worklocation},
+            </if>
+            <if test="person.worksystem!=null and person.worksystem!=''">
+                worksystem=#{person.worksystem},
+            </if>
+            <if test="person.photo!=null and person.photo!=''">
+                photo=#{person.photo},
+            </if>
+            <if test="person.workorder!=null and person.workorder!=''">
+                workorder=#{person.workorder},
+            </if>
+            <if test="person.identity!=null ">
+                `identity`=#{person.identity},
+            </if>
+            <if test="person.photolocal!=null and person.photolocal!=''">
+                photolocal=#{person.photolocal},
+            </if>
+            <if test="person.checkTime!=null and person.checkTime!=''">
+                checkTime=#{person.checkTime},
+            </if>
+            <if test="person.finishTime!=null and person.finishTime!=''">
+                finishTime=#{person.finishTime},
+            </if>
+        </set>
+        where id=#{person.id}
+    </update>
+
+    <delete id="delPerson" >
+        delete from person
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+        #{id}
+        </foreach>
+    </delete>
+
+    <delete id="delPersonInstance">
+        delete from person
+        where instanceid=#{instanceid}
+    </delete>
+
+    <select id="findByTagNum" resultType="com.tgy.rtls.data.entity.user.Person">
+        select *,
+        (select status from tag where p.tagid=id)as status
+        from person p
+        where tagid=(select id from tag where num=#{num})
+    </select>
+
+    <update id="updatePersonMine">
+        update person
+        <set>
+            minestate=#{minestate},
+            <if test="time!=null and time!=''">
+                time=#{time}
+            </if>
+        </set>
+        where id=#{personid}
+    </update>
+
+    <update id="updatePersonOff">
+        update person
+         set offTime=#{offTime}
+        where id=#{personid}
+    </update>
+
+    <update id="updatePersonMap">
+        update person
+         set   map=#{map}
+        where id=#{personid}
+    </update>
+
+    <update id="updatePersonSub">
+        update person
+           set sub=#{sub},insubTime=#{insubTime}
+        where id=#{personid}
+    </update>
+
+    <select id="findByCount" resultType="int">
+        select count(1)
+        from person
+        where minestate=0
+        and map=#{map}
+    </select>
+
+    <select id="findByOff" resultType="int">
+        select count(1)
+        from person
+        where tagid in (select id from tag where status=0)
+        and map=#{map} and minestate=0
+    </select>
+
+    <select id="findByOvertime" resultType="int">
+        select count(p.id)
+        from person p
+        where minestate=0
+        and map=#{map}
+         and TIMESTAMPDIFF(HOUR,p.time,NOW())>=(SELECT rule FROM warnrule WHERE warnrule.map=#{map} AND `type`=2 and enable=1)
+    </select>
+
+    <delete id="delIncoal">
+        delete from incoalrecord
+        where personid in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="delInarea">
+        delete from inarearecord
+        where personid in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="delInsub">
+        delete from insubrecord
+        where personid in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="delWarnrecord">
+        delete from warnrecord
+        where personid in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="findTypeTimeByTypeid" resultType="com.tgy.rtls.data.entity.xianjiliang.TypeTime">
+        SELECT   SUM(TIMESTAMPDIFF(MINUTE,person.`checkTime`,person.`finishTime`)/60)/ COUNT(person.id) AS time,
+        COUNT(person.id) AS total,
+        <if test="typeId!=null">
+            ,worktype.`id` as typeId,
+            worktype.`name` as typeName
+        </if>
+         FROM person LEFT JOIN  worktype
+        ON person.`worktype`=worktype.`id` where person.`checkTime`IS NOT NULL  AND person.`finishTime` IS NOT NULL
+        <if test="instanceid!=null">
+            and person.`instanceid`=#{instanceid}
+        </if>
+        <if test="typeId!=null">
+            GROUP BY person.`worktype`
+        </if>
+    </select>
+
+    <select id="findTypeCountByTypeid" resultType="com.tgy.rtls.data.entity.xianjiliang.TypeCount">
+        SELECT
+        /*   SUM(TIMESTAMPDIFF(MINUTE,person.`checkTime`,person.`finishTime`)/60)/ COUNT(person.id) AS time,*/
+        COUNT(person.id) AS total,
+        COUNT(CASE WHEN person.`sex`=1 THEN 1 END ) AS unchecked,
+        COUNT(CASE WHEN person.`sex`=0 THEN 1 END) AS checked
+        <if test="typeId!=null">
+            ,
+            worktype.`id` as typeId,
+            worktype.`name` as typeName
+        </if>
+
+        FROM person LEFT JOIN  worktype
+        ON person.`worktype`=worktype.`id` where 1=1
+        <if test="instanceid!=null">
+            and  person.`instanceid`=#{instanceid}
+        </if>
+        <if test="typeId!=null">
+               GROUP BY person.`worktype`
+        </if>
+
+    </select>
+
+
+</mapper>

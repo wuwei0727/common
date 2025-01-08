@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+
+<head>
+    <meta charset="UTF-8">
+    <title>导引屏配置</title>
+    <link rel="stylesheet" href="../css/common/common.css"/>
+    <link rel="stylesheet" href="../css/list.css"/>
+    <link rel="stylesheet" href="../css/permiss.css"/>
+    <link rel="stylesheet" href="../fMap/3/toolBarStyle.css" />
+    <script src="../js/common/jquery-1.8.0.min.js"></script>
+    <script src="../js/common/url.js"></script>
+    <script src="../js/common/common.js"></script>
+    <script src="../js/common/page.js"></script>
+    <script src="../fMap/3/fengmap.map.min.js"></script>
+    <script src="../fMap/3/fengmap.plugins-mapedit.min.js"></script>
+    <script src="../fMap/3/fengmap.plugin.min.js"></script>
+    <script src="../fMap/3.1.2/fengmap.plugins-compositemarker.min.js"></script>
+    <script src="../js/common/initFmap4.js"></script>
+    <script src="../js/displayScreen.js"></script>
+</head>
+
+<body>
+<div class="contentTop">
+    <span class="contentTitle">导引屏配置</span>
+    <div class="search">
+        <div class="searchItem seleBox">
+            设备ID：
+            <input type="text" onkeyup="this.value=this.value.replace(/\s/g,'')" name="deviceNum" id="deviceNum"
+                    class="searchInp" autocomplete="off" placeholder="请输入设备ID" style="width:112px" />
+        </div>
+        <div class="searchItem seleBox">
+            屏幕编号：
+            <input type="text" onkeyup="this.value=this.value.replace(/\s/g,'')" name="screennum" id="screennum"
+                    class="searchInp" autocomplete="off" placeholder="请输入屏幕编号" style="width:112px" />
+            </div>
+            <div class="searchItem seleBox">
+                屏幕方位：
+                <input type="text" onkeyup="this.value=this.value.replace(/\s/g,'')" name="screenposition"
+                    id="screenposition" class="searchInp" autocomplete="off" placeholder="请输入屏幕方位"
+                    style="width:112px" />
+            </div>
+            <div class="searchItem seleBox">
+                关联地图：
+                <div class="batchBox mapWidth" onclick="switchSele(event)">
+                    <div name="map" class="batchTxt" data-val="">--请选择关联地图--</div>
+                    <div class="batchList" id="mapSelect">
+                        <div onclick="seleBatch(this,'')">--请选择关联地图--</div>
+                    </div>
+                </div>
+            </div>
+            <div class="searchItem seleBox">
+                绑定区域：
+                <input type="text" onkeyup="this.value=this.value.replace(/\s/g,'')" name="bindarea" id="bindarea"
+                    class="searchInp" autocomplete="off" placeholder="请输入绑定区域" style="width:112px" />
+            </div>
+            <div class="searchItem seleBox">
+                楼层：
+                <input type="text" onkeyup="this.value=this.value.replace(/\s/g,'')" name="floorName" id="floorName"
+                    class="searchInp" autocomplete="off" placeholder="请输入楼层" style="width:112px" />
+            </div>
+            <br />
+            <span class="searchBtn" onclick="search()">搜索</span>
+            <span class="searchBtn resetBtn" onclick="reset()">重置</span>
+            <shiro:hasPermission name="sg:add">
+                <div class="topBtn">
+                    <span onclick="addRecommend()">新增</span>
+                </div>
+            </shiro:hasPermission>
+        </div>
+    </div>
+    <!-- 信息 -->
+    <div class="wrap">
+        <table class="tab" id="tab">
+            <thead>
+                <tr>
+                    <td name="line" class="line">序号</td>
+                    <td name="deviceNum">设备ID</td>
+                    <td name="screennum">屏幕编号</td>
+                    <td name="screenposition">屏幕方位</td>
+                    <td name="mapName">关联地图</td>
+                    <td name="bindarea">绑定区域</td>
+                    <td name="floorName">楼层</td>
+                    <td name="operating">操作</td>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="listFooter clearfix">
+            <label class="seleLabel">
+                <input id="allCheck" onclick="allCheck(this)" type="checkbox" class="tabCheck" name="tabCheck">
+                <span class="seleIcon"></span>全选
+            </label>
+
+        <shiro:hasPermission name="sg:del">
+            <span class="deleBtn" onclick="showAllDele()">删除</span>
+        </shiro:hasPermission>
+
+        <div class="page">
+            <span id="total" class="total"></span>
+            <span class="turnPage prev" onclick="prevPage()"></span>
+            <ul class="pageList"></ul>
+            <span class="turnPage next" onclick="nextPage(this)"></span>
+            跳至<input type="text" value="1" class="jumpPage" onkeyup="jumpCurPage(this,event)"/>页
+        </div>
+    </div>
+</div>
+<!-- 提示 -->
+<div class="tips" id="tip"></div>
+<!-- 遮罩 -->
+<div class="mask" id="mask"></div>
+<!-- 确认提示框 -->
+<div class="confimPop" id="delePop">
+    <div class="confimPopTop">
+        <span class="popClose" onclick="hidePop('#delePop')"></span>
+    </div>
+    <div class="confimPopInfo">
+        <p class="confimPopTitle">是否删除？</p>
+        <p class="txtOverFlow">导引屏屏幕方位：<span id="deleTxt"></span></p>
+    </div>
+    <div class="confimPopFooter">
+        <span class="confimPopEnt" onclick="entDele()">确定</span><span class="confimPopCancel"
+                                                                        onclick="hidePop('#delePop')">取消</span>
+    </div>
+</div>
+
+<!-- 蓝牙信标所在位置 -->
+<!--<div class="mapPop" id="mapPop" style="left:75px;">-->
+<!--    <div class="mapPopTop">-->
+<!--        导引屏所在位置-->
+<!--        <div class="close" onclick="hidePop('#mapPop')"></div>-->
+<!--    </div>-->
+<!--    <div class="fengmap" id="fengmap" style="position: relative;width:1540px;height:812px;"></div>-->
+<!--</div>-->
+
+    <div class="mapPop" id="mapPop">
+        <div class="mapPopTop">
+            导引屏区域所在位置
+            <div class="close" onclick="hidePop('#mapPop')"></div>
+        </div>
+        <div class="fengmap" id="fengmap">
+            <!--设备控件，2D/3D切换-->
+            <!-- <div class="viewMode3">
+                <div class="viewMode" onclick="changeMode(this)"></div>
+            </div> -->
+            <!--加载logo-->
+            <div class="layer1Img">
+                <img src="../image/common/PARKHome2.png" class="imgs1">
+            </div>
+        </div>
+    </div>
+
+<div id="operating" class="hidden">
+     <shiro:hasAnyPermissions name="sg:see,sg:edit">
+        <span class="tabOper" id="editBtn">详情</span>
+     </shiro:hasAnyPermissions>
+
+     <shiro:hasPermission name="sg:del">
+        <span class="tabOper deleOpa" id="deleteBtn">删除</span>
+     </shiro:hasPermission>
+</div>
+<iframe id="addFrame" class="frameClass"></iframe>
+<iframe id="editFrame" class="frameClass"></iframe>
+</body>
+<script>
+    //回车搜索
+    $("#barrierGateNum").keydown(function (event) {
+        if (event.keyCode === 13) {
+            search(); //搜索
+        }
+    });
+</script>
+
+</html>

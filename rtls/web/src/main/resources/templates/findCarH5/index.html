@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>反向寻车</title>
+
+  <link rel="stylesheet" href="./fmap/global.css">
+  <link rel="stylesheet" href="./fmap/toolBarStyle.css">
+  <script src="./fmap/fengmap.map.min.js"></script>
+  <script src="./fmap/fengmap.plugin.markers.min.js"></script>
+  <script src="./fmap/fengmap.plugin.ui.min.js"></script>
+  <script src="./fmap/fengmap.analyser.min.js"></script>
+  <script src="./fmap/fengmap.plugin.navi.min.js"></script>
+
+  <link rel="stylesheet" href="./static/weui/weui.min.css">
+  <link rel="stylesheet" href="./static/weui/jquery-weui.min.css">
+  <script src="./static/weui/jquery-2.1.4.js"></script>
+  <script src="./static/weui/jquery-weui.min.js"></script>
+
+  <script src="./static/uni.webview.1.5.4.js"></script>
+
+  <link rel="stylesheet" href="./static/index.css">
+  <script src="./static/index.js"></script>
+</head>
+
+<body>
+  <div id="fengmapbox"></div>
+  <div class="header">
+    <div class="logoBox">
+      <div class="logoimg">
+        <img class="logoimgicon" src="static/images/logoIcon.png" alt="">
+      </div>
+      <div class="logotext">易PARK智能寻车系统</div>
+    </div>
+    <div class="timeBox">
+      <div class="timetext headerTimeT"></div>
+      <div class="timeyeartext headerTimeD"></div>
+    </div>
+  </div>
+  <div id="levelPlaceNumBox"></div>
+  <div class="rightBox">
+    <div id="selectMapBox"></div>
+    <div id="searchListBox"></div>
+    <div id="searchCordBox"></div>
+  </div>
+
+</body>
+
+<script>
+  document.addEventListener('UniAppJSBridgeReady', function () {
+    uni.postMessage({
+      data: {
+        todo: 'init',
+      }
+    });
+  });
+</script>
+
+</html>

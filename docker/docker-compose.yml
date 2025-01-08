@@ -1,0 +1,171 @@
+version: '3'
+services:
+  tomcat:
+    restart: always
+    image: tomcat:8.5.59-jdk8
+    container_name: tomcat8
+    environment:
+      TZ: Asia/Shanghai
+      JAVA_OPTS: -Xms1024m -Xmx1024m  -XX:+UnlockCommercialFeatures -XX:+FlightRecorder
+    volumes:
+      - /data/docker/dockerdata/tomcatWork/logs:/usr/local/tomcat/logs
+      - /data/docker/dockerdata/tomcatWork/webapps:/usr/local/tomcat/webapps
+    ports:
+      - "8083:8080"
+      - "3341:3341"
+      - "39777:39777"
+      - "10085:10085"
+      - "10086:10086"
+      - "39778:39778/udp"
+ #command:
+      #- /bin/bash
+      #- -c
+      #- |
+        #cd /home/jar/
+        #./startJar.sh
+  redis:
+    image: redis
+    container_name: tgy-redis
+    tty: true
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - /data/docker/dockerdata/redisWork/data:/data
+      - /data/docker/dockerdata/redisWork/config:/etc/redis/
+      - /etc/localtime:/etc/localtime
+    environment:
+      - TZ=Asia/Shanghai
+      - LANG=en_US.UTF-8
+  mysql:
+    image: 717160040/mysql5.5
+    container_name: tgy-mysql
+    tty: true
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:
+      - /data/docker/dockerdata/mysqlWork/data:/var/lib/mysql
+      - /data/docker/dockerdata/mysqlWork/etc/my.cnf:/etc/my.cnf
+      - /etc/localtime:/etc/localtime
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_USER=admin
+      - MYSQL_PASS=123456
+      - TZ=Asia/Shanghai
+      - LANG=en_US.UTF-8      
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    tty: true
+    restart: always
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka
+    depends_on: [ zookeeper ]
+    container_name: kafka
+    tty: true
+    restart: always
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: 192.168.1.95
+      KAFKA_CREATE_TOPICS: "test:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    volumes:
+      - /data/docker/dockerdata/kafka/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime
+
+  fastdfs-tracker:
+    hostname: fastdfs-tracker
+    container_name: fastdfs-tracker
+    image: season/fastdfs:1.2
+    network_mode: "host"
+    command: tracker
+    volumes:
+        - /data/docker/dockerdata/tracker_data:/fastdfs/tracker/data
+  fastdfs-storage:
+    hostname: fastdfs-storage
+    container_name: fastdfs-storage
+    image: season/fastdfs:1.2
+    network_mode: "host"
+    volumes:
+       - /data/docker/dockerdata/storage_data:/fastdfs/storage/data
+       - /data/docker/dockerdata/store_path:/fastdfs/store_path
+    environment:
+       - TRACKER_SERVER=192.168.1.95:22122
+    command: storage
+    depends_on:
+       - fastdfs-tracker
+  fastdfs-nginx:
+    hostname: fastdfs-nginx
+    container_name: fastdfs-nginx
+    image: season/fastdfs:1.2
+    network_mode: "host"
+    volumes:
+        - /data/docker/dockerdata/nginx/nginx.conf:/etc/nginx/conf/nginx.conf
+        - /data/docker/dockerdata/store_path:/fastdfs/store_path
+    environment:
+        - TRACKER_SERVER=192.168.1.95:22122
+    command: nginx
+#  emq:
+#    image: emqx/emqx
+#    container_name: emqx
+#    ports:
+#      - "18083:18083"
+#      - "1883:1883"
+#      - "8084:8084"
+#      - "8883:8883"
+#      - "8083:8083"
+#  nacos:
+#    image: nacos/nacos-server:1.2.1
+#    container_name: nacos
+#    restart: always
+#    depends_on:
+#      - mysql
+#    environment:
+#      PREFER_HOST_MODE: 192.168.1.190 #如果支持主机名可以使用hostname,否则使用ip，默认也是ip
+#      SPRING_DATASOURCE_PLATFORM: mysql #数据源平台 仅支持mysql或不保存empty
+#      MODE: standalone
+#      MYSQL_SERVICE_HOST: mysql
+#      MYSQL_SERVICE_DB_NAME: nacos_devtest
+#      MYSQL_SERVICE_PORT: 3306
+#      MYSQL_SERVICE_USER: root
+#      MYSQL_SERVICE_PASSWORD: tuguiyao     
+#      NACOS_APPLICATION_PORT: 8848
+#      JVM_XMS: 512m
+#      JVM_MMS: 320m
+#    volumes:
+#      - ./docker/nacos/standalone-logs/:/home/nacos/logs
+#      - ./docker/nacos/plugins/:/home/nacos/plugins
+#      - ./docker/nacos/conf/application.properties:/home/nacos/conf/application.properties
+#    ports:
+#      - "8848:8848"
+#  prometheus:
+#    container_name: prometheus
+#    image: prom/prometheus:latest
+#    volumes:
+#      - ./docker/nacos/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+#    ports:
+#      - "9090:9090"
+#    depends_on:
+#      - nacos
+#    restart: on-failure
+#  grafana:
+#    container_name: grafana
+#    image: grafana/grafana:latest
+#    ports:
+#      - 3000:3000
+#    restart: on-failure
+#  cadvisor:
+#    image: google/cadvisor:latest
+#    container_name: cadvisor
+#    restart: always
+#    ports:
+#      - '8080:8080'
+#    volumes:
+#      - /:/rootfs:ro
+#      - /var/run:/var/run:rw
+#      - /sys:/sys:ro
+#      - /var/lib/docker/:/var/lib/docker:ro

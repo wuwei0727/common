@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+
+<head>
+  <meta charset="UTF-8">
+  <title>车位导航</title>
+  <link rel="stylesheet" href="../css/common/common.css" />
+  <link rel="stylesheet" href="../css/list.css" />
+  <script src="../js/common/jquery-1.8.0.min.js"></script>
+  <script src="../js/common/url.js"></script>
+  <script src="../js/common/common.js"></script>
+  <script src="../js/common/page.js"></script>
+  <script src="../js/parkSpaceNaviAdd.js"></script>
+</head>
+
+<body>
+  <div class="contentTop">
+    <span class="contentTitle">车位导航</span>
+    <div class="search">
+      <div class="searchItem seleBox">
+        关联地图：
+        <div class="batchBox" onclick="switchSele(event)" style="width: 150px;">
+          <div name="map" class="batchTxt" data-val="" style="width: 137px">--请选择关联地图--</div>
+          <div class="batchList" id="mapSelect">
+            <div onclick="seleBatch(this,'')">--请选择关联地图--</div>
+          </div>
+        </div>
+      </div>
+
+      <span class="searchBtn" onclick="search()">搜索</span>
+      <span class="searchBtn resetBtn" onclick="resetSearch()">重置</span>
+      <!-- <shiro:hasPermission name="map:add"> -->
+      <div class="topBtn">
+        <span id="addTheme" onclick="add()">新增</span>
+      </div>
+      <!-- </shiro:hasPermission> -->
+    </div>
+  </div>
+  <!-- 信息 -->
+  <div class="wrap">
+    <table class="tab" id="tab">
+      <thead>
+        <tr>
+          <td name="line" class="line">序号</td>
+          <td name="map">关联地图</td>
+          <td name="count">车位导航次数</td>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="listFooter clearfix">
+      <div class="page">
+        <span id="total" class="total"></span>
+        <span class="turnPage prev" onclick="prevPage()"></span>
+        <ul class="pageList"></ul>
+        <span class="turnPage next" onclick="nextPage(this)"></span>
+        跳至<input type="text" value="1" class="jumpPage" onkeyup="jumpCurPage(this,event)" />页
+      </div>
+    </div>
+  </div>
+  <!-- 提示 -->
+  <div class="tips" id="tip"></div>
+  <!-- 遮罩 -->
+  <div class="mask" id="mask"></div>
+
+  <iframe id="addFrame" class="frameClass"></iframe>
+
+</body>
+
+</html>

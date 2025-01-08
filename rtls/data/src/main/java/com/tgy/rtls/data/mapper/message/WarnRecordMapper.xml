@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.message.WarnRecordMapper">
+    <select id="findByAll" resultType="com.tgy.rtls.data.entity.message.WarnRecord">
+        select finn.*,`area_type`.name as areaType from(select * from (select temp.*,`area`.id as idd,`area`.type as areatypeid,`area`.name as areaName from (select *,
+        (select ${name} from status where typeid=w.type and type='warn')as typeName,
+        (select `name` from map_2d where id=w.map)as mapName,
+        TIME_FORMAT(TIMEDIFF(endTime,startTime),#{timeformat}) AS duration
+        from warnrecord w
+        where( map in (select id from map_2d where instanceid=#{instanceid}) or map=0)
+        <if test="startTime!=null and endTime!=null and startTime!='' and endTime!=''">
+            and startTime>#{startTime} and #{endTime}>startTime
+        </if>
+        <if test="type!=null and type!=''">
+            and `type`=#{type}
+        </if>
+        <if test="map!=null and map!=''">
+            and map=#{map}
+        </if>
+        <if test="warnState!=null">
+            and w.warnstate=#{warnState}
+        </if>
+        order by startTime desc) temp left join `area` on `area`.id=temp.area ) fin
+         where 1=1
+        <if test="areaType!=null and areaType!=''">
+            and  fin.areatypeid=#{areaType}
+        </if>
+        <if test="areaName!=null and areaName!=''">
+            and  fin.areaName like concat('%',#{areaName},'%')
+        </if>) finn left join `area_type` on finn.areatypeid=`area_type`.id
+
+    </select>
+
+    <select id="findByWarn" resultType="com.tgy.rtls.data.entity.message.WarnRecord">
+        select *,
+        (select num from tag where id=(select tagid from person where id=w.personid))as tagid,
+        (select ${name} from status where typeid=w.type and type='warn')as typeName
+        from warnrecord w
+        where warnstate=0
+        and map=#{map}
+    </select>
+
+    <select id="findById" resultType="com.tgy.rtls.data.entity.message.WarnRecord">
+        select *,
+        (select num from tag where id=(select tagid from person where id=w.personid))as tagid,
+        (select ${name} from status where typeid=w.type and type='warn')as typeName
+        from warnrecord w
+        where id=#{id}
+    </select>
+
+    <select id="findByArea" resultType="com.tgy.rtls.data.entity.message.WarnRecord">
+        select *,
+        (select ${name} from status where typeid=w.type and type='warn')as typeName
+        from warnrecord w
+        where warnstate=0
+        and area=#{area}
+    </select>
+
+    <select id="findByAreaPerson" resultType="com.tgy.rtls.data.entity.message.WarnRecord">
+        select *,
+        (select ${name} from status where typeid=w.type and type='warn')as typeName
+        from warnrecord w
+        where warnstate=0
+        and area=#{area}
+        and personid in (${personids})
+    </select>
+
+    <select id="findByWarnType" resultType="com.tgy.rtls.data.entity.message.WarnRecord">
+        select *
+        from warnrecord
+        where warnstate=0
+        and type=#{type} and map=#{map}
+    </select>
+
+    <select id="findGatherWarn" resultType="com.tgy.rtls.data.entity.message.WarnRecord">
+        select *
+        from warnrecord
+        where warnstate=0
+        and type=#{type} and map=#{map} and floor=#{floor}
+        <if test="describe!=null">
+            and `describe`=#{describe}
+        </if>
+        <if test="personid!=null">
+            and personid=#{personid}
+        </if>
+
+
+    </select>
+
+
+    <insert id="addWarnRecord" keyProperty="id" useGeneratedKeys="true" parameterType="com.tgy.rtls.data.entity.message.WarnRecord">
+        insert into warnrecord(personid,map,area,`type`,`describe`,startTime,floor,position)
+        value (#{personid},#{map},#{area},#{type},#{describe},#{startTime},#{floor},#{position})
+    </insert>
+
+    <update id="updateWarnRecord">
+        update warnrecord
+        set endTime=#{endTime}, warnstate=1
+        where id=#{id}
+    </update>
+
+    <delete id="delWarnRecordSub">
+        delete from warnrecord
+        where personid in
+        <foreach collection="nums" item="num" open="(" close=")" separator=",">
+            #{num}
+        </foreach>
+    </delete>
+
+
+    <select id="findByType" resultType="com.tgy.rtls.data.entity.message.WarnRecord">
+         select *
+        from warnrecord
+        where warnstate=0
+        <if test="map!=null and map!=''">
+            and map=#{map}
+        </if>
+        <if test="area!=null and area!=''">
+            and area=#{area}
+        </if>
+        <if test="personid!=null and personid!=''">
+            and personid=#{personid}
+        </if>
+        <if test="type!=null and type!=''">
+            and `type`=#{type}
+        </if>
+        group by personid
+    </select>
+</mapper>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.docking.mapper.PlaceMapper">
+    <sql id="Base_Column_List">
+        id,
+        `name`,
+        `map`,
+        `state`,
+        license,
+        `type`,
+        addTime
+    </sql>
+    <resultMap id="BaseResultMap" type="com.tgy.rtls.docking.dao.ParkingPlace">
+        <!--@mbg.generated-->
+        <!--@Table parking_place-->
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="map" jdbcType="BIGINT" property="map" />
+        <result column="addTime" jdbcType="TIMESTAMP" property="addTime" />
+
+    </resultMap>
+
+
+    <sql id="Base_Column_List1">
+        <!--@mbg.generated-->
+        <!--@sql select -->pvd.id,
+        pvd.`map`,
+        pvd.`ip`,
+        pvd.`api_url`,
+        pvd.place_Inquire_address,
+        pvd.license_Inquire_address,
+        pvd.addTime,
+        pvd.updateTime,
+        m2d.name mapName
+        <!--@sql from place_video_detection pvd
+                    left join map_2d m2d on pvd.map = m2d.id -->
+    </sql>
+
+    <resultMap id="BaseResultMap1" type="com.tgy.rtls.docking.dao.PlaceVideoDetection">
+        <!--@mbg.generated-->
+        <!--@Table place_video_detection-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="map" jdbcType="BIGINT" property="map"/>
+        <result column="mapName" jdbcType="BIGINT" property="mapName"/>
+        <result column="ip" jdbcType="VARCHAR" property="ip"/>
+        <result column="api_url" jdbcType="VARCHAR" property="apiUrl"/>
+        <result column="place_Inquire_address" jdbcType="VARCHAR" property="placeInquireAddress"/>
+        <result column="license_Inquire_address" jdbcType="VARCHAR" property="licenseInquireAddress"/>
+        <result column="addTime" jdbcType="TIMESTAMP" property="addTime"/>
+        <result column="updateTime" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <select id="getAllGuideScreenDeviceOrConditionQuery" resultMap="BaseResultMap1">
+        select
+        <include refid="Base_Column_List1"/>
+        from place_video_detection pvd
+        left join map_2d m2d on pvd.map = m2d.id
+        where 1 = 1
+        <if test="map != null and map != ''">
+            and pvd.map = #{map}
+        </if>
+    </select>
+
+    <select id="getAllPlaceByMap" resultType="com.tgy.rtls.docking.dao.ParkingPlace">
+        SELECT p1.id, p1.name
+        FROM parking_place p1
+        WHERE 1=1
+            <if test="map != null">and p1.map = #{map}</if>
+            <if test="id != null">and id = #{id}</if>
+          AND NOT EXISTS (
+                        SELECT 1
+                        FROM parking_place p2
+                        WHERE p2.map = #{map} AND p2.name = p1.name AND p2.id != p1.id
+         );
+
+
+
+    </select>
+
+    <update id="updatePlaceById">
+        update parking_place
+        <set>
+            <if test="state != null">
+                state=#{state},
+            </if>
+            <if test="license != null and license != ''and license != 'null'">
+                license=#{license},
+            </if>
+            <if test="'null'.equals(license)">
+                license=null
+            </if>
+        </set>
+        where id = #{placeId}
+    </update>
+
+    <select id="getAllPlace" resultType="com.tgy.rtls.docking.dao.ParkingPlace">
+        select id,name,map
+        from parking_place
+        where 1=1 <if test="map!=null"> and  map =#{map}</if> <if test="placeName!=null">and name=#{placeName}</if>
+    </select>
+
+    <update id="updateBatchById" parameterType="com.tgy.rtls.docking.dao.PlaceVo">
+        <foreach collection="placeVoList" separator=";" item="placeVo">
+        update parking_place
+            <set>
+                <if test="placeVo.state != null">
+                    state=#{placeVo.state},
+                </if>
+                <if test="placeVo.license != null and placeVo.license != ''and placeVo.license != 'null'">
+                    license=#{placeVo.license},
+                </if>
+                <if test="placeVo.license==null or 'null'.equals(placeVo.license)">
+                    license=null
+                </if>
+            </set>
+            where id = #{placeVo.id}
+        </foreach>
+    </update>
+
+    <insert id="batchInsertParkingPlaces" parameterType="java.util.List">
+        INSERT INTO parking_place (id,name, map, addTime)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id}, #{item.name}, #{item.map},now())
+        </foreach>
+    </insert>
+
+</mapper>

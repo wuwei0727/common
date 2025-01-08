@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.type.JobMapper">
+    <select id="findByAll" resultType="com.tgy.rtls.data.entity.type.Job">
+        select *
+        from  job
+        where instanceid=#{instanceid}
+    </select>
+
+    <select id="findById" resultType="com.tgy.rtls.data.entity.type.Job">
+        select *
+        from  job
+        where id=#{id}
+    </select>
+
+    <select id="findByName" resultType="com.tgy.rtls.data.entity.type.Job">
+        select *
+        from  job
+        where instanceid=#{instanceid} and name=#{name}
+    </select>
+
+    <insert id="addJob" keyProperty="id" useGeneratedKeys="true">
+        insert  into job(name,instanceid)
+        value (#{job.name},#{job.instanceid})
+    </insert>
+
+    <update id="updateJob">
+        update job
+        <set>
+            <if test="job.name!=null and job.name!=''">
+                name=#{job.name},
+            </if>
+        </set>
+        where id=#{job.id}
+    </update>
+
+    <delete id="delJob">
+        delete from job
+        where id in
+        <foreach collection="ids" separator="," close=")" open="(" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="delJobInstance">
+        delete from job
+        where instanceid=#{instanceid}
+    </delete>
+</mapper>

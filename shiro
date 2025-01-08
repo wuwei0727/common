@@ -1,0 +1,300 @@
+spring boot apache shiro 获取在线用户和踢出用户：https://blog.csdn.net/zhangcc233/article/details/85263668
+springboot + shiro 配置session管理：https://blog.csdn.net/xhf852963/article/details/117324259
+1、创建 session 监听类
+/**
+ * @BelongsProject: rtls
+ * @BelongsPackage: com.tgy.rtls.web.shiro
+ * @Author: wuwei
+ * @CreateTime: 2023-06-28 11:20
+ * @Description: TODO
+ * @Version: 1.0
+ */
+
+import org.apache.shiro.session.Session;
+import org.apache.shiro.session.SessionListener;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class BDSessionListener implements SessionListener {
+
+    /**
+     * 统计在线人数
+     * juc包下线程安全自增
+     */
+    private final AtomicInteger sessionCount = new AtomicInteger(0);
+
+    @Override
+    public void onStart(Session session) {
+        sessionCount.incrementAndGet();// 会话创建，在线人数加一
+    }
+
+    /**
+     * 退出会话时触发
+     * @param session
+     */
+    @Override
+    public void onStop(Session session) {
+        sessionCount.decrementAndGet();// 会话退出,在线人数减一
+    }
+
+    /**
+     * 会话过期时触发
+     * @param session
+     */
+    @Override
+    public void onExpiration(Session session) {
+        sessionCount.decrementAndGet();
+
+    }
+
+    /**
+     * 获取在线人数使用
+     * @return
+     */
+    public int getSessionCount() {
+        return sessionCount.get();
+    }
+
+}
+
+
+import org.apache.shiro.session.Session;
+import org.apache.shiro.session.mgt.eis.SessionIdGenerator;
+
+import java.io.Serializable;
+import java.util.UUID;
+
+/**
+ * @BelongsProject: rtls
+ * @BelongsPackage: com.tgy.rtls.web.shiro
+ * @Author: wuwei
+ * @CreateTime: 2023-06-28 14:39
+ * @Description: TODO
+ * @Version: 1.0
+ * 自定义sessionId生成
+ */
+
+public class CustomSessionIdGenerator implements SessionIdGenerator {
+
+    @Override
+    public Serializable generateId(Session session) {
+        return UUID.randomUUID().toString().replace("-","").toUpperCase();
+    }
+}
+
+
+import org.apache.shiro.SecurityUtils;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+/**
+ * @BelongsProject: rtls
+ * @BelongsPackage: com.tgy.rtls.web.shiro
+ * @Author: wuwei
+ * @CreateTime: 2023-06-28 15:02
+ * @Description: TODO
+ * @Version: 1.0
+ */
+public class ClearSessionCacheFilter implements Filter {
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+
+    }
+
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+            throws IOException, ServletException {
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
+        String basePath = request.getContextPath();
+        request.setAttribute("basePath", basePath);
+        // 判断 session 里是否有用户信息
+        if (!SecurityUtils.getSubject().isAuthenticated()) {
+            // 如果是ajax请求响应头会有，x-requested-with
+            if (request.getHeader("x-requested-with") != null
+                    && request.getHeader("x-requested-with").equalsIgnoreCase("XMLHttpRequest")) {
+                // 在响应头设置session状态
+                response.setHeader("session-status", "timeout");
+                return;
+            }
+        }
+        filterChain.doFilter(request, servletResponse);
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+}
+
+@Component
+@ConfigurationProperties(prefix = "eriz.shiro")
+public class ShiroProperties {
+    //自定义session名称，避免与tomcat或者其他session默认的名称重名
+    private String sessionKeyPrefix = "eriz:session";
+    private String jsessionidKey = "SESSION";
+
+    public String getSessionKeyPrefix() {
+        return sessionKeyPrefix;
+    }
+
+    public void setSessionKeyPrefix(String sessionKeyPrefix) {
+        this.sessionKeyPrefix = sessionKeyPrefix;
+    }
+
+    public String getJsessionidKey() {
+        return jsessionidKey;
+    }
+
+    public void setJsessionidKey(String jsessionidKey) {
+        this.jsessionidKey = jsessionidKey;
+    }
+}
+
+
+public class RedisSessionDAO extends EnterpriseCacheSessionDAO {
+    /**
+     * session 名称
+     */
+    private String activeSessionsCacheName;
+
+    public RedisSessionDAO(String activeSessionsCacheName) {
+        this.activeSessionsCacheName = activeSessionsCacheName;
+    }
+
+    @Override
+    public String getActiveSessionsCacheName() {
+        return this.activeSessionsCacheName;
+    }
+}
+
+#获取所有用户sessionid及信息
+@Resource
+    private SessionDAO sessionDAO;
+
+Collection<Session> sessions = sessionDAO.getActiveSessions();
+
+public Session getSessionByUsername(String userid) {
+        Collection<Session> sessions = sessionDAO.getActiveSessions();
+        Member user;
+        Object attribute;
+        for (Session session : sessions) {
+            attribute = session.getAttribute(DefaultSubjectContext.PRINCIPALS_SESSION_KEY);
+            if (attribute == null) {
+                continue;
+            }
+            user = (Member) ((SimplePrincipalCollection) attribute).getPrimaryPrincipal();
+            if (user == null) {
+                continue;
+            }
+            if (userid.equals(user.getUid()+"")) {
+                return session;
+            }
+        }
+        return null;
+    }
+
+#删除用户sessionid
+public boolean removeSession(String ids) {
+        //read session by id
+        Session session = sessionDAO.readSession(ids);//通过readSession读取session，然后调用delete删除
+        sessionDAO.delete(session);
+        return true;
+    }
+
+
+
+
+
+
+shiroconfig的SecurityManager添加：securityManager.setSessionManager(sessionManager);
+@Bean(name = "securityManagers")
+    public SecurityManager securityManager(SessionManager sessionManager,@Qualifier("myShiroRealm") MyShiroRealm myShiroRealm, @Qualifier("wechatRealm") WechatRealm wechatRealm) {
+        DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
+        securityManager.setSessionManager(sessionManager);
+
+        //系统自带的Realm管理，主要针对多realm
+        securityManager.setAuthenticator(modularRealmAuthenticator());
+        //设置realm
+        List<Realm> realms = new ArrayList<>();
+        realms.add(myShiroRealm);
+        realms.add(wechatRealm);
+        securityManager.setRealms(realms);
+        return securityManager;
+    }
+
+/**
+     * 配置保存sessionId的cookie
+     * 注意：这里的cookie 不是上面的记住我 cookie 记住我需要一个cookie session管理 也需要自己的cookie
+     * @return
+     */
+    @Bean("sessionIdCookie")
+    public SimpleCookie sessionIdCookie(){
+        // 这个参数是cookie的名称
+        SimpleCookie simpleCookie = new SimpleCookie("sid");
+        // setcookie的httponly属性如果设为true的话，会增加对xss防护的安全系数。它有以下特点：
+        // 设为true后，只能通过http访问，javascript无法访问， 防止xss读取cookie
+        simpleCookie.setHttpOnly(true);
+        simpleCookie.setPath("/");
+        // maxAge=-1表示浏览器关闭时失效此Cookie
+        simpleCookie.setMaxAge(-1);
+        return simpleCookie;
+    }
+
+    /**
+     * 设置sessionManager
+     * @param sessionDAO
+     * @return
+     */
+    @Bean
+    public SessionManager sessionManager(SessionDAO sessionDAO) {
+        DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
+        sessionManager.setSessionIdUrlRewritingEnabled(false);// 为了解决输入网址地址栏出现 jsessionid 的问题
+
+        Collection<SessionListener> sessionListeners = new ArrayList<SessionListener>();
+        sessionListeners.add(new BDSessionListener());//这里的BDsessionListener实现了SessionListener接口，主要用于监听session的开始、停止与过期时间
+        sessionManager.setSessionListeners(sessionListeners);
+        sessionManager.setSessionDAO(sessionDAO);// 配置监听
+        sessionManager.setSessionIdCookie(sessionIdCookie());
+
+
+
+        // 全局会话超时时间（单位毫秒），默认30分钟  暂时设置为10秒钟 用来测试
+        // sessionManager.setGlobalSessionTimeout(10000);
+        sessionManager.setGlobalSessionTimeout(1800000);
+        // 是否开启删除无效的session对象  默认为true
+        sessionManager.setDeleteInvalidSessions(true);
+        // 是否开启定时调度器进行检测过期session 默认为true
+        sessionManager.setSessionValidationSchedulerEnabled(true);
+        // 设置session失效的扫描时间, 清理用户直接关闭浏览器造成的孤立会话 默认为 1个小时
+        // 设置该属性 就不需要设置 ExecutorServiceSessionValidationScheduler 底层也是默认自动调用ExecutorServiceSessionValidationScheduler
+        // 暂时设置为 5秒 用来测试
+        sessionManager.setSessionValidationInterval(3600000);
+        return sessionManager;
+    }
+
+    /**
+     * 设置sessionDAO
+     * @param config
+     * @return
+     */
+    @Bean
+    public SessionDAO sessionDAO(ShiroProperties config){
+        RedisSessionDAO sessionDAO = new RedisSessionDAO(config.getSessionKeyPrefix());
+        sessionDAO.setSessionIdGenerator(new CustomSessionIdGenerator());
+
+        return sessionDAO;
+    }
+
+@Bean
+    public ClearSessionCacheFilter clearSessionCacheFilter() {
+        ClearSessionCacheFilter clearSessionCacheFilter = new ClearSessionCacheFilter();
+        return clearSessionCacheFilter;
+    }
+
+
+

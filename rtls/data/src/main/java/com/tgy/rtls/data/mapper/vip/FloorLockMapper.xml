@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.vip.FloorLockMapper">
+    <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.vip.FloorLock">
+        <!--@mbg.generated-->
+        <!--@Table floor_lock-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="deviceNum" jdbcType="VARCHAR" property="deviceNum"/>
+        <result column="parkingName" jdbcType="VARCHAR" property="parkingName"/>
+        <result column="map" jdbcType="BIGINT" property="map"/>
+        <result column="placeState" jdbcType="TINYINT" property="placeState"/>
+        <result column="state" jdbcType="INTEGER" property="state"/>
+        <result column="fid" jdbcType="VARCHAR" property="fid"/>
+        <result column="x" jdbcType="VARCHAR" property="x"/>
+        <result column="y" jdbcType="VARCHAR" property="y"/>
+        <result column="place" jdbcType="VARCHAR" property="place"/>
+        <result column="floor" jdbcType="VARCHAR" property="floor"/>
+        <result column="floorName" jdbcType="VARCHAR" property="floorName"/>
+        <result column="mapId" jdbcType="BIGINT" property="mapId"/>
+        <result column="mapName" jdbcType="VARCHAR" property="mapName"/>
+        <result column="appName" jdbcType="VARCHAR" property="appName"/>
+        <result column="mapKey" jdbcType="VARCHAR" property="mapKey"/>
+        <result column="fmapID" jdbcType="VARCHAR" property="fmapID"/>
+        <result column="mapImg" jdbcType="VARCHAR" property="mapImg"/>
+        <result column="themeImg" jdbcType="VARCHAR" property="themeImg"/>
+        <result column="startTime" jdbcType="VARCHAR" property="startTime"/>
+        <result column="endTime" jdbcType="VARCHAR" property="endTime"/>
+        <result column="offlineTime" jdbcType="TIMESTAMP" property="offlineTime"/>
+        <result column="company" jdbcType="INTEGER" property="company"/>
+        <result column="validEndTime" jdbcType="VARCHAR" property="validEndTime"/>
+        <result column="qrcode" jdbcType="VARCHAR" property="qrcode" />
+        <result column="qrcodelocal" jdbcType="VARCHAR" property="qrcodelocal" />
+    </resultMap>
+
+    <resultMap id="placeNameList" type="com.tgy.rtls.data.entity.park.ParkingCompanyVo">
+        <result property="mapId" column="mapId"/>
+        <result property="mapName" column="mapName"/>
+        <collection property="placeNameList" ofType="com.tgy.rtls.data.entity.park.ParkingCompanyVo">
+            <result property="placeId" column="placeId"/>
+            <result property="placeName" column="placeName"/>
+            <result property="comId" column="comId"/>
+            <result property="comName" column="comName"/>
+        </collection>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        <!--@sql select -->
+        f.id,
+        f.device_num as deviceNum,
+        f.parking_name as parkingName,
+        f.`map`,
+        f.floor_lock_state,f.networkstate,f.power,f.model,
+        f.`start_time` as startTime,
+        f.`end_time` as endTime,
+        f.qrcode,
+        f.qrcodelocal,
+        f.offline_time offlineTime,
+        pp.`id` place,
+        pp.`name`,
+        pp.x,
+        pp.y,
+        pp.z,
+        pp.`floor`,
+        mrf.name floorName,
+        pp.state placeState,
+        IF(floor_lock_state = 1, 0,IF(floor_lock_state = 0, 1, floor_lock_state)) as `state`,
+        pp.fid,
+        pp.company,
+        m2d.id     as mapId,
+        m2d.`name` as mapName,
+        m2d.mapKey,
+        m2d.appName,
+        m2d.fmapID,
+        m2d.mapImg,
+        m2d.themeImg,
+        (select valid_end_time from floor_lock_config where map = m2d.id) validEndTime
+
+        <!--@sql from floor_lock f
+        left join map_2d m2d on m2d.id = f.map
+        left join parking_place pp on f.parking_name = pp.name left join map_relevance_floor mrf on mrf.map = m2d.id-->
+    </sql>
+
+    <!--$var desc=m2d.id desc-->
+    <select id="getFloorLockInfo" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from floor_lock f
+                 left join map_2d m2d on m2d.id = f.map
+                 left join parking_place pp on f.place = pp.id
+        left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = pp.floor
+        where 1 = 1
+        <if test="parkingName != null and parkingName != ''">
+            and f.parking_name like concat('%', #{parkingName}, '%')
+        </if>
+        <if test="map != null">
+            and f.map = #{map}
+        </if>
+        <if test="networkstate != null">
+            and f.networkstate = #{networkstate}
+        </if>
+        <if test="floorName != null and floorName != ''">
+            and mrf.name like concat('%',#{floorName},'%')
+        </if>
+        <if test="placeState != null">
+            and pp.state = #{placeState}
+        </if>
+        <if test="floorState != null">
+            and f.floor_lock_state = #{floorState}
+        </if>
+        <if test="state != null">
+            and f.floor_lock_state = #{state}
+        </if>
+        <if test="deviceNum != null and deviceNum != ''">
+            and f.device_num like concat('%', #{deviceNum}, '%')
+        </if>
+        <if test="mapids != null and mapids != ''">
+            and m2d.id in
+            <foreach close=")" collection="mapids" item="maps" open="(" separator=",">
+                #{maps}
+            </foreach>
+        </if>
+        <if test="desc != null and desc != ''">
+            order by ${desc}
+        </if>
+    </select>
+
+    <insert id="addFloorLockInfo" keyProperty="id" useGeneratedKeys="true">
+        insert into floor_lock (device_num, place, parking_name, map)
+        values (#{deviceNum}, #{place}, #{parkingName}, #{map});
+    </insert>
+
+    <update id="editFloorLockInfo">
+        update floor_lock
+        <set>
+            <if test="map != null">
+                map = #{map},
+            </if>
+            <if test="deviceNum != null and deviceNum != ''">
+                device_num = #{deviceNum},
+            </if>
+                place = #{place},
+                parking_name = #{parkingName},
+            <if test="state != null ">
+                state = #{state},
+            </if>
+            <if test="floorLockState != null and floorLockState != ''">
+                floor_lock_state = #{floorLockState},
+            </if>
+            <if test="networkstate != null ">
+                networkstate = #{networkstate},
+            </if>
+            <if test="model != '' and model != null">
+                model = #{model},
+            </if>
+            <if test="power != '' and power != null">
+                power = #{power},
+            </if>
+            qrcode=#{qrcode},
+            qrcodelocal=#{qrcodelocal}
+            <!--<if test="startTime != null">-->
+            <!--    start_time = #{startTime},-->
+            <!--</if>-->
+            <!--<if test="endTime != null">-->
+            <!--    end_time = #{endTime}-->
+            <!--</if>-->
+        </set>
+            where id = #{id}
+
+    </update>
+
+    <select id="getFloorLockInfoInfoById" resultMap="BaseResultMap">
+        select distinct
+        <include refid="Base_Column_List"/>
+        from floor_lock f
+                 left join map_2d m2d on m2d.id = f.map
+                 left join parking_place pp on f.place = pp.id
+        left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = pp.floor
+
+        where f.id = #{id}
+    </select>
+
+    <select id="delFloorLockInfo">
+        delete
+        from floor_lock
+        where id = #{id}
+    </select>
+
+    <select id="getConditionData" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from floor_lock f
+                 left join map_2d m2d on m2d.id = f.map
+                 left join parking_place pp on f.place = pp.id
+        left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = pp.floor
+        <where>
+            <if test="deviceNum != null and deviceNum != ''">
+                f.device_num = #{deviceNum}
+            </if>
+            <if test="place != null">
+                or f.place = #{place}
+            </if>
+            <if test="map != null">
+                and f.map = #{map}
+            </if>
+        </where>
+    </select>
+
+    <select id="getConditionDataById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from floor_lock f
+                 left join map_2d m2d on m2d.id = f.map
+                 left join parking_place pp on f.place = pp.id
+        left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = pp.floor
+        <where>
+            <if test="deviceNum != null and deviceNum != ''">
+                f.device_num = #{deviceNum}
+            </if>
+            <if test="place != null">
+                and f.place = #{place}
+            </if>
+            <if test="map != null">
+                and f.map = #{map}
+            </if>
+            <if test="id != null">
+                and f.id != #{id}
+            </if>
+        </where>
+    </select>
+
+    <select id="getAllPlaceNameByMapId" resultMap="placeNameList">
+        select m.id    as mapId,
+        m.name  as mapName,
+        pp.id   as placeId,
+        pp.name as placeName,
+        pc.id comId,
+        pc.name comName
+        from map_2d as m
+        left join parking_place pp on m.id = pp.map
+        left join parking_company pc on pp.company = pc.id
+        left join floor_lock fl on pp.id = fl.place
+        where 1 = 1 and fl.place is null
+        and m.enable != 0
+        <if test="type != null and type != '' and type.equals('vipPlace')">
+            and pp.state= 0
+            and pp.carbittype = 1
+        </if>
+
+        <if test="mapIds != '' and mapIds != null">
+            and m.id in
+            <foreach collection="mapIds" open="(" close=")" separator="," item="mapIds">
+                #{mapIds}
+            </foreach>
+        </if>
+        order by mapId
+    </select>
+</mapper>

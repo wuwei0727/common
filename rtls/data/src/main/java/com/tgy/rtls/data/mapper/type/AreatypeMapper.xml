@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.type.AreatypeMapper">
+    <select id="findByAll" resultType="com.tgy.rtls.data.entity.type.Areatype">
+        select *
+        from area_type
+        where instanceid=#{instanceid}
+    </select>
+
+    <select id="findById" resultType="com.tgy.rtls.data.entity.type.Areatype">
+        select *
+        from area_type
+        where id=#{id}
+    </select>
+
+    <insert id="addAreatype" useGeneratedKeys="true" keyProperty="id">
+        insert into area_type(name,instanceid,color)
+        value (#{areatype.name},#{areatype.instanceid},#{areatype.color})
+    </insert>
+
+    <update id="updateAreatype">
+        update area_type
+        <set>
+            <if test="areatype.name!=null and areatype.name!=''">
+                name=#{areatype.name},
+            </if>
+            <if test="areatype.color!=null and areatype.color!=''">
+                color=#{areatype.color},
+            </if>
+        </set>
+        where id=#{areatype.id}
+    </update>
+
+    <delete id="delAreatype">
+        delete from area_type
+        where id in
+        <foreach collection="ids" separator="," close=")" open="(" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="delAreatypeInstance">
+        delete from area_type
+        where instanceid=#{instanceid}
+    </delete>
+
+    <select id="findByAreatypeId" resultType="com.tgy.rtls.data.entity.map.Area">
+        select *
+        from area
+        where type=#{id}
+    </select>
+</mapper>

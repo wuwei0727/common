@@ -1,0 +1,114 @@
+html, body, div, span, h1, h2, h3, h4, h5, h6, p, a, em, img,i, dl, dt, dd, ol, ul, li,table, tbody, tfoot, thead, tr, th, td {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+}
+a{
+    color: inherit;
+    text-decoration: none;
+}
+/*header*/
+.header{
+    position: fixed;
+    width: 100%;
+    z-index: 1;
+    line-height: 60px;
+    height: 60px;
+    background-color: #4A60CF;
+}
+.logo{
+    float: left;
+    font-size: 24px;
+    text-align: center;
+    color: #fff;
+    margin-left: 24px;
+}
+.spacing{
+    width: 100%;
+    height: 60px;
+}
+.iframeBox{
+    width: 100%;
+}
+.main_left{
+    overflow: hidden;
+    width: 220px;
+    position: fixed;
+    left: 0;
+    top: 60px;
+    bottom: 0;
+    background-color: #FBFBFB;
+    font-size: 16px;
+    z-index: 1;
+}
+.menu{
+    height: 100%;
+    width: 240px;
+    overflow-y: scroll;
+    color:#676767;
+}
+.menuIcon{
+    display: inline-block;
+    vertical-align: top;
+    width: 16px;
+    height: 16px;
+    margin: 16px 16px 0 24px;
+}
+.memuList li a{
+    display: block;
+    height: 48px;
+    line-height: 48px;
+    padding-left: 72px;
+}
+.menuItem{
+    margin-bottom: 2px;
+}
+#curMenu .curA,#curMenu .defaCur{
+    color: #4A60CF;
+}
+.memuList li:hover,.defaCur:hover{
+    color: #4A60CF;
+    background-color: #F4F4F4;
+}
+#curMenu{
+    background-color: #F4F4F4;
+}
+#curMenu .menuIcon{
+    background-position-x:16px;
+}
+#curMenu .menuUnfold{
+    transform: rotate(90deg);
+}
+.defaCur{
+    height: 48px;
+    line-height: 48px;
+    cursor: pointer;
+    color:#484848;
+}
+.menuUnfold{
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 20px;
+    width: 16px;
+    height: 48px;
+    background: url(../image/next.png) no-repeat center center;
+}
+.content {
+    margin-left: 220px;
+    font-size: 0;
+}
+.hide{
+    display: none
+}
+.showTips{
+    position: fixed;
+    padding: 6px 16px;
+    background-color: #696969;
+    color: #fff;
+    border-radius: 2px;
+    left: 50%;
+    top: 80px;
+    z-index: 99;
+    transform: translateX(-50%);
+}

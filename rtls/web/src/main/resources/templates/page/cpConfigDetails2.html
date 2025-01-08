@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+
+<head>
+  <meta charset="UTF-8">
+  <title>报警参数配置</title>
+  <link rel="stylesheet" href="../css/common/common.css" />
+  <link rel="stylesheet" href="../css/details.css" />
+  <link rel="stylesheet" href="../css/jedate/jedate.css" />
+  <script src="../js/common/jquery-1.8.0.min.js"></script>
+  <script src="../js/common/url.js"></script>
+  <script src="../js/common/common.js"></script>
+  <script src="../js/common/jedate.min.js"></script>
+  <script src="../js/cpConfigDetails2.js"></script>
+</head>
+<style>
+  .itemTxt {
+    width: 210px !important;
+  }
+
+  .t2TimeSlotN {
+    width: 250px;
+  }
+
+  .t2TimeSlotBtn {
+    margin-left: 10px;
+    width: 50px;
+    height: 30px;
+    text-align: center;
+    line-height: 30px;
+    background: #DFE7FF;
+    color: #4A60CF;
+    display: inline-block;
+    cursor: pointer;
+  }
+</style>
+
+<body>
+  <div class="top">
+    <span class="topTitle">报警参数配置 > <span id="titleFlag">新增</span></span>
+    <div class="topBtn">
+       <shiro:hasAnyPermissions name="pac:add,pac:edit">
+      <span class="save" onclick="save()">
+        <i></i>保存
+      </span>
+       </shiro:hasAnyPermissions>
+      <span class="refresh" onclick="location.reload()">
+        <i></i>刷新
+      </span><span class="back" onclick="back()">
+        <i></i>返回
+      </span>
+    </div>
+  </div>
+  <div class="main">
+    <div class="mainBox clearfix">
+      <div class="mainItemB">
+        <span class="itemTxt"><span class="require">*</span>配置名称：</span>
+        <input autocomplete="off" type="text" name="configName" class="itemInput" placeholder="配置名称" />
+      </div>
+
+      <div class="mainItemB">
+        <span class="itemTxt">
+          <span class="require">*</span>关联地图：
+        </span>
+        <div class="batchBox" onclick="switchSele(event)">
+          <div name="map" class="batchTxt" data-val="">--请选择--</div>
+          <div class="batchList" id="mapSelect">
+            <div data-val="">--请选择关联地图--</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mainItemB">
+        <span class="itemTxt"><span class="require">*</span>时间阈值t1(小时)：</span>
+        <input autocomplete="off" type="text" name="t1ThresholdHours" class="itemInput"
+          placeholder="请输入车位变化时间阈值t1(小时)" />
+      </div>
+
+      <div class="mainItemB">
+        <span class="itemTxt"><span class="require">*</span>时间阈值t2(小时)：</span>
+        <input autocomplete="off" type="text" name="t2PeriodHours" class="itemInput" placeholder="请输入车位变化时间阈值t2(小时)" />
+      </div>
+      <div class="mainItemB">
+        <span class="itemTxt"><span class="require">*</span>t2时间内车位变动次数：</span>
+        <input autocomplete="off" type="text" name="t2SlotChangeLimit" class="itemInput" placeholder="t2时间内车位变动次数" />
+      </div>
+
+      <div class="mainItemB">
+        <span class="itemTxt">节假日-时间阈值t2(小时)：</span>
+        <input autocomplete="off" type="text" name="holidayT2PeriodHours" class="itemInput"
+          placeholder="请输入节假日-车位变化时间阈值t2(小时)" />
+      </div>
+      <div class="mainItemB">
+        <span class="itemTxt">节假日-t2时间内车位变动次数：</span>
+        <input autocomplete="off" type="text" name="holidayT2SlotChangeLimit" class="itemInput"
+          placeholder="节假日-t2时间内车位变动次数" />
+      </div>
+
+      <div id="t2TimeSlot">
+        <div class="mainItemB">
+          <span class="itemTxt"><span class="require">*</span>t2时间段：</span>
+          <input autocomplete="off" type="text" name="t2TimeSlotN" class="itemInput t2TimeSlotN" placeholder="请选择t2时间段"
+            id="t2TS1" />
+          <span class="t2TimeSlotBtn" onclick="addT2TimeSolt(event)">添加</span>
+        </div>
+      </div>
+
+      <div class="mainItemB">
+        <span class="itemTxt"><span class="require">*</span>时间阈值t3(小时)：</span>
+        <input autocomplete="off" type="text" name="t3PeriodHours" class="itemInput" placeholder="请输入车位变化时间阈值t3(小时)" />
+      </div>
+      <div class="mainItemB">
+        <span class="itemTxt"><span class="require">*</span>t3时间内车位变动次数：</span>
+        <input autocomplete="off" type="text" name="t3SlotUsageLimit" class="itemInput" placeholder="t3时间内车位变动次数" />
+      </div>
+
+      <div class="mainItemB">
+        <span class="itemTxt">节假日-时间阈值t3(小时)：</span>
+        <input autocomplete="off" type="text" name="holidayT3PeriodHours" class="itemInput"
+          placeholder="请输入节假日-车位变化时间阈值t3(小时)" />
+      </div>
+      <div class="mainItemB">
+        <span class="itemTxt">节假日-t3时间内车位变动次数：</span>
+        <input autocomplete="off" type="text" name="holidayT3SlotChangeLimit" class="itemInput"
+          placeholder="节假日-t3时间内车位变动次数" />
+      </div>
+
+      <div id="t3TimeSlot">
+        <div class="mainItemB">
+          <span class="itemTxt"><span class="require">*</span>t3时间段：</span>
+          <input autocomplete="off" type="text" name="t3TimeSlotN" class="itemInput t2TimeSlotN" placeholder="请选择t3时间段"
+            id="t3TS1" />
+          <span class="t2TimeSlotBtn" onclick="addT3TimeSolt(event)">添加</span>
+        </div>
+      </div>
+
+
+      <!-- <div class="mainItemB">
+        <span class="itemTxt">是否为节假日：</span>
+        <label class="seleLabel">
+          <input type="checkbox" class="tabCheck" name="holiday" />
+          <span style="margin-top:8px" class="seleIcon holiday"></span>
+          <span class="itemDetail holiday">打勾为是</span>
+        </label>
+      </div> -->
+
+      <div class="mainItemB">
+        <span class="itemTxt">是否启用：</span>
+        <label class="seleLabel">
+          <input type="checkbox" class="tabCheck" name="status" />
+          <span style="margin-top:8px" class="seleIcon"></span>
+          <span class="itemDetail">打勾启用</span>
+        </label>
+      </div>
+
+    </div>
+  </div>
+  <!-- 遮罩 -->
+  <div class="mask" id="mask"></div>
+  <!-- 提示 -->
+  <div class="tips" id="tip"></div>
+</body>
+
+</html>

@@ -1,0 +1,412 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>易PARK智慧停车运营数据中心</title>
+    <link rel="shortcut icon" href="../image/titleIcon.ico">
+    <script src="../js/common/jquery-1.8.0.min.js"></script>
+    <script src="../js/common/common.js"></script>
+    <script src="../js/common/url.js"></script>
+    <script src="../js/common/echartsNew.min.js"></script>
+    <script src="../js/common/china.js"></script>
+    <link rel="stylesheet" href="../css/bigView.css">
+    <script src="../js/common/flexible.js"></script>
+    <script src="../js/common/jquery.liMarquee.js"></script>
+    <script src="../js/bigView.js"></script>
+    <script src="//api.map.baidu.com/api?&v=2.0&ak=I3XdftOl2svA4DzhzUZoFGq57w6FPtPY&s=1"></script>
+    <style>
+        #loadMask {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 111;
+            top: 0;
+            left: 0;
+        }
+
+        #load {
+            position: fixed;
+            width: 150px;
+            height: 160px;
+            /*border-radius: 10px;*/
+            border-radius: 2px;
+            left: 50%;
+            top: 50%;
+            margin-left: -75px;
+            margin-top: -80px;
+            background-color: #fff;
+            text-align: center;
+            padding-top: 20px;
+            z-index: 112;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="headerTitle">易PARK智慧停车</div>
+        <div class="headerTime">
+            <span class="headerTimeD"></span><span class="headerTimeT"></span><span class="headerTimeW"></span>
+        </div>
+        <div class="dropdownSelectionBox">
+            <div class="selectTitle">统计时间区间</div>
+            <div class="selectBox">
+                <div class="selectNameBox" onclick="openSelect()">
+                    <div class="selectName">一个月</div>
+                    <div class="selectNameIcon"></div>
+                </div>
+                <div class="selectUl">
+                    <div class="selectLi" onclick="chooseTimeSlot('0','12')">一年</div>
+                    <div class="selectLi" onclick="chooseTimeSlot('2','6')">六个月</div>
+                    <div class="selectLi" onclick="chooseTimeSlot('3','3')">三个月</div>
+                    <div class="selectLi" onclick="chooseTimeSlot('1','1')">一个月</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="main">
+        <div class="mainLeft">
+            <div class="bigArea carRecommend padding10 newboxheight">
+                <div class="areaT">
+                    <img class="areaTIcon" src="../image/common/newTitleIcon1.png"></img>
+                    车场信息统计
+                    <span class="countTLine">
+                        <span class="countTLineT"></span>
+                        <span class="countTLineB"></span>
+                    </span>
+                </div>
+                <!-- <div class="carRecommendBar" id="carRecommendBar"></div> -->
+                <div class="carParkFlexView">
+                    <div class="carParkItem carParkIcon1">
+                        <div class="carParkrInfoNum" id="carParkTotal">0</div>
+                        <div class="carParkInfoName">车位导航总数</div>
+                    </div>
+                    <div class="carParkItem">
+                        <div class="carParkrInfoRound">
+                            <!-- 圆 -->
+                            <div class="sphericalAnimation">
+                                <div class="sphearicA sphearicColor1" id="carParkNavigaH"></div>
+                            </div>
+                            <div class="carParkrInfoNum2" id="carParkNaviga">0%</div>
+                        </div>
+                        <div class="carParkInfoName">车位导航使用率</div>
+                    </div>
+                    <div class="carParkItem">
+                        <div class="carParkrInfoRound">
+                            <!-- 圆 -->
+                            <div class="sphericalAnimation">
+                                <div class="sphearicA sphearicColor2" id="carParkUsageH"></div>
+                            </div>
+                            <div class="carParkrInfoNum2" id="carParkUsage">0%</div>
+                        </div>
+                        <div class="carParkInfoName">平台车位利用率</div>
+                    </div>
+                    <div class="carParkItem carParkIcon2">
+                        <div class="carParkrInfoNum" id="carParkReserva">0</div>
+                        <div class="carParkInfoName">车位预约总数</div>
+                    </div>
+                    <div class="carParkItem carParkIcon3">
+                        <div class="carParkrInfoNum" id="carParkFindCar">0</div>
+                        <div class="carParkInfoName">反向寻车总数</div>
+                    </div>
+                    <div class="carParkItem">
+                        <div class="carParkrInfoRound">
+                            <!-- 圆 -->
+                            <div class="sphericalAnimation">
+                                <div class="sphearicA sphearicColor3" id="carParkIdleRateH"></div>
+                            </div>
+                            <div class="carParkrInfoNum2" id="carParkIdleRate">0%</div>
+                        </div>
+                        <div class="carParkInfoName">停车场车位空闲率</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="bigArea padding10 marginTop20">
+                <div class="areaT">
+                    <img class="areaTIcon" src="../image/common/newTitleIcon3.png"></img>
+                    空车位趋势图
+                    <span class="countTLine">
+                        <span class="countTLineT"></span>
+                        <span class="countTLineB"></span>
+                    </span>
+                </div>
+                <div class="mainH" id="emptyParkSpaces"></div>
+            </div>
+
+            <div class="small marginTop20">
+                <div class="smallArea padding10 carUse">
+                    <div class="areaT">
+                        <img class="areaTIcon" src="../image/common/newTitleIcon5.png"></img>
+                        车位使用次数
+                        <span class="countTLine" style="width: unset;">
+                            <span class="countTLineT"></span>
+                            <span class="countTLineB shorterline">
+                                <span class="dayTitle2">(累计)</span>
+                            </span>
+                        </span>
+                    </div>
+                    <div class="carUseBarNumV">
+                        总数<span class="carUseBarNum" id="carUseBarNum">0万</span>次
+                    </div>
+                    <div class="carUseBar" id="carUseBar"></div>
+                </div>
+
+                <div class="smallArea padding10">
+                    <div class="areaT">
+                        <img class="areaTIcon" src="../image/common/newTitleIcon6.png"></img>
+                        车位空闲总时长
+                        <span class="countTLine" style="width: unset;">
+                            <span class="countTLineT"></span>
+                            <span class="countTLineB shorterline2">
+                                <span class="dayTitle">(近30天数据)</span>
+                            </span>
+                        </span>
+                    </div>
+                    <div class="spacesTotalTime mainH" id="spacesTotalTime"></div>
+                </div>
+
+            </div>
+        </div>
+        <div class="mainMiddle">
+
+
+            <div class="chinaMap" id="chinaMap"></div>
+
+            <div class="mainMiddleFooter">
+                <!-- <div class="openANDclose" onclick="openANDclose('mainMiddleFooter')">xxx</div> -->
+                <div class="footerView">
+                    <div class="viewBGImage1 padding10">
+                        <div class="areaT">
+                            <img class="areaTIcon" src="../image/common/newTitleIcon7.png"></img>
+                            车位利用率前十停车场
+                            <span class="countTLine" style="width: unset;">
+                                <span class="countTLineT"></span>
+                                <span class="countTLineB"></span>
+                            </span>
+                        </div>
+                        <div class="tableListView">
+                            <div class="tableH">
+                                <div class="tableHItme1">名次</div>
+                                <div class="tableHItme2">停车场</div>
+                                <div class="tableHItme3">利用率</div>
+                            </div>
+                            <div class="tableMain" id="parkingSpaceUtilizationRate"> </div>
+                        </div>
+                    </div>
+                    <div class="viewBGImage1 marginLeft14 padding10">
+                        <div class="areaT">
+                            <img class="areaTIcon" src="../image/common/newTitleIcon8.png"></img>
+                            空车位数据前十停车场
+                            <span class="countTLine" style="width: unset;">
+                                <span class="countTLineT"></span>
+                                <span class="countTLineB"></span>
+                            </span>
+                        </div>
+                        <div class="tableListView emptyParkingSpaceData">
+                            <div class="tableH">
+                                <div class="tableHItme1">时间</div>
+                                <div class="tableHItme2">停车场</div>
+                                <div class="tableHItme3">空闲车位数</div>
+                            </div>
+                            <div class="tableMain" id="emptyParkingSpaceData"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="mainRight">
+            <div class="bigArea padding10 newboxheight">
+                <div class="areaT">
+                    <img class="areaTIcon" src="../image/common/newTitleIcon2.png"></img>
+                    用户信息统计
+                    <span class="countTLine">
+                        <span class="countTLineT"></span>
+                        <span class="countTLineB"></span>
+                    </span>
+                </div>
+                <div class="userViewFlex">
+                    <div class="userInfoItem usericon1">
+                        <div class="userInfoNum" id="userTotal">0</div>
+                        <div class="usreInfoName">用户总数</div>
+                    </div>
+                    <div class="userInfoItem usericon2">
+                        <div class="userInfoNum" id="visits">0</div>
+                        <div class="usreInfoName">访问总次数</div>
+                    </div>
+                    <div class="userInfoItem usericon3">
+                        <div class="userInfoNum" id="usersActive">0</div>
+                        <div class="usreInfoName">活跃用户数</div>
+                    </div>
+                    <div class="userInfoItem usericon4">
+                        <div class="userInfoNum" id="usersNew">0</div>
+                        <div class="usreInfoName">新增用户数</div>
+                    </div>
+                    <div class="userInfoItem usericon5">
+                        <div class="userInfoNum" id="usersSearchesTotal">0</div>
+                        <div class="usreInfoName">用户检索总数</div>
+                    </div>
+                    <div class="userInfoItem usericon6">
+                        <div class="userInfoNum" id="sharesTotal">0</div>
+                        <div class="usreInfoName">位置分享总数</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bigArea marginTop20 padding10">
+                <div class="areaT">
+                    <img class="areaTIcon" src="../image/common/newTitleIcon4.png"></img>
+                    设备统计信息
+                    <span class="countTLine">
+                        <span class="countTLineT"></span>
+                        <span class="countTLineB"></span>
+                    </span>
+                </div>
+                <div class="harwareContent">
+                    <div class="harwareBox">
+                        <div class="harwareTitle">
+                            <span class="hardwareTitleL"></span>
+                            <span class="hardwareTitleC">检测器</span>
+                            <span class="hardwareTitleR"></span>
+                        </div>
+                        <div class="ymtlTotal">
+                            总数<span class="ymtlTotalNum" id="jiancePieTotal"></span>个
+                        </div>
+                        <div class="jiancePie" id="jiancePie"></div>
+                    </div>
+                    <div class="harwareBox">
+                        <div class="harwareTitle">
+                            <span class="hardwareTitleL"></span>
+                            <span class="hardwareTitleC">信标</span>
+                            <span class="hardwareTitleR"></span>
+                        </div>
+                        <div class="ymtlTotal">
+                            总数<span class="ymtlTotalNum" id="xinbiaoPieTotal"></span>个
+                        </div>
+                        <div class="xinbiaoPie" id="xinbiaoPie"></div>
+                    </div>
+                    <div class="harwareBox">
+                        <div class="harwareTitle">
+                            <span class="hardwareTitleL"></span>
+                            <span class="hardwareTitleC">网关</span>
+                            <span class="hardwareTitleR"></span>
+                        </div>
+                        <div class="ymtlTotal">
+                            总数<span class="ymtlTotalNum" id="wangguanPieTotal"></span>个
+                        </div>
+                        <div class="wangguanPie" id="wangguanPie"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="small marginTop20">
+                <div class="smallArea padding10">
+                    <div class="areaT">
+                        <img class="areaTIcon" src="../image/common/newTitleIcon9.png"></img>
+                        月活用户数
+                        <span class="countTLine" style="width: unset;">
+                            <span class="countTLineT"></span>
+                            <span class="countTLineB shorterline"> </span>
+                        </span>
+                    </div>
+                    <div class="mainH" id="monthZhe"></div>
+                </div>
+
+                <div class="smallArea padding10">
+                    <div class="areaT">
+                        <img class="areaTIcon" src="../image/common/newTitleIcon10.png"></img>
+                        检索前十商家
+                        <span class="countTLine" style="width: unset;">
+                            <span class="countTLineT"></span>
+                            <span class="countTLineB shorterline"></span>
+                        </span>
+                    </div>
+                    <div class="tableListView merchantsTopRetrieve">
+                        <div class="tableH">
+                            <div class="tableHItme1">名次</div>
+                            <div class="tableHItme2">商家</div>
+                            <div class="tableHItme3">次数</div>
+                        </div>
+                        <div class="tableMain" id="merchantsTopRetrieve"></div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="mainMiddleTop">
+            <!-- <div class="openANDclose" onclick="openANDclose('mainMiddleTop')">xxx</div> -->
+            <div class="viewBGImage">
+                <div class="MTHeader">
+                    <div class="Hitem">
+                        <div class="HitemName">
+                            <div class="HitemNL"></div>
+                            <div class="HitemN">停车场总数</div>
+                            <div class="HitemNR"></div>
+                        </div>
+                        <div class="HitemNum">
+                            <span class="bigText" id="parkadeTotal">0</span>
+                            <span class="smallText">个</span>
+                        </div>
+                    </div>
+                    <div class="Hitem">
+                        <div class="HitemName">
+                            <div class="HitemNL"></div>
+                            <div class="HitemN">车位总数</div>
+                            <div class="HitemNR"></div>
+                        </div>
+                        <div class="HitemNum">
+                            <span class="bigText" id="carTotal">0</span>
+                            <span class="smallText">个</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="MTMain">
+                    <div class="MTMainItem">
+                        <!-- <div class="carYi carYiSecond" id="carYiOccupy"></div> -->
+                        <div class="carYi2" id="carYiOccupy2"></div>
+                        <div class="carYiNum carYiNumSecond"><span class="occupyTitle ">占用车位：</span><span
+                                id="occupySpace">0</span>个</div>
+                    </div>
+                    <div class="MTMainItem">
+                        <!-- <div class="carYi" id="carYiFree"></div> -->
+                        <div class="carYi2" id="carYiFree2"></div>
+                        <div class="carYiNum"><span class="freeTitle">空闲车位：</span><span id="freeSpace">0</span>个
+                        </div>
+                    </div>
+                    <div class="MTMainItem">
+                        <!-- <div class="carYi carYiSecond" id="carBitChargePark"></div> -->
+                        <div class="carYi2" id="carBitChargePark2"></div>
+                        <div class="carYiNum carYiNumFrive"><span class="chargeTitle ">充电车位：</span><span
+                                id="chargeSpace">0</span>个</div>
+                    </div>
+                    <div class="MTMainItem">
+                        <!-- <div class="carYi carYiThird" id="carYiSpecial"></div> -->
+                        <div class="carYi2" id="carYiSpecial2"></div>
+                        <div class="carYiNum carYiNumThird"><span class="specialTitle">专用车位：</span><span
+                                id="specialSpace">0</span>个</div>
+                    </div>
+                    <div class="MTMainItem">
+                        <!-- <div class="carYi carYiFour" id="carYiVip"></div> -->
+                        <div class="carYi2" id="carYiVip2"></div>
+                        <div class="carYiNum carYiNumFour"><span class="vipTitle">VIP车位：</span><span
+                                id="vipSpace">0</span>个
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+</body>
+
+</html>

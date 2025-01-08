@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.Camera.CameraConfigMapper">
+    <resultMap id="CameraConfigResultMap" type="com.tgy.rtls.data.entity.Camera.CameraConfigResponse">
+        <id column="cameraId" property="cameraId" />
+        <id column="areaId" property="areaId" />
+        <result column="serialNumber" property="serialNumber" />
+        <result column="name" property="name" />
+        <result column="map" property="map" />
+        <result column="floor" property="floor" />
+        <result column="networkState" property="networkState" />
+        <result column="mapKey" property="mapKey" />
+        <result column="appName" property="appName" />
+        <result column="fmapID" property="fmapID" />
+        <result column="mapName" property="mapName" />
+
+        <result column="floorName" property="floorName" />
+        <result column="areaName" property="areaName" />
+        <result column="placeList" property="placeList" />
+        <result column="x" property="x" />
+        <result column="y" property="y" />
+        <result column="radius" property="radius" />
+        <result column="create_time" property="createTime" />
+        <result column="camera_vertex_info" property="cameraVertexInfo" />
+
+
+        <!-- 处理 vertexInfo -->
+        <collection property="vertexInfo"  ofType="com.tgy.rtls.data.entity.Camera.CameraConfigResponse$VertexInfo" column="vertexFloor" >
+            <result column="areaQuFen" property="areaQuFen" />
+            <collection property="points" ofType="com.tgy.rtls.data.entity.Camera.CameraConfigResponse$VertexInfo$Point" >
+                <result column="vertexX" jdbcType="VARCHAR" property="x" />
+                <result column="vertexY" jdbcType="VARCHAR" property="y" />
+                <result column="floor" jdbcType="VARCHAR" property="floor"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+        <!--@sql select -->
+            c.id AS cameraId,
+            c.serial_number AS serialNumber,
+            c.name AS name,
+            c.map AS map,
+            c.networkstate AS networkState,
+            c.floor AS floor,
+            c.x AS x,
+            c.y AS y,
+            c.radius AS radius,
+            c.create_time,
+            c.camera_vertex_info,
+            ca.id areaId,
+            ca.area_name areaName,
+            cc.area_qu_fen AS areaQuFen,
+            cps.id AS parkingSpaceId,
+            GROUP_CONCAT(DISTINCT cps.place_name ORDER BY cps.place_name) AS placeList,
+            cc.floor AS vertexFloor,
+            cc.x vertexX,
+            cc.y vertexY,
+            m2d.appName AS appName,
+            m2d.name as mapName,
+            m2d.mapKey AS mapKey,
+            m2d.fmapID AS fmapID,
+            mrf.name floorName
+        <!--@sql FROM camera_config c
+        LEFT JOIN camera_area_info ca ON ca.id = c.area_id
+        LEFT JOIN camera_parking_space cps ON cps.area_id = ca.id
+        LEFT JOIN camera_coordinates cc ON cc.area_id = ca.id
+        LEFT join map_2d m2d on m2d.id = c.map
+        left join map_relevance_floor mrf on mrf.map = m2d.id and mrf.level = c.floor
+        -->
+    </sql>
+
+
+    <select id="getAllOrFilteredCameras" resultMap="CameraConfigResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM camera_config c
+        LEFT JOIN camera_area_info ca ON ca.id = c.area_id
+        LEFT JOIN camera_parking_space cps ON cps.area_id = ca.id
+        LEFT JOIN camera_coordinates cc ON cc.area_id = ca.id
+        LEFT join map_2d m2d on m2d.id = c.map
+        LEFT join map_relevance_floor mrf on mrf.map = m2d.id and mrf.level = c.floor
+        where 1 = 1
+        <if test="name != null and name != ''">
+            and c.name like concat('%', #{name}, '%')
+        </if>
+        <if test="serialNumber != null and serialNumber != ''">
+            and c.serial_number like concat('%', #{serialNumber}, '%')
+        </if>
+        <if test="map != null and map != ''">
+            and c.map = #{map}
+        </if>
+        <if test="networkState != null and networkState != ''">
+            and networkstate = #{networkState}
+        </if>
+        <if test="floorName != null and floorName != ''">
+            and mrf.name like concat('%', #{floorName}, '%')
+        </if>
+        <if test="mapids != null and mapids != ''">
+            and m2d.id in
+            <foreach close=")" collection="mapids" item="maps" open="(" separator=",">
+                #{maps}
+            </foreach>
+        </if>
+        group by cc.id, x, y
+        <if test="desc != null and desc != ''">
+            order by ${desc} <!--$sql 11-->
+        </if>
+    </select>
+
+    <select id="getCameraById" resultMap="CameraConfigResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        FROM camera_config c
+        LEFT JOIN camera_area_info ca ON ca.id = c.area_id
+        LEFT JOIN camera_parking_space cps ON cps.area_id = ca.id
+        LEFT JOIN camera_coordinates cc ON cc.area_id = ca.id
+        LEFT join map_2d m2d on m2d.id = c.map
+        LEFT join map_relevance_floor mrf on mrf.map = m2d.id and mrf.level = c.floor
+        where 1 = 1
+        <if test="id != null">
+            and c.id = #{id}
+        </if>
+        group by cc.id, x, y
+    </select>
+
+    <select id="getAvailableCameras" resultType="com.tgy.rtls.data.entity.Camera.CameraConfigResponse">
+        SELECT
+        c.id AS cameraId,
+        c.serial_number AS serialNumber,
+        c.name AS name,
+        c.map AS map,
+        c.floor AS floor,
+        c.x AS x,
+        c.y AS y,
+        c.radius AS radius
+        FROM camera_config c
+        LEFT JOIN camera_area_info ca ON ca.id = c.area_id
+        WHERE c.map = #{map}
+        AND c.floor = #{floor}
+        AND NOT EXISTS (SELECT 1 FROM camera_parking_space cps WHERE cps.place_name = #{placeName})
+    </select>
+
+    <select id="findRecordsBySerialNumber" resultType="com.tgy.rtls.data.entity.Camera.CameraVehicleCapture">
+        SELECT
+        cvc.*
+        FROM camera_vehicle_capture cvc
+        LEFT JOIN camera_config c ON c.serial_number = cvc.serial_number
+        WHERE cvc.serial_number = #{serialNumber}
+        AND cvc.place IS NULL
+        AND cvc.unique_flag &lt; 4
+        ORDER BY cvc.create_time DESC
+    </select>
+</mapper>

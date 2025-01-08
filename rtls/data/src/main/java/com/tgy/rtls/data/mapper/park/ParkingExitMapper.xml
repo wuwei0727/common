@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.park.ParkingExitMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.park.ParkingExit">
+    <result column="id" jdbcType="BIGINT" property="id" />
+    <result column="x" jdbcType="VARCHAR" property="x" />
+    <result column="y" jdbcType="VARCHAR" property="y" />
+    <result column="fid" jdbcType="VARCHAR" property="fid" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="map" jdbcType="BIGINT" property="map" />
+    <result column="access_status" jdbcType="BIGINT" property="accessStatus" />
+    <result column="roadName" jdbcType="VARCHAR" property="roadName" />
+    <result column="floor" jdbcType="VARCHAR" property="floor" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+    <result column="z" jdbcType="VARCHAR" property="z" />
+    <result column="doorx" jdbcType="VARCHAR" property="doorx" />
+    <result column="doory" jdbcType="VARCHAR" property="doory" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    pe.id, pe.x, pe.y, pe.fid, pe.`name`, pe.`map`,pe.road_name roadName,pe.access_status,pe.`floor`, pe.`type`, pe.z, pe.doorx, pe.doory,
+    m.name mapName,m.mapKey,m.appName,m.fmapID,m.mapImg,m.themeImg,mrf.name floorName
+  </sql>
+  <insert id="batchInsert" parameterType="map">
+    insert into parking_exit
+    (id, x, y, fid, `name`, `map`, `floor`, `type`, z, doorx, doory)
+    values
+    <foreach collection="list" item="item" separator=",">
+      (#{item.id,jdbcType=BIGINT}, #{item.x,jdbcType=VARCHAR}, #{item.y,jdbcType=VARCHAR}, 
+        #{item.fid,jdbcType=VARCHAR}, #{item.name,jdbcType=VARCHAR}, #{item.map,jdbcType=BIGINT}, 
+        #{item.floor,jdbcType=VARCHAR}, #{item.type,jdbcType=TINYINT}, #{item.z,jdbcType=VARCHAR}, 
+        #{item.doorx,jdbcType=VARCHAR}, #{item.doory,jdbcType=VARCHAR})
+    </foreach>
+  </insert>
+
+  <!--$var desc=1-->
+  <select id="getPlaceExit" resultMap="BaseResultMap">
+    select
+        <include refid="Base_Column_List"/>
+    from parking_exit pe
+            left join map_2d m ON pe.map = m.id
+    left join map_relevance_floor mrf on mrf.map = m.id AND mrf.level = pe.floor
+    <where>
+      <if test="mapIds != null and mapIds != ''">
+        and m.id in
+        <foreach collection="mapIds" open="(" close=")" separator="," item="mapIds">
+              #{mapIds}
+        </foreach>
+      </if>
+      <if test="floorName != null and floorName != ''">
+        and mrf.name like concat('%',#{floorName},'%')
+      </if>
+      <if test="name != null and name != ''">
+        <bind name="name" value="'%' + name + '%'"/>
+        and pe.name like #{name}
+      </if>
+      <if test="map != null">
+          and m.id = #{map}
+      </if>
+      <if test="type != null">
+          and pe.type = #{type}
+      </if>
+    </where>
+    <if test="desc != null and desc != ''">
+      order by ${desc}
+    </if>
+  </select>
+
+  <delete id="delPlaceExit">
+    delete
+    from parking_exit
+    where id in
+        <foreach collection="ids" open="(" close=")" item="id" separator=",">
+          #{id}
+        </foreach>
+  </delete>
+
+  <select id="getPlaceExitById" resultMap="BaseResultMap">
+    select
+      <include refid="Base_Column_List"/>
+    from parking_exit pe
+        left join map_2d m ON pe.map = m.id
+    left join map_relevance_floor mrf on mrf.map = m.id AND mrf.level = pe.floor
+    where pe.id = #{id}
+  </select>
+
+  <insert id="addPlaceExit">
+    insert into parking_exit (x, y, fid, name, map,road_name,access_status, floor, type, z, doorx, doory)
+    values (#{x}, #{y}, #{fid}, #{name} ,#{map},#{roadName},#{accessStatus},#{floor} ,#{type}, #{z} ,#{doorx} ,#{doory});
+  </insert>
+
+  <update id="editPlaceExitById">
+    update parking_exit
+    set
+    <if test="name != null and name != ''">
+      name = #{name},
+    </if>
+    <if test="map != null">
+      map = #{map},
+    </if>
+    <if test="x != null and x != ''">
+      x = #{x},
+    </if>
+    <if test="y != null and y != ''">
+      y = #{y},
+    </if>
+    <if test="z != null and z != ''">
+      z = #{z},
+    </if>
+    <if test="floor != null and floor != ''">
+      floor = #{floor},
+    </if>
+      fid = #{fid},
+      road_name = #{roadName},
+    <if test="accessStatus != null">
+      access_status = #{accessStatus},
+    </if>
+    <if test="type != null">
+      type = #{type}
+    </if>
+    where id = #{id}
+  </update>
+</mapper>

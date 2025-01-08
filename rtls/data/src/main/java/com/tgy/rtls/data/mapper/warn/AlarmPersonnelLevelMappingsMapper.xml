@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.warn.AlarmPersonnelLevelMappingsMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.warn.AlarmPersonnelLevelMappings">
+    <!--@mbg.generated-->
+    <!--@Table alarm_personnel_level_mappings-->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="binding_id" jdbcType="INTEGER" property="bindingId" />
+    <result column="level_id" jdbcType="INTEGER" property="levelId" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, binding_id, level_id
+  </sql>
+</mapper>

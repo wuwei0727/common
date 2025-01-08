@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<meta charset="UTF-8">
+	<title>通道违停</title>
+	<link rel="stylesheet" href="../css/common/common.css" />
+	<link rel="stylesheet" href="../css/details.css" />
+	<script src="../js/common/jquery-1.8.0.min.js"></script>
+	<script src="../js/common/url.js"></script>
+	<script src="../js/common/common.js"></script>
+	<script src="../js/violationDetails.js"></script>
+</head>
+<body>
+	<div class="top">
+		<span class="topTitle">通道违停 > 详情</span>
+		<div class="topBtn">
+			<span class="refresh" onclick="javascript:location.reload()">
+				<i></i>刷新
+			</span><span class="back" onclick="back()">
+				<i></i>返回
+			</span>
+		</div>
+	</div>
+	<div class="main">
+		<div class="mainBox clearfix">
+			<div class="mainItemB">
+				<span class="itemTxt">违停车牌号：</span>
+				<input autocomplete="off" readonly type="text" name="license" class="itemInput disable details" />
+			</div>
+			<div class="mainItemB">
+				<span class="itemTxt">地图名称：</span>
+				<input autocomplete="off" readonly type="text" name="mapName" class="itemInput disable details" />
+			</div>
+			<div class="mainItemB">
+				<span class="itemTxt">照片：</span>
+				<div class="uploadImg">
+					<img src="" id="photolocal" class="uploadImgShow" />
+				</div>
+			</div>
+			<div class="mainItemB">
+				<span class="itemTxt">违停时间：</span>
+				<input autocomplete="off" readonly type="text" name="time" class="itemInput disable details" />
+			</div>
+			<div class="mainItemB">
+				<span class="itemTxt">违停是否结束：</span>
+				<input autocomplete="off" readonly type="text" id="state" class="itemInput disable details" />
+			</div>
+			<div class="mainItemB">
+				<span class="itemTxt">摄像头编号：</span>
+				<input autocomplete="off" readonly type="text" name="camera" class="itemInput disable details" />
+			</div>
+			<div class="mainItemB">
+				<span class="itemTxt">楼层：</span>
+				<input autocomplete="off" readonly type="text" name="floor" class="itemInput disable details" />
+			</div>
+		</div>
+	</div>
+	<!-- 提示 -->
+	<div class="tips" id="tip"></div>
+	<!-- 遮罩 -->
+	<div class="mask" id="mask"></div>
+</body>
+</html>

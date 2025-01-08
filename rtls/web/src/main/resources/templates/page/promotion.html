@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+
+<head>
+  <meta charset="UTF-8">
+  <title>推广管理</title>
+  <link rel="stylesheet" href="../css/common/common.css" />
+  <link rel="stylesheet" href="../css/list.css" />
+  <script src="../js/common/jquery-1.8.0.min.js"></script>
+  <script src="../js/common/url.js"></script>
+  <script src="../js/common/common.js"></script>
+  <script src="../js/common/page.js"></script>
+  <script src="../js/promotion.js"></script>
+</head>
+
+<body>
+  <div class="contentTop">
+    <span class="contentTitle">推广人管理</span>
+    <div class="search">
+
+      <div class="searchItem seleBox">
+        名称：<input type="text" autocomplete="off" name="name" id="name" onkeyup="this.value=this.value.replace(/\s/g,'')"
+          class="searchInp" placeholder="请输入名称" />
+      </div>
+
+      <span class="searchBtn" onclick="search()">搜索</span>
+      <span class="searchBtn resetBtn" onclick="resetSearch()">重置</span>
+       <shiro:hasPermission name="po:add">
+        <div class="topBtn">
+          <span id="addTheme" onclick="add()">新增</span>
+        </div>
+       </shiro:hasPermission>
+    </div>
+  </div>
+  <!-- 信息 -->
+  <div class="wrap">
+    <table class="tab" id="tab">
+      <thead>
+        <tr>
+          <td name="line" class="line">序号</td>
+          <td name="name">名称</td>
+          <td name="phone">手机号码</td>
+          <td name="province">地区</td>
+          <td name="operating" style="width: 300px;">操作</td>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="listFooter clearfix">
+      <label class="seleLabel">
+        <input id="allCheck" onclick="allCheck(this)" type="checkbox" class="tabCheck" name="tabCheck">
+        <span class="seleIcon"></span>全选
+      </label>
+       <shiro:hasPermission name="po:del">
+      <span class="deleBtn" onclick="showAllDele()">删除</span>
+       </shiro:hasPermission>
+      <div class="page">
+        <span id="total" class="total"></span>
+        <span class="turnPage prev" onclick="prevPage()"></span>
+        <ul class="pageList"></ul>
+        <span class="turnPage next" onclick="nextPage(this)"></span>
+        跳至<input type="text" value="1" class="jumpPage" onkeyup="jumpCurPage(this,event)" />页
+      </div>
+    </div>
+  </div>
+  <!-- 提示 -->
+  <div class="tips" id="tip"></div>
+  <!-- 遮罩 -->
+  <div class="mask" id="mask"></div>
+  <!-- 确认提示框 -->
+  <div class="confimPop" id="delePop">
+    <div class="confimPopTop">
+      <span class="popClose" onclick="hidePop('#delePop')"></span>
+    </div>
+    <div class="confimPopInfo">
+      <p class="confimPopTitle">是否删除？</p>
+      <p class="txtOverFlow">名称：<span id="deleTxt"></span></p>
+    </div>
+    <div class="confimPopFooter">
+      <span class="confimPopEnt" onclick="entDele()">确定</span><span class="confimPopCancel"
+        onclick="hidePop('#delePop')">取消</span>
+    </div>
+  </div>
+
+  <div id="operating" class="hidden">
+     <shiro:hasAnyPermissions name="po:edit,po:see">
+    <span class="tabOper" id="detailBtn">详情</span>
+     </shiro:hasAnyPermissions>
+
+     <shiro:hasAnyPermissions name="po:edit,po:see">
+    <span class="tabOper" id="editBtn">编辑</span>
+     </shiro:hasAnyPermissions>
+
+     <shiro:hasPermission name="po:del">
+    <span class="tabOper deleOpa" id="deleteBtn">删除</span>
+     </shiro:hasPermission>
+
+  </div>
+  <iframe id="addFrame" class="frameClass"></iframe>
+  <iframe id="editFrame" class="frameClass"></iframe>
+  <iframe id="detailFrame" class="frameClass"></iframe>
+
+</body>
+
+</html>

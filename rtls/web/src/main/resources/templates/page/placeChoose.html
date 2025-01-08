@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>选择车位</title>
+	<script src="https://www.tuguiyao-gd.com/h5/fmap/fengmap.map.min.js"></script>
+	<script src="https://www.tuguiyao-gd.com/h5/fmap/fengmap.plugin.min.js"></script>
+	<script src="https://www.tuguiyao-gd.com/h5/fmap/fengmap.analyser.min.js"></script>
+	<link rel="stylesheet" href="https://www.tuguiyao-gd.com/h5/fMapControl.css">
+	<!-- <link rel="stylesheet" href="https://www.tuguiyao-gd.com/h5/placeChoose.css"> -->
+	<link rel="stylesheet" href="./css/placeChoose.css">
+	<script src="./js/jquery-2.1.1.js"></script>
+	<script src="./js/jweixin-1.6.0.js"></script>
+	<!-- <script src="https://www.tuguiyao-gd.com/h5/placeChoose.js"></script> -->
+	<script src="./js/placeChoose.js"></script>
+
+</head>
+
+<body>
+  <div id="fengmap"></div>
+
+  <div class="emptybox">
+    <div class="box green"></div>
+    <div class="text">可约</div>
+    <div class="box yellow"></div>
+    <div class="text">紧张</div>
+    <div class="box grey"></div>
+    <div class="text">不可约</div>
+  </div>
+
+	<div class="footer">
+		<div class="footerBox">
+			<div class="icon upClass" ontouchend="openBox(event)">
+				<img class="img" src="./image/down.png">
+			</div>
+
+			<div class="title" ontouchend="openBox(event)">地图选择车位或搜索目的地</div>
+
+			<div class="main">
+				<div class="center">
+					<div class="inputBox">
+						<div class="variable" id="variable">
+							<input class="input" id="searchInput" type="text" placeholder="搜索目的地">
+						</div>
+						<div class="delBtnBox" onclick="delBtn()">
+							<div class="delBtn"></div>
+						</div>
+					</div>
+
+					<div class="btnBox">
+						<div class="btn" onclick="next()">下一步</div>
+					</div>
+
+				</div>
+				<div class="list">
+					<div class="list_title" id="list_title">可约车位</div>
+					<div class="list_main" id="list_main">
+					</div>
+				</div>
+			</div>
+
+    </div>
+  </div>
+
+  <div class="tip" id="showTip">
+    <div class="mask"></div>
+    <div class="text" id="showText">当前车位不可预约</div>
+  </div>
+</body>
+
+</html>

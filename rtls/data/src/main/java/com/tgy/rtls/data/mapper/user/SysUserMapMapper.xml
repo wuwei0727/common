@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.user.SysUserMapMapper">
+
+    <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.user.SysUserMap">
+            <id property="userId" column="user_id" jdbcType="INTEGER"/>
+            <id property="mapId" column="map_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <update id="updateByUserId">
+        update sys_user_map
+        set map_id = #{mapId}
+        where user_id = #{userId}
+    </update>
+
+    <delete id="deleteByUserId">
+        delete from sys_appuser_map
+        where user_id in
+        <foreach collection="userId" open="(" close=")" separator="," item="userId">
+            #{userId}
+        </foreach>
+    </delete>
+</mapper>

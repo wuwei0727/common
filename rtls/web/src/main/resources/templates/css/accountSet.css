@@ -1,0 +1,17 @@
+body{
+	color: #222222;
+}
+/*wrap*/
+.wrap{
+    background-color: #fff;
+    margin: 20px;
+    padding: 20px;
+}
+.wrapCon{
+    width: 460px;
+    margin:0 auto;
+}
+.userImg{
+	text-align: center;
+    margin-bottom: 20px;
+}

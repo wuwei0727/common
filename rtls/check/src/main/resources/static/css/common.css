@@ -1,0 +1,380 @@
+html, body, div, span, h1, h2, h3, h4, h5, h6, p, a, em, img,i, dl, dt, dd, ol, ul, li,table, tbody, tfoot, thead, tr, th, td {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+}
+table{
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+body{
+    font-family:Microsoft YaHei;
+    font-size: 14px;
+    min-width: 1160px;
+    padding:0 20px;
+}
+.heading{
+    height: 40px;
+    line-height: 40px;
+    margin-bottom: 20px;
+}
+.line{
+    display: inline-block;
+    vertical-align: top;
+    width: 5px;
+    height: 18px;
+    border-radius: 6px;
+    background-color: #4A60CF;
+    margin-top: 11px;
+    margin-right: 6px;
+}
+.headingTxt{
+    font-size: 16px;
+    font-weight: bold;
+}
+.item{
+    clear: both;
+    margin-bottom: 20px;
+}
+.itemTxt{
+    float: left;
+    width: 80px;
+    height: 32px;
+    line-height: 32px;
+}
+.itemR{
+    margin-left: 80px;
+}
+.lineBlock{
+    display: inline-block;
+    vertical-align: top;
+}
+.btn{
+    height: 32px;
+    line-height: 32px;
+    color: #fff;
+    background-color: #5474E8;
+    border-radius: 2px;
+    cursor: pointer;
+    user-select: none;
+    padding:0 10px;
+}
+.btn:hover{
+    background-color: #4A60CF;
+}
+.seleBox{
+    display: inline-block;
+    vertical-align: top;
+    margin-bottom: 20px;
+    position: relative;
+    left: 0;
+    top: 0;
+}
+.remove{
+    display: none;
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background-color: #e01a4f;
+    right: 10px;
+    top: 0;
+    border-radius: 2px;
+    cursor: pointer;
+}
+.remove::before{
+    width: 20px;
+    height: 4px;
+    border-radius: 4px;
+    background-color: #fff;
+    left: 6px;
+    top: 14px;
+}
+.seleBox:hover .remove{
+    display: block;
+}
+.sele{
+    border-color: #ececec;
+    height: 32px;
+    vertical-align: top;
+    min-width: 76px;
+    margin-right: 10px;
+    border-radius: 2px;
+    padding: 0 10px;
+}
+.addIcon{
+    display: inline-block;
+    vertical-align: top;
+    width: 28px;
+    height: 28px;
+    color:#5474E8;
+    border:1px solid;
+    border-radius: 4px;
+    position: relative;
+    left: 0;
+    top: 0;
+    cursor: pointer;
+    margin: 1px 0 21px;
+}
+.addIcon::before,.addIcon::after,.remove::before{
+    content:'';
+    display: block;
+    position: absolute;
+}
+.addIcon::before{
+    width: 20px;
+    height: 4px;
+    border-radius:4px;
+    background-color: currentColor;
+    left: 4px;
+    top: 12px;
+}
+.addIcon::after{
+    width: 4px;
+    height: 20px;
+    border-radius:4px;
+    background-color: currentColor;
+    left: 12px;
+    top: 4px;
+}
+.addIcon:hover{
+    color: #4A60CF;
+}
+.lineH{
+    line-height: 32px;
+}
+label{
+    user-select:none;
+}
+.input{
+    width: 70px;
+    padding-left: 8px;
+    height: 30px;
+    border:1px solid #ececec;
+    border-radius: 2px;
+    margin:0 10px;
+}
+.tabBox{
+    border: 1px solid #ececec;
+    padding: 20px;
+    margin-bottom: 40px;
+}
+/*列表table*/
+.tab{
+    width: 100%;
+    background-color: #fff;
+}
+.tab tbody tr:nth-child(2n){
+    background-color: #FAFBFC;
+}
+.tab thead{
+    background-color: #f4f4f4;
+}
+.tab thead tr{
+    color:#676767;
+}
+.tab tbody tr{
+    color: #020202;
+}
+.tab tr{
+    height: 40px;
+}
+.tab td{
+    padding-left: 8px;
+}
+.tab thead td,.tab tbody tr{
+    border:1px solid #ececec;
+}
+.tab tbody tr:hover{
+    background-color: #F4F7FD; 
+}
+tr td.padLeft40{
+    padding-left: 40px;
+}
+td.lineNum {
+    padding: 0 40px;
+    width: 40px;
+}
+
+.upload{
+    position: relative;
+    left: 0;
+    top: 0;
+}
+.file{
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    z-index: 1;
+}
+.fileInfo{
+    margin-left: 10px;
+    border-bottom: 1px solid red;
+    line-height: 32px;
+}
+.showTips{
+    position: fixed;
+    padding: 6px 16px;
+    background-color: #696969;
+    color: #fff;
+    border-radius: 2px;
+    left: 50%;
+    top: 20px;
+    z-index: 99;
+    transform: translateX(-50%);
+}
+.hide{
+    display: none;
+}
+.fillInput{
+    width: 180px;
+    height: 30px;
+    padding-left: 8px;
+    border-radius: 2px;
+    border:1px solid #ececec;
+}
+.tabOper{
+    cursor: pointer;
+    color: #4A60D0;
+}
+.deleOpa{
+    margin-left: 20px;
+}
+.loadBox{
+    display: none;
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    top:90px;
+    left: 50%;
+    margin-left: -30px;
+}
+.load{
+    width: 60px;
+    height: 60px;
+    position: relative;
+    left: 0;
+    top: 0;
+    color: #4A60CF;
+}
+.loadItem{
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: currentColor;
+    opacity: 0.6;
+    position: absolute;
+    top: 0;
+    left: 0;
+    -webkit-animation: bounce 2s infinite ease-in-out;
+    -moz-animation: bounce 2s infinite ease-in-out;
+    -o-animation: bounce 2s infinite ease-in-out;
+    animation: bounce 2s infinite ease-in-out;
+}
+.item2{
+    -webkit-animation-delay:-1s;
+    -moz-animation-delay: -1s;
+    -o-animation-delay: -1s;
+    animation-delay: -1s;
+}
+
+@-webkit-keyframes bounce {
+    0%,100% {
+        -webkit-transform: scale(0);
+    }
+    50% {
+        -webkit-transform: scale(1);
+    }
+}
+
+@-moz-keyframes bounce {
+    0%,100% {
+        -moz-transform: scale(0);
+    }
+    50% {
+        -moz-transform: scale(1);
+    }
+}
+
+@-o-keyframes bounce {
+    0%,100% {
+        -o-transform: scale(0);
+    }
+    50% {
+        -o-transform: scale(1);
+    }
+}
+
+@keyframes bounce {
+    0%,100% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1);
+    }
+}
+
+.mask{
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+.pop{
+    display: none;
+    position: fixed;
+    width: 400px;
+    height: 200px;
+    left: 50%;
+    top: 50%;
+    margin-top: -100px;
+    margin-left: -200px;
+    background-color: #fff;
+    border-radius: 2px;
+}
+.popInfo{
+    height: 128px;
+    padding: 10px;
+}
+.popEnter{
+    width: 80px;
+    text-align: center;
+    margin: 10px auto;
+}
+.popInfoTxt{
+    float: left;
+    line-height: 30px;
+    width: 80px;
+}
+.popInfoCon{
+    height: 128px;
+    overflow-y: auto;
+    margin-left: 80px;
+    line-height: 30px;
+    word-wrap:break-word;
+}
+.startPop{
+    display: none;
+    position: fixed;
+    width: 360px;
+    height: 100px;
+    left: 50%;
+    top: 50%;
+    margin-top: -70px;
+    margin-left: -200px;
+    background-color: #fff;
+    border-radius: 2px;
+    padding: 20px;
+}
+.startTxt{
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+}

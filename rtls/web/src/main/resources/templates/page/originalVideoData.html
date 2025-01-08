@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+
+<head>
+  <meta charset="UTF-8">
+  <title>视频原数据</title>
+  <link rel="stylesheet" href="../css/common/common.css" />
+  <link rel="stylesheet" href="../css/jedate/jedate.css" />
+  <link rel="stylesheet" href="../css/list.css" />
+  <script src="../js/common/jquery-1.8.0.min.js"></script>
+  <script src="../js/common/url.js"></script>
+  <script src="../js/common/common.js"></script>
+  <script src="../js/common/page.js"></script>
+  <script src="../fMap/2/fengmap.core.min.js"></script>
+  <script src="../fMap/2/fengmap.control.min.js"></script>
+  <script src="../js/common/initFmap3.js"></script>
+  <script src="../js/common/jedate.min.js"></script>
+  <script src="../js/originalVideoData.js"></script>
+</head>
+
+<body>
+  <div class="contentTop">
+    <span class="contentTitle">视频原数据</span>
+    <div class="search">
+      <div class="searchItem">
+        摄像头ID：<input type="text" onkeyup="this.value=this.value.replace(/\s/g,'')" name="serialNumber" id="serialNumber"
+          class="searchInp" autocomplete="off" placeholder="请输入摄像头ID" style="width:112px" />
+      </div>
+
+      <div class="searchItem">
+        摄像头名称：<input type="text" onkeyup="this.value=this.value.replace(/\s/g,'')" name="name" id="name"
+          class="searchInp" autocomplete="off" placeholder="请输入摄像头名称" style="width:132px" />
+      </div>
+
+      <div class="searchItem seleBox">
+        关联地图：
+        <div class="batchBox mapWidth" onclick="switchSele(event)">
+          <div name="map" class="batchTxt" data-val="">--请选择关联地图--</div>
+          <div class="batchList" id="mapSelect">
+            <div onclick="seleBatch(this,'')">--请选择关联地图--</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="searchItem">
+        车位名称：<input type="text" onkeyup="this.value=this.value.replace(/\s/g,'')" name="placeName" id="placeName"
+          class="searchInp" autocomplete="off" placeholder="请输入车位名称" style="width:112px" />
+      </div>
+
+      <div class="searchItem">
+        车牌号码：<input type="text" onkeyup="this.value=this.value.replace(/\s/g,'')" name="license" id="license"
+          class="searchInp" autocomplete="off" placeholder="请输入车牌号码" style="width:112px" />
+      </div>
+
+      <div class="searchItem">
+        楼层：<input type="text" onkeyup="this.value=this.value.replace(/\s/g,'')" name="floorName" id="floorName"
+          class="searchInp" autocomplete="off" placeholder="请输入楼层" style="width:112px" />
+      </div>
+
+      <div class="searchItem">
+        摄像头记录时间范围：<input id="timeDate" autocomplete="off" readonly="readonly" style="width:310px;" type="text"
+          class="searchInp searchTime" placeholder="请选择开始时间和结束时间" />
+      </div>
+
+      <span class="searchBtn" onclick="search()">搜索</span>
+      <span class="searchBtn resetBtn" onclick="pageReset()">重置</span>
+
+    </div>
+  </div>
+  <!-- 信息 -->
+  <div class="wrap">
+    <table class="tab" id="tab">
+      <thead>
+        <tr>
+          <td name="line" class="line">序号</td>
+          <td name="serialNumber">摄像头ID</td>
+          <td name="name">摄像头名称</td>
+          <td name="mapName">地图</td>
+          <td name="placeName">车位名称</td>
+          <td name="number">车牌号码</td>
+          <td name="floorName">楼层</td>
+          <td name="cameraRecordTime">摄像头记录时间</td>
+          <td name="placeRecordTime">车位记录时间</td>
+          <td name="createTime">创建时间</td>
+          <td name="updateTime">更新时间</td>
+          <td name="imgUrl">记录图片</td>
+          <td name="operating">操作</td>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="listFooter clearfix">
+      <label class="seleLabel">
+        <input id="allCheck" onclick="allCheck(this)" type="checkbox" class="tabCheck" name="tabCheck">
+        <span class="seleIcon"></span>全选</label>
+       <shiro:hasPermission name="cvc:del">
+      <span class="deleBtn" onclick="showAllDele()">删除</span>
+       </shiro:hasPermission>
+      <div class="page">
+        <span id="total" class="total"></span>
+        <span class="turnPage prev" onclick="prevPage()"></span>
+        <ul class="pageList"></ul>
+        <span class="turnPage next" onclick="nextPage(this)"></span>
+        跳至<input type="text" value="1" class="jumpPage" onkeyup="jumpCurPage(this,event)" />页
+      </div>
+    </div>
+  </div>
+  <!-- 提示 -->
+  <div class="tips" id="tip"></div>
+  <!-- 遮罩 -->
+  <div class="mask" id="mask"></div>
+  <!-- 确认提示框 -->
+  <div class="confimPop" id="delePop">
+    <div class="confimPopTop">
+      <span class="popClose" onclick="hidePop('#delePop')"></span>
+    </div>
+    <div class="confimPopInfo">
+      <p class="confimPopTitle">确定删除？</p>
+      <p class="txtOverFlow">设备名称：<span id="deleTxt"></span></p>
+    </div>
+    <div class="confimPopFooter">
+      <span class="confimPopEnt" onclick="entDele()">确定</span>
+      <span class="confimPopCancel" onclick="hidePop('#delePop')">取消</span>
+    </div>
+  </div>
+
+
+
+  <div id="operating" class="hidden">
+     <shiro:hasPermission name="cvc:del">
+    <span class="tabOper deleOpa" id="deleteBtn">删除</span>
+     </shiro:hasPermission>
+  </div>
+  <!-- 商家所在位置 -->
+  <div class="mapPop" id="mapPop" style="left:75px;">
+    <div class="mapPopTop">
+      车位所在位置
+      <div class="close" onclick="hidePop('#mapPop')"></div>
+    </div>
+    <div class="fengmap" id="fengmap" style="width:1540px;height:812px;">
+      <!--设备控件，2D/3D切换-->
+      <div class="viewMode3">
+        <div class="viewMode" onclick="changeMode(this)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="outerdiv"
+    style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:999;width:100%;height:100%;display:none;">
+    <div id="innerdiv" style="position:absolute;">
+      <img id="bigimg" src="" />
+    </div>
+  </div>
+
+</body>
+<script>
+  //回车搜索
+  $("#serialNumber").keydown(function (event) {
+    if (event.keyCode === 13) {
+      search(); //搜索
+    }
+  });
+
+  $("#name").keydown(function (event) {
+    if (event.keyCode === 13) {
+      search(); //搜索
+    }
+  });
+
+  $("#license").keydown(function (event) {
+    if (event.keyCode === 13) {
+      search(); //搜索
+    }
+  });
+
+  $("#placeName").keydown(function (event) {
+    if (event.keyCode === 13) {
+      search(); //搜索
+    }
+  });
+</script>
+
+</html>

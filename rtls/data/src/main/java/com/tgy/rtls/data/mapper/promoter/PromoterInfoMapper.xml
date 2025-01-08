@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.promoter.PromoterInfoMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.promoter.PromoterInfo">
+    <!--@mbg.generated-->
+    <!--@Table promoter_info-->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="province" jdbcType="VARCHAR" property="province" />
+    <result column="city" jdbcType="VARCHAR" property="city" />
+    <result column="area" jdbcType="VARCHAR" property="area" />
+    <result column="createTime" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    pi.id, pi.`name`, pi.phone, pi.province, pi.city, pi.area,pi.create_time createTime
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    <!--@mbg.generated-->
+    select 
+    <include refid="Base_Column_List" />
+    from promoter_info pi
+    where pi.id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    <!--@mbg.generated-->
+    delete from promoter_info
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.tgy.rtls.data.entity.promoter.PromoterInfo" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into promoter_info (map,`name`, phone, province, city, area,create_time)
+    values (#{map},#{name,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, #{province,jdbcType=VARCHAR},
+      #{city,jdbcType=VARCHAR}, #{area,jdbcType=VARCHAR},#{createTime})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.tgy.rtls.data.entity.promoter.PromoterInfo" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into promoter_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="name != null">
+        `name`,
+      </if>
+      <if test="phone != null">
+        phone,
+      </if>
+      <if test="province != null">
+        province,
+      </if>
+      <if test="city != null">
+        city,
+      </if>
+      <if test="area != null">
+        area,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="province != null">
+        #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="city != null">
+        #{city,jdbcType=VARCHAR},
+      </if>
+      <if test="area != null">
+        #{area,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.tgy.rtls.data.entity.promoter.PromoterInfo">
+    <!--@mbg.generated-->
+    update promoter_info
+    <set>
+      <if test="name != null">
+        `name` = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="province != null">
+        province = #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="city != null">
+        city = #{city,jdbcType=VARCHAR},
+      </if>
+      <if test="area != null">
+        area = #{area,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.tgy.rtls.data.entity.promoter.PromoterInfo">
+    <!--@mbg.generated-->
+    update promoter_info
+    set `name` = #{name,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR},
+      province = #{province,jdbcType=VARCHAR},
+      city = #{city,jdbcType=VARCHAR},
+      area = #{area,jdbcType=VARCHAR},
+      update_time=#{updateTime}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+    <!--$var desc=1-->
+  <select id="getPromoterInfo" resultMap="BaseResultMap">
+      select <include refid="Base_Column_List" />
+      from promoter_info pi
+      where 1=1
+      <if test="name != null and name != ''">
+        and pi.name like concat('%',#{name},'%')
+      </if>
+      <if test="map != null ">
+        and pi.map = #{map}
+      </if>
+      <if test="province != null and province != ''">
+        and pi.province=#{province}
+      </if>
+      <if test="city != null and city != ''">
+        and pi.city = #{city}
+      </if>
+      <if test="area != null and area != ''">
+        and pi.area like concat('%',#{area},'%')
+      </if>
+<!--      <if test="mapids != null and mapids != ''">-->
+<!--        and pi.map in-->
+<!--        <foreach close=")" collection="mapids" item="mapids" open="(" separator=",">-->
+<!--          #{mapids}-->
+<!--        </foreach>-->
+<!--      </if>-->
+      <if test="desc != null and desc != ''">
+        order by ${desc}
+      </if>
+    </select>
+
+  <delete id="deleteByIdIn">
+    delete from promoter_info
+    <where>
+      <if test="ids != null and ids.length > 0">
+        and id in
+        <foreach item="id" index="index" collection="ids" open="(" separator="," close=")">
+              #{id}
+        </foreach>
+      </if>
+    </where>
+  </delete>
+
+<!--  SELECT-->
+<!--  DATE_FORMAT(start, '%Y-%m-%d %H:00:00') AS hour_start,-->
+<!--  COUNT(*) AS total_count-->
+<!--  FROM-->
+<!--  place_userecord-->
+<!--  WHERE-->
+<!--  (start >= DATE_SUB(NOW(), INTERVAL 24 HOUR) AND start <= NOW())-->
+<!--  OR (`end` >= DATE_SUB(NOW(), INTERVAL 24 HOUR) AND `end` <= NOW())-->
+<!--  OR (start < DATE_SUB(NOW(), INTERVAL 24 HOUR) AND `end` IS NULL)-->
+<!--  GROUP BY-->
+<!--  hour_start-->
+<!--  ORDER BY-->
+<!--  hour_start;-->
+
+</mapper>

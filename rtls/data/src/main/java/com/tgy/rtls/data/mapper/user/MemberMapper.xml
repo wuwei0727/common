@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.user.MemberMapper">
+    <select id="findByAll" resultType="com.tgy.rtls.data.entity.user.Member">
+        SELECT uid,membername,phone,enabled,`describe`,addTime,loginTime,url,cid,
+        (select cname from company c where c.id=m.cid)as cname
+        FROM member m
+        where 1=1
+        <if test="keyword != null and keyword != ''">
+            and (phone like concat('%',#{keyword},'%')
+            or membername like concat('%',#{keyword},'%')
+            or cid in (select id from company where cname like concat('%',#{keyword},'%')))
+        </if>
+        <if test="enabled != null">
+            and enabled=#{enabled}
+        </if>
+        <if test="cid != null and cid != '' and cid != '1'.toString()">
+            and cid=#{cid}
+        </if>
+        <if test="desc != null and desc != ''">
+            order by ${desc}
+        </if>
+    </select>
+
+    <select id="findByAll2" resultType="com.tgy.rtls.data.entity.user.Member">
+        SELECT distinct
+        m.uid,m.membername,m.phone,m.enabled,m.`describe`,m.addTime,m.loginTime,m.url,m.cid,m.rawPassword,m.creatorId,
+        (select cname from company c where c.id=m.cid)as cname,
+        (
+            SELECT GROUP_CONCAT(distinct m2.name SEPARATOR '，')
+            from map_2d m2
+            left join sys_user_map am on am.map_id = m2.id
+            where user_id in (m.uid) and m2.enable = 1
+        ) as mapName
+        FROM member m
+        left join sys_user_map um on um.user_id = m.uid
+        left join map_2d m2d on m2d.id=um.map_id
+        where 1=1
+        <if test="maps != null and maps != ''">
+            and m2d.id in
+            <foreach collection="maps" open="(" close=")" separator="," item="maps">
+                #{maps}
+            </foreach>
+        </if>
+
+        <if test="cid != null and cid != ''">
+           and (creatorId=#{cid} or m.uid = #{cid})
+        </if>
+        <if test="keyword != null and keyword != ''">
+            and (m.phone like concat('%',#{keyword},'%')
+            or m.membername like concat('%',#{keyword},'%')
+            or m.cid in (select id from company where cname like concat('%',#{keyword},'%')))
+        </if>
+        <if test="enabled != null">
+            and enabled=#{enabled}
+        </if>
+        <if test="cname != null and cname != ''">
+            and cid=#{cname}
+        </if>
+        <!--<if test="cid != null and cid != '' and cid != '1'.toString()">-->
+        <!--    and cid=#{cid}-->
+        <!--</if>-->
+        <if test="desc != null and desc != ''">
+            order by ${desc}
+        </if>
+    </select>
+
+    <select id="findByLonginRecord" resultType="com.tgy.rtls.data.entity.user.LoginRecord">
+        select *
+        from loginrecord
+        where 1=1
+        <if test="phone != null and phone != ''">
+            and phone like concat('%',#{phone},'%')
+        </if>
+        <if test="startTime != null and startTime != '' and endTime != '' and endTime != null">
+            and addTime>#{startTime} and #{endTime}>addTime
+        </if>
+        order by addTime desc
+    </select>
+
+    <select id="findByLonginRecord2" resultType="com.tgy.rtls.data.entity.user.LoginRecord">
+        select *
+        from loginrecord
+        where 1=1
+        and uid = #{uid}
+        <if test="phone != null and phone != ''">
+            and phone like concat('%',#{phone},'%')
+        </if>
+        <if test="startTime != null and startTime != '' and endTime != '' and endTime != null">
+            and addTime>#{startTime} and #{endTime}>addTime
+        </if>
+        order by addTime desc
+    </select>
+
+    <insert id="addLonginRecord">
+        insert into loginrecord(uid,ip,address,phone)
+        values (#{login.uid},#{login.ip},#{login.address},#{login.phone})
+    </insert>
+
+    <select id="findByNameId" resultType="string">
+        select group_concat(membername)
+        from member
+        where uid in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="findByCid" resultType="com.tgy.rtls.data.entity.user.Member">
+        SELECT uid,membername,phone,enabled,`describe`,addTime,loginTime,url,cid,
+        (select cname from company c where c.id=m.cid)as cname
+        FROM member m
+        where cid=#{cid}
+    </select>
+
+    <select id="findById" resultType="com.tgy.rtls.data.entity.user.Member">
+        SELECT m.uid,m.membername,m.password,m.phone,m.enabled,m.`describe`,
+        m.addTime,m.loginTime,m.url,m.cid,m.rawPassword,
+        (select cname from company c where c.id=m.cid)as cname
+        FROM member m
+        where uid=#{id}
+    </select>
+
+    <select id="findByName" resultType="com.tgy.rtls.data.entity.user.Member">
+        SELECT *
+        FROM member m
+        where membername=#{membername}
+    </select>
+
+    <select id="findByPhone" resultType="com.tgy.rtls.data.entity.user.Member">
+        SELECT *
+        FROM member m
+        where phone=#{phone}
+    </select>
+
+    <insert id="insertMember" keyProperty="uid" useGeneratedKeys="true">
+        insert into member(uid,membername,password,phone,cid,`describe`,enabled,rawPassword,creatorId)
+        values(#{member.uid},#{member.membername},#{member.password},#{member.phone},#{member.cid},#{member.describe},#{member.enabled},#{member.rawPassword},#{member.creatorId})
+    </insert>
+
+    <update id="updateMember">
+        update member
+        <set>
+            enabled=#{member.enabled},
+            <if test="member.membername != null and member.membername != ''">
+                membername=#{member.membername},
+            </if>
+            <if test="member.password != null and member.password != ''">
+                password=#{member.password},
+            </if>
+            <if test="member.phone != null and member.phone != ''">
+                phone=#{member.phone},
+            </if>
+            <if test="member.cid != null and member.cid != ''">
+                cid=#{member.cid},
+            </if>
+            <if test="member.describe != null and member.describe != ''">
+                `describe`=#{member.describe},
+            </if>
+            <if test="member.loginTime != null and member.loginTime != ''">
+                loginTime=#{member.loginTime},
+            </if>
+            <if test="member.rawPassword != null and member.rawPassword != ''">
+                rawPassword=#{member.rawPassword},
+            </if>
+        </set>
+        where uid=#{member.uid}
+    </update>
+
+    <update id="updatePassword">
+        update member
+        set password=#{password}
+        where uid=#{uid}
+    </update>
+
+    <update id="updateAddTime">
+        update member
+        set loginTime=#{loginTime}
+        where uid=#{uid}
+    </update>
+    <delete id="delMember">
+        delete from member
+        where uid=#{id}
+    </delete>
+    <select id="findByMemberCid" resultType="string">
+        select group_concat(uid)
+        from member
+        where cid=#{cid}
+    </select>
+
+
+    <delete id="delMember_project">
+        delete from sys_member_project
+        where uid=#{uid}
+        <if test="project_ids != null and project_ids != ''">
+            and pid not in
+            <foreach collection="project_ids" close=")" open="(" separator="," item="pid">
+                #{pid}
+            </foreach>
+        </if>
+    </delete>
+
+    <delete id="delMember_projectId">
+        delete from sys_member_project
+        where pid=#{project_id}
+    </delete>
+    <delete id="delMemberMap">
+        DELETE
+        FROM
+        sys_user_map
+        WHERE
+        user_id = #{uid}
+    </delete>
+
+    <insert id="addMemberMap">
+        insert into sys_user_map
+        values
+        <foreach collection="mapIds" item="mapId" separator=",">
+            (#{uid},#{mapId})
+        </foreach>
+    </insert>
+
+    <select id="findByUid" resultType="int">
+        select count(1)
+        from sys_member_project
+        where uid=#{uid} and pid=#{pid}
+    </select>
+    <select id="getMapName" resultType="com.tgy.rtls.data.entity.map.Map_2d">
+        SELECT
+        m.id,
+        m.`name`,
+        m.type,
+        m.width,
+        m.height,
+        m.url,
+        m.origin,
+        m.`describe`,
+        m.`enable`,
+        m.addTime,
+        m.updateTime,
+        m.instanceid,
+        m.subStyle,
+        m.tagStyle,
+        m.gatewayStyle,
+        m.mapKey,
+        m.appName,
+        m.fmapID,
+        m.mapImg,
+        m.themeImg,
+        m.lng,
+        m.lat
+        FROM
+        map_2d AS m
+        LEFT JOIN sys_user_map AS mm ON mm.map_id = m.id
+        WHERE
+        mm.user_id = #{uid}
+    </select>
+
+    <select id="getMemberMap" resultType="com.tgy.rtls.data.entity.map.Map_2d">
+        SELECT
+        m.id,
+        m.`name`,
+        m.type,
+        m.width,
+        m.height,
+        m.url,
+        m.origin,
+        m.`describe`,
+        m.`enable`,
+        m.addTime,
+        m.updateTime,
+        m.instanceid,
+        m.subStyle,
+        m.tagStyle,
+        m.gatewayStyle,
+        m.mapKey,
+        m.appName,
+        m.fmapID,
+        m.mapImg,
+        m.themeImg,
+        m.lng,
+        m.lat
+        FROM
+        map_2d AS m
+        LEFT JOIN sys_user_map AS mm ON mm.map_id = m.id
+        WHERE
+        mm.user_id = #{uid}
+    </select>
+    <select id="getMapId" resultType="com.tgy.rtls.data.entity.map.Map_2d">
+        SELECT
+        m.id
+        FROM
+        map_2d AS m
+        LEFT JOIN sys_user_map AS mm ON mm.map_id = m.id
+        WHERE
+        mm.user_id = #{uid} <if test="uid!=1">and m.enable =1</if>
+    </select>
+    <select id="getMapIdAll" resultType="com.tgy.rtls.data.entity.map.Map_2d">
+        SELECT
+        m.id
+        FROM
+        map_2d AS m
+        LEFT JOIN sys_user_map AS mm ON mm.map_id = m.id
+        WHERE
+        mm.user_id = #{uid}
+    </select>
+
+    <select id="getMapId2" resultType="com.tgy.rtls.data.entity.map.Map_2d">
+        SELECT
+        m.id
+        FROM map_2d AS m
+        LEFT JOIN sys_appuser_map AS mm ON mm.map_id = m.id
+
+        LEFT JOIN sys_user AS s ON mm.user_id = s.user_id
+        WHERE
+        (select id from sys_appuser_map sss
+        left join member m2 on m2.uid = sss.user_id
+        left join sys_user ss on ss.user_id = sss.user_id
+
+        where m2.uid= ss.user_id ) = #{userId}
+    </select>
+
+    <insert id="insertMember_project">
+        insert into sys_member_project(uid,pid)
+        values
+        <foreach collection="mapids" item="mapid" separator=",">
+            (#{uid},#{pid})
+        </foreach>
+    </insert>
+
+    <insert id="insertMemberMap">
+        insert into sys_user_map
+        values(#{uid},#{mapids})
+    </insert>
+
+    <select id="getMemberPermissons" resultType="com.tgy.rtls.data.entity.user.Permission">
+        select p.id,
+        p.enabled,
+        p.name,
+        p.parentid,
+        p.permission
+        from permission p
+        left join sys_member_permission smp on p.id = smp.permission_id
+        left join member m on smp.uid = m.uid
+        where m.uid = #{uId}
+        and p.id not in (31,32,33,34,35)
+    </select>
+</mapper>

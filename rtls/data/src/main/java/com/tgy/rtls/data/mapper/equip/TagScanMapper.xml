@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.equip.TagScanMapper">
+    <sql id="Base_Column_List">
+        id,
+        num,
+        `type`,
+        frequency,
+        `power`,
+        batteryVolt,
+        code1,
+        code2,
+        `status`,
+        typeName
+    </sql>
+    <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.equip.TagScan">
+        <result column="id" property="id"/>
+        <result column="num" property="num"/>
+        <result column="type" property="type"/>
+        <result column="frequency" property="frequency"/>
+        <result column="power" property="power"/>
+        <result column="batteryVolt" property="batteryVolt"/>
+        <result column="code1" property="code1"/>
+        <result column="code2" property="code2"/>
+        <result column="status" property="status"/>
+        <result column="typeName" property="typeName"/>
+    </resultMap>
+    <select id="findByAll" resultType="com.tgy.rtls.data.entity.equip.TagScan">
+        select *,
+               (select ${name} from tagtype where id = t.type) as typeName
+        from tag_scan t
+        where 1 = 1
+        <if test="status != null">
+            and status = #{status}
+        </if>
+        <if test="type != null">
+            and type = #{type}
+        </if>
+        <if test="code1 != null and code1 != ''">
+            and code1 = #{code1}
+        </if>
+        <if test="code2 != null and code2 != ''">
+            and code2 = #{code2}
+        </if>
+    </select>
+
+    <select id="findByNum" resultType="com.tgy.rtls.data.entity.equip.TagScan">
+        select *
+        from tag_scan
+        where num = #{num}
+    </select>
+
+    <insert id="addTagScan">
+        insert into tag_scan(type, num, batteryVolt, status)
+        values (#{tagScan.type}, #{tagScan.num}, #{tagScan.batteryVolt}, #{tagScan.status})
+    </insert>
+    <insert id="addInfrared">
+        INSERT INTO infrared(id, num, networkstate, power, map, status, place, hardware, firmware, rawProduct_id)
+        VALUES (null, #{infrared.num}, #{infrared.networkstate}, #{infrared.power},
+                #{infrared.map}, #{infrared.status}, #{infrared.place},
+                #{infrared.hardware}, #{infrared.firmware}, #{infrared.rawProductId});
+    </insert>
+
+    <update id="updateStatus">
+        update tag_scan
+        set status=#{status}
+        where num = #{num}
+    </update>
+
+    <update id="delTagScan">
+        truncate table tag_scan
+    </update>
+
+    <update id="updateInfrared">
+        update infrared
+        <set>
+            <if test="num != null and num != ''">
+                num = #{num},
+            </if>
+            <if test="map != null">
+                map = #{map},
+            </if>
+            <if test="placeId != null">
+                place = #{placeId},
+            </if>
+            <if test="rawProductId != null and rawProductId != ''">
+                rawProductId = #{rawProductId},
+            </if>
+            networkstate =0,
+            updateTime=#{updateTime}
+        </set>
+        <where>
+            <if test="infraredId != null">
+                id = #{infraredId}
+            </if>
+        </where>
+    </update>
+</mapper>

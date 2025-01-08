@@ -1,0 +1,66 @@
+maven:
+        <dependency>
+            <groupId>com.github.binarywang</groupId>
+            <artifactId>wx-java-miniapp-spring-boot-starter</artifactId>
+            <version>4.5.7.B</version>
+        </dependency>
+---------------------------------
+这个不加可能会报错：xxx...: me.chanjar.weixin.common.bean.WxAccessTokenEntity
+<dependency>
+            <groupId>com.github.binarywang</groupId>
+            <artifactId>weixin-java-common</artifactId>
+            <version>4.5.7.B</version>
+        </dependency>
+--------------------------
+
+微信配置：
+import cn.binarywang.wx.miniapp.api.WxMaService;
+import cn.binarywang.wx.miniapp.api.impl.WxMaServiceImpl;
+import cn.binarywang.wx.miniapp.config.WxMaConfig;
+import cn.binarywang.wx.miniapp.config.impl.WxMaDefaultConfigImpl;
+import com.tgy.rtls.data.tool.Constant;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+@Configuration
+public class WeChatMpConfig {
+    @Bean
+    public WxMaService wxMaService(){
+        WxMaServiceImpl wxMaService = new WxMaServiceImpl();
+        wxMaService.setWxMaConfig(wxMaConfig());
+        return wxMaService;
+    }
+    @Bean
+    public WxMaConfig wxMaConfig(){
+        WxMaDefaultConfigImpl wxMaConfig = new WxMaDefaultConfigImpl();
+        wxMaConfig.setAppid(Constant.APP_ID);
+        wxMaConfig.setSecret(Constant.APP_SECRET);
+        return wxMaConfig;
+    }
+}
+
+业务代码：
+注意：需要在类上加入@RequiredArgsConstructor，才能使用final注入
+private final WxMaService wxMaService;
+
+@RequestMapping("/send")
+    @SneakyThrows(Exception.class)//简化try/catch
+    public void send()  {
+        List<WxMaSubscribeMessage.MsgData> data=
+                Arrays.asList(
+                    new WxMaSubscribeMessage.MsgData("car_number1","鄂FU89x1"),
+                    new WxMaSubscribeMessage.MsgData("thing2","VIP9"),
+                    new WxMaSubscribeMessage.MsgData("time3","2023/02/03 15:15:15"),
+                    new WxMaSubscribeMessage.MsgData("thing4","您是VIP9，每日不限时停车"),
+                    new WxMaSubscribeMessage.MsgData("thing5","祝您购物愉快")
+                );
+
+        wxMaService.getSubscribeService().sendSubscribeMsg(
+                WxMaSubscribeMessage.builder()
+                .toUser("oMIpe44aAYMUyRUajmrI28XLDNek")
+                .templateId(TEMPLATE_ID)
+                .miniprogramState("developer")
+                .data(data)
+                .build()
+        );
+    }
+

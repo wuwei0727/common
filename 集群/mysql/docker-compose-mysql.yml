@@ -1,0 +1,65 @@
+version: '3'
+services:
+  tomcat:
+    restart: always
+    image: tomcat:8.5.59-jdk8
+    container_name: tomcat8
+    environment:
+      TZ: Asia/Shanghai
+      JAVA_OPTS: -Xms1024m -Xmx1024m  -XX:+UnlockCommercialFeatures -XX:+FlightRecorder
+    volumes:
+      - /data/dockerdata/tomcatWork/logs:/usr/local/tomcat/logs
+      - /data/dockerdata/tomcatWork/webapps:/usr/local/tomcat/webapps
+    ports:
+      - "8083:8080"
+      - "1227:1227"
+  redis:
+    image: redis:alpine
+    container_name: tgy-redis
+    tty: true
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - /data/dockerdata/redisWork/data:/data
+      - /data/dockerdata/redisWork/config:/etc/redis/
+      - /etc/localtime:/etc/localtime
+    environment:
+      - TZ=Asia/Shanghai
+      - LANG=en_US.UTF-8
+  mastermysql:
+    image: mysql:5.7
+    container_name: mastermysql
+    tty: true
+    restart: always
+    ports:
+      - "3307:3306"
+    volumes:
+      - /data/dockerdata/mysqlWork/master/data:/var/lib/mysql ##注意这个/data/docker/dockerdata/mysqlWork/master/data宿主机目录要自己创建
+      - /data/dockerdata/mysqlWork/master/etc/my.cnf:/etc/my.cnf ##注意这个/data/docker/dockerdata/mysqlWork/master/etc/my.cnf宿主机目录要自己创建
+      - /etc/localtime:/etc/localtime
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MASTER_SYNC_USER=masteradmin #设置脚本中定义的用于同步的账号
+      - MASTER_SYNC_PASSWORD=123456 #设置脚本中定义的用于同步的密码
+      - ADMIN_USER=root #当前容器用于拥有创建账号功能的数据库账号
+      - ADMIN_PASSWORD=123456
+      - TZ=Asia/Shanghai #解决时区问题
+  slavemysql:
+    image: mysql:5.7
+    container_name: slavemysql
+    tty: true
+    restart: always
+    ports:
+      - "3308:3306"
+    volumes:
+      - /data/dockerdata/mysqlWork/slave/data:/var/lib/mysql
+      - /data/dockerdata/mysqlWork/slave/etc/my.cnf:/etc/my.cnf
+      - /etc/localtime:/etc/localtime
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MASTER_SYNC_USER=masteradmin #设置脚本中定义的用于同步的账号
+      - MASTER_SYNC_PASSWORD=123456 #设置脚本中定义的用于同步的密码
+      - ADMIN_USER=root #当前容器用于拥有创建账号功能的数据库账号
+      - ADMIN_PASSWORD=123456
+      - TZ=Asia/Shanghai #解决时区问题

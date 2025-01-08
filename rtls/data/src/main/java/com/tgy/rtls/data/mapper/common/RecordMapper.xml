@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.common.RecordMapper">
+    <insert id="addIncoal" keyProperty="id" useGeneratedKeys="true">
+        insert into incoalrecord(personid,map)
+        value (#{personid},#{map})
+    </insert>
+
+    <update id="updateIncoal">
+        update incoalrecord
+        set outTime=#{outTime}
+        where personid=#{personid} and map=#{map} and outTime is null
+    </update>
+
+    <delete id="delIncoal">
+        delete from incoalrecord
+        where map in
+        <foreach collection="ids" separator="," close=")" open="(" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="findByInSub" resultType="int">
+        select count(1)
+        from insubrecord
+        where personid=#{personid} and num=#{num} and outTime is null
+    </select>
+
+    <insert id="addInsub">
+        insert into insubrecord(personid,num,map)
+        values (#{personid},#{num},#{map})
+    </insert>
+
+    <update id="updateInsub">
+        update insubrecord
+        set outTime=#{outTime}
+        where personid=#{personid} and outTime is null
+    </update>
+
+    <delete id="delInsub">
+        delete from insubrecord
+        where num in
+        (select num from substation where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        )
+    </delete>
+
+    <select id="findByInArea" resultType="int">
+        select count(1)
+        from inarearecord
+        where personid=#{personid} and area=#{area} and outTime is null
+    </select>
+
+    <insert id="addInArea">
+        insert into inarearecord(personid,area,map)
+        values (#{personid},#{area},#{map})
+    </insert>
+
+    <update id="updateInArea">
+        update inarearecord
+        set outTime=#{outTime}
+        where personid=#{personid} and area=#{area} and outTime is null
+    </update>
+
+    <delete id="delInArea">
+        delete from inarearecord
+        where area=#{id}
+    </delete>
+
+    <select id="findByIncal" resultType="com.tgy.rtls.data.entity.user.PersonIncoal">
+        select id,name,num,time,offTime,
+        (CASE  WHEN offTime IS NULL THEN #{online}  ELSE #{offline} END ) AS  statusName ,
+        (select num from tag where id=p.tagid)as tagName,
+        (select name from job where id=p.job)as jobName,
+        (select name from department where id=p.department)as departmentName,
+        (select name from level where id=p.level)as levelName,
+        (select name from worktype where id=p.worktype)as worktypeName,
+        TIME_FORMAT(TIMEDIFF(NOW(),TIME),#{timeformat}) AS duration
+        from person p
+        where minestate=0 and map=#{map}
+        <if test="keyword!=null and keyword!=''">
+            and (name like concat('%',#{keyword},'%')
+            or num like concat('%',#{keyword},'%')
+            )
+        </if>
+        <if test="departmentid!=null and departmentid!=''">
+            and department=#{departmentid}
+        </if>
+        <if test="jobid!=null and jobid!=''">
+            and job=#{jobid}
+        </if>
+        <if test="worktypeid!=null and worktypeid!=''">
+            and worktype=#{worktypeid}
+        </if>
+
+    </select>
+
+    <select id="findByOff" resultType="com.tgy.rtls.data.entity.user.PersonOff">
+        select id,name,num,offTime,
+        (CASE  WHEN offTime IS NULL THEN #{online}  ELSE #{offline} END ) AS  statusName ,
+        (select num from tag where id=p.tagid)as tagName,
+        (select name from job where id=p.job)as jobName,
+        (select name from department where id=p.department)as departmentName,
+        (select name from level where id=p.level)as levelName,
+        (select name from worktype where id=p.worktype)as worktypeName,
+        TIME_FORMAT(TIMEDIFF(NOW(),offTime),#{timeformat}) AS duration
+        from person p
+        where map=#{map} and minestate=0 and offTime is not null
+        and tagid in (select id from tag where status=0)
+        <if test="keyword!=null and keyword!=''">
+            and (name like concat('%',#{keyword},'%')
+            or num like concat('%',#{keyword},'%')
+            )
+        </if>
+        <if test="departmentid!=null and departmentid!=''">
+            and department=#{departmentid}
+        </if>
+        <if test="jobid!=null and jobid!=''">
+            and job=#{jobid}
+        </if>
+        <if test="worktypeid!=null and worktypeid!=''">
+            and worktype=#{worktypeid}
+        </if>
+    </select>
+
+    <select id="findByOvertime" resultType="com.tgy.rtls.data.entity.user.PersonIncoal">
+        SELECT sss.*,(CASE WHEN sss.status_name IS NULL THEN #{offline} ELSE sss.status_name END ) AS statusName FROM (
+        select id,name,num,time,
+        (select num from tag where id=p.tagid)as tagName,
+        (select name from job where id=p.job)as jobName,
+        (select name from department where id=p.department)as departmentName,
+        (select name from level where id=p.level)as levelName,
+        (select name from worktype where id=p.worktype)as worktypeName,
+        (select ${name} from status where type='online' and typeid=(select status from tag where id=p.tagid))as status_Name,
+        TIME_FORMAT(TIMEDIFF(NOW(),time),#{timeformat}) AS duration
+        from person p
+        where map=#{map} and minestate=0
+        <if test="keyword!=null and keyword!=''">
+            and (name like concat('%',#{keyword},'%')
+            or num like concat('%',#{keyword},'%')
+            )
+        </if>
+        <if test="departmentid!=null and departmentid!=''">
+            and department=#{departmentid}
+        </if>
+        <if test="jobid!=null and jobid!=''">
+            and job=#{jobid}
+        </if>
+        <if test="worktypeid!=null and worktypeid!=''">
+            and worktype=#{worktypeid}
+        </if>
+        HAVING duration>(SELECT rule FROM warnrule WHERE map=p.`map` AND `type`=2 and enable=1)
+        <if test="pageIndex!=null">
+            limit ${pageIndex},${pageSize}
+        </if>
+        ) sss
+
+    </select>
+
+    <select id="findBySub" resultType="com.tgy.rtls.data.entity.equip.SubSyn">
+        select id,num,maxnum,
+        (select ${name} from status where type='network' and typeid=s.networkstate)as networkName,
+        (select ${name} from status where type='power' and typeid=s.powerstate)as powerName,
+        (select  ${name} from bserror where id=s.error)as errorName,
+        (select ${name} from bstype where id=s.type)as typeName,
+        (select count(1) from person where sub=s.num and minestate=0)as count
+        from substation s
+        where map=#{map}
+        <if test="num!=null and num!=''">
+            and num like concat('%',#{num},'%')
+        </if>
+        <if test="networkstate!=null">
+            and networkstate=#{networkstate}
+        </if>
+        <if test="powerstate!=null">
+            and powerstate=#{powerstate}
+        </if>
+        <if test="error==1">
+            and error>1
+        </if>
+        <if test="error==0">
+            and error=1
+        </if>
+        order by addTime desc
+    </select>
+
+    <select id="findByPersonSub"  resultType="com.tgy.rtls.data.entity.user.PersonSub">
+        select id,name,num,insubTime,
+        (select num from tag where id=p.tagid)as tagName,
+        (select name from job where id=p.job)as jobName,
+        (select name from department where id=p.department)as departmentName,
+        (select name from level where id=p.level)as levelName,
+        (select name from worktype where id=p.worktype)as worktypeName,
+        TIME_FORMAT(TIMEDIFF(NOW(),insubTime),#{timeformat}) AS duration
+        from person p
+        where sub=#{num} and minestate=0
+        <if test="keyword!=null and keyword!=''">
+            and (name like concat('%',#{keyword},'%')
+            or num like concat('%',#{keyword},'%')
+            )
+        </if>
+        <if test="departmentid!=null and departmentid!=''">
+            and department=#{departmentid}
+        </if>
+        <if test="jobid!=null and jobid!=''">
+            and job=#{jobid}
+        </if>
+        <if test="worktypeid!=null and worktypeid!=''">
+            and worktype=#{worktypeid}
+        </if>
+    </select>
+
+    <select id="findByPersonArea" resultType="com.tgy.rtls.data.entity.user.PersonArea">
+        select id,name,num,
+        (select inTime from inarearecord where area=#{area} and personid=p.id and outTime is null)as inareaTime,
+        (select name from job where id=p.job)as jobName,
+        (select num from tag where id=p.tagid)as tagName,
+        (select name from department where id=p.department)as departmentName,
+        (select name from level where id=p.level)as levelName,
+        (select name from worktype where id=p.worktype)as worktypeName,
+        TIME_FORMAT(TIMEDIFF(NOW(),(select inTime from inarearecord where area=#{area} and personid=p.id and outTime is null)),#{timeformat}) AS duration
+        from person p
+        where id IN (SELECT personid FROM inarearecord WHERE AREA=#{area} AND outTime IS NULL)
+         and minestate=0
+        <if test="keyword!=null and keyword!=''">
+            and (name like concat('%',#{keyword},'%')
+            or num like concat('%',#{keyword},'%')
+            )
+        </if>
+        <if test="departmentid!=null and departmentid!=''">
+            and department=#{departmentid}
+        </if>
+        <if test="jobid!=null and jobid!=''">
+            and job=#{jobid}
+        </if>
+        <if test="worktypeid!=null and worktypeid!=''">
+            and worktype=#{worktypeid}
+        </if>
+    </select>
+
+    <select id="findByArea" resultType="com.tgy.rtls.data.entity.map.AreaVO">
+        select id,name,enable,
+        (select name from area_type where id=a.type)as typeName,
+        (select count(1) from person p
+        where id IN (SELECT personid FROM inarearecord WHERE AREA=a.id AND outTime IS NULL)
+         and minestate=0)as count,
+         (select maxnum from area_overload where area=a.id)as maxnum
+        from area a
+        where map=#{map}
+        <if test="name!=null and name!=''">
+            and name like concat('%',#{name},'%')
+        </if>
+        <if test="type!=null and type!=''">
+            and type=#{type}
+        </if>
+        <if test="enable!=null">
+            and enable=#{enable}
+        </if>
+    </select>
+</mapper>

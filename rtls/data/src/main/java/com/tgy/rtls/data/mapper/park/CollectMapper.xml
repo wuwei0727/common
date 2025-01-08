@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+
+<mapper namespace="com.tgy.rtls.data.mapper.park.CollectMapper">
+
+
+    <select id="findUserFunction" resultType="com.tgy.rtls.data.entity.userinfo.WechatUserFunction">
+        select * from wechat_function
+    </select>
+
+
+    <insert id="addWechatUserInfo" keyProperty="id" useGeneratedKeys="true">
+        insert into wechat_userinfo(userid,nickName,avatarUrl,gender,city,province,country,version,phone,cell_phone,brand,model,platform)
+        value (#{wechatUserInfo.userid},#{wechatUserInfo.nickName},#{wechatUserInfo.avatarUrl},#{wechatUserInfo.gender},#{wechatUserInfo.city},
+        #{wechatUserInfo.province},#{wechatUserInfo.country},#{wechatUserInfo.version},#{wechatUserInfo.phone},
+        #{wechatUserInfo.cell_phone},#{wechatUserInfo.brand},#{wechatUserInfo.model},
+        #{wechatUserInfo.platform})
+    </insert>
+    <insert id="addWechatUserPosition" keyProperty="id" useGeneratedKeys="true">
+        insert into wechat_position(userid,x,y,map,floor)
+        value (#{wechatUserPosition.userid},#{wechatUserPosition.x},
+        #{wechatUserPosition.y},#{wechatUserPosition.map},#{wechatUserPosition.floor})
+    </insert>
+    <insert id="addWechatUserOperation" keyProperty="id" useGeneratedKeys="true">
+        insert into wechat_operation(userid,operation)
+        value (#{wechatUserOperation.userid},#{wechatUserOperation.operation})
+    </insert>
+    <insert id="addWechatUseradvice" keyProperty="id" useGeneratedKeys="true">
+        insert into wechat_advice(userid,functionId,type,comment,content,more)
+        values 
+        <foreach collection="list" item="wechatUserAdvice" separator=",">
+            (#{wechatUserAdvice.userid},#{wechatUserAdvice.functionId},
+            #{wechatUserAdvice.type},#{wechatUserAdvice.comment},
+            #{wechatUserAdvice.content},#{wechatUserAdvice.more}
+            )
+        </foreach>
+
+    </insert>
+
+    <insert id="addWechatUsermark" keyProperty="id" useGeneratedKeys="true">
+        insert into wechat_usermark(userid,map,x,y,floor,fid,name)
+        value
+            (#{mark.userid},#{mark.map},
+            #{mark.x},#{mark.y},
+            #{mark.floor},#{mark.fid},
+            #{mark.name})
+    </insert>
+
+    <select id="findUserMark" resultType="com.tgy.rtls.data.entity.park.WeChatUserMark">
+        select * from wechat_usermark where
+         1=1 and
+         userid=#{userid}
+    </select>
+    <select id="findUserInfo" resultType="com.tgy.rtls.data.entity.userinfo.WechatUserInfo">
+        select * from wechat_userinfo where
+         1=1 and
+         userid=#{userid}
+    </select>
+    <update id="updateUserInfo">
+        update wechat_userinfo
+        <set>
+                nickName=#{wechatUserInfo.nickName},
+                avatarUrl=#{wechatUserInfo.avatarUrl}
+        </set>
+        where userid=#{wechatUserInfo.userid}
+    </update>
+
+    <select id="getWechatPosition" resultType="com.tgy.rtls.data.entity.userinfo.WechatUserPosition">
+        select * from wechat_position where userid=#{uid}
+        <if test="map !=null">
+            and  map=#{map}
+        </if>
+        and time between #{start} and #{end}
+    </select>
+
+
+    <select id="getHeatmap" resultType="com.tgy.rtls.data.entity.userinfo.WechatUserPosition">
+        select x,y,floor
+        from wechat_position
+        where 1=1
+        <choose>
+            <when test="userId != null">
+                <if test="map !=null">
+                    and  map=#{map}
+                </if>
+                <if test="start != null and start != '' and end != null and end != ''">
+                    and time between #{start} and #{end}
+                </if>
+            </when>
+            <otherwise>
+                <if test="map !=null">
+                    and map=#{map}
+                </if>
+                <if test="level != null">
+                    and floor=#{level}
+                </if>
+                <if test="start != null and start != '' and end != null and end != ''">
+                    and time between #{start} and #{end}
+                </if>
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

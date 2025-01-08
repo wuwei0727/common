@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.park.floorLock.PlaceUnlockRecordsMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.park.floorLock.PlaceUnlockRecords">
+    <!--@mbg.generated-->
+    <!--@Table place_unlock_records-->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="place_id" jdbcType="INTEGER" property="placeId" />
+    <result column="license_plate" jdbcType="VARCHAR" property="licensePlate" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="mapId" jdbcType="INTEGER" property="mapId" />
+    <result column="mapName" jdbcType="VARCHAR" property="mapName" />
+    <result column="unlock_time" jdbcType="TIMESTAMP" property="unlockTime" />
+    <result column="parkingStatus" jdbcType="VARCHAR" property="parkingStatus" />
+    <result column="company_id" jdbcType="INTEGER" property="companyId" />
+    <result column="company_name" jdbcType="INTEGER" property="companyName" />
+    <result column="create_time" jdbcType="INTEGER" property="createTime" />
+    <result column="update_time" jdbcType="INTEGER" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    <!--@sql select -->
+    p.id,p.place_id,p.place_name,p.license_plate,p.phone,p.user_id,p.mapId,p.unlock_time,fl.floor_lock_state parkingStatus,p.create_time,p.update_time,p.company_id,p.company_name,m.name mapName
+    <!--@sql from place_unlock_records p left join map_2d m on m.id = p.mapId left join parking_company c on c.id = p.company_id left join parking_place pp on pp.id = p.place_id left join floor_lock fl on fl.place = pp.id-->
+  </sql>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.tgy.rtls.data.entity.park.floorLock.PlaceUnlockRecords" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into place_unlock_records
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="placeId != null">
+        place_id,
+      </if>
+      <if test="licensePlate != null and licensePlate != ''">
+        license_plate,
+      </if>
+      <if test="companyId != null">
+        company_id,
+      </if>
+      <if test="companyName != null and companyName != ''">
+        company_name,
+      </if>
+      <if test="phone != null and phone != ''">
+        phone,
+      </if>
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="mapId != null">
+        mapId,
+      </if>
+      <if test="mapName != null and mapName != ''">
+        `map_name`,
+      </if>
+      <if test="unlockTime != null">
+        unlock_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="placeId != null">
+        #{placeId,jdbcType=INTEGER},
+      </if>
+      <if test="licensePlate != null and licensePlate != ''">
+        #{licensePlate,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null and phone != ''">
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="companyId != null">
+        #{companyId},
+      </if>
+      <if test="companyName != null and companyName != ''">
+        #{companyName},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="mapId != null">
+        #{mapId,jdbcType=INTEGER},
+      </if>
+      <if test="mapName != null and mapName != ''">
+        `map_name`,
+      </if>
+      <if test="unlockTime != null">
+        #{unlockTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="parkingStatus != null">
+        #{parkingStatus,jdbcType=OTHER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.tgy.rtls.data.entity.park.floorLock.PlaceUnlockRecords">
+    <!--@mbg.generated-->
+    update place_unlock_records
+    <set>
+      <if test="placeId != null">
+        place_id = #{placeId,jdbcType=INTEGER},
+      </if>
+      <if test="licensePlate != null and licensePlate != ''">
+        license_plate = #{licensePlate,jdbcType=VARCHAR},
+      </if>
+      <if test="companyId != null">
+        company_id=#{companyId},
+      </if>
+      <if test="companyName != null and companyName != ''">
+        company_name=#{companyName},
+      </if>
+      <if test="mapName != null and mapName != ''">
+        map_name=#{mapName},
+      </if>
+      <if test="phone != null and phone != ''">
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="mapId != null">
+        mapId = #{mapId,jdbcType=INTEGER},
+      </if>
+      <if test="unlockTime != null">
+        unlock_time = #{unlockTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <!--$var desc=1-->
+  <select id="getPlaceUnlockRecords" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+    from place_unlock_records p
+        left join map_2d m on m.id = p.mapId left join parking_company c on c.id = p.company_id
+        left join parking_place pp on pp.id = p.place_id left join floor_lock fl on fl.place = pp.id
+    where 1=1 and DATE(unlock_time) = CURDATE()
+    <if test="map != null">
+      and mapId=#{map}
+    </if>
+    <if test="companyId != null and companyId != ''">
+      and company_id=#{companyId}
+    </if>
+    <if test="floorLockState != null">
+      and floor_lock_state=#{floorLockState}
+    </if>
+    <if test="placeName != null and placeName != ''">
+      and place_name like concat('%',#{placeName},'%')
+    </if>
+    <if test="licensePlate != null and licensePlate != ''">
+      and license_plate like concat('%',#{licensePlate},'%')
+    </if>
+    <if test="phone != null and phone != ''">
+      and phone like concat('%',#{phone},'%')
+    </if>
+    <if test="mapids != null and mapids.length != 0">
+      and m.id in
+      <foreach collection="mapids" item="mapId" close=")" open="(" separator=",">
+        #{mapId}
+      </foreach>
+    </if>
+    <if test="desc != null and desc != ''">
+      order by ${desc}
+    </if>
+  </select>
+
+  <select id="getPlaceUnlockRecordsById" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+    from place_unlock_records p
+        left join map_2d m on m.id = p.mapId left join parking_company c on c.id = p.company_id
+        left join parking_place pp on pp.id = p.place_id left join floor_lock fl on fl.place = pp.id
+    where 1=1
+    <if test="id != null">
+      and p.id=#{id}
+    </if>
+  </select>
+</mapper>

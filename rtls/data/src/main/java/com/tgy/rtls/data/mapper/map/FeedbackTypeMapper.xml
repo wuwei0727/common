@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.map.FeedbackTypeMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.map.FeedbackType">
+    <!--@mbg.generated-->
+    <!--@Table feedback_type-->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="type_name" jdbcType="VARCHAR" property="typeName" />
+    <result column="type_code" jdbcType="VARCHAR" property="typeCode" />
+    <result column="sort" jdbcType="INTEGER" property="sort" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, type_name, type_code, sort, `status`
+  </sql>
+</mapper>

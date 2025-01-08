@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+
+<head>
+  <meta charset="UTF-8">
+  <title>运营管理</title>
+  <link rel="stylesheet" href="../css/common/common.css" />
+  <link rel="stylesheet" href="../css/list.css" />
+  <script src="../js/common/jquery-1.8.0.min.js"></script>
+  <script src="../js/common/url.js"></script>
+  <script src="../js/common/common.js"></script>
+  <script src="../js/common/page.js"></script>
+  <script src="../js/operate.js"></script>
+</head>
+
+<body>
+  <div class="contentTop">
+    <span class="contentTitle">运营管理</span>
+    <div class="search">
+
+      <span class="searchBtn" onclick="search()">搜索</span>
+      <!-- <span class="searchBtn resetBtn" onclick="resetSearch()">重置</span> -->
+      <!-- <shiro:hasPermission name="map:add"> -->
+      <!-- <div class="topBtn">
+        <span id="addTheme" onclick="add()">新增</span>
+      </div> -->
+      <!-- </shiro:hasPermission> -->
+    </div>
+  </div>
+  <!-- 信息 -->
+  <div class="wrap">
+    <table class="tab" id="tab">
+      <thead>
+        <tr>
+          <td name="line" class="line">序号</td>
+
+          <td name="placeNavigationTotal">车位导航总数</td>
+          <td name="placeNavigationUseRate">车位导航使用率</td>
+          <td name="platformPlaceUtilizationRate">平台车位利用率</td>
+          <td name="reservationTotal">车位预约总数</td>
+          <td name="reverseCarSearchTotal">反向寻车总数</td>
+          <td name="placeAvailabilityRate">停车场车位空闲率</td>
+
+          <td name="userTotal">用户总数</td>
+          <td name="useFrequency">访问总数</td>
+          <td name="activeUserTotal">活跃用户数</td>
+          <td name="newUsersNumber">新用户数量</td>
+          <!-- <td name="userSearchTotal">用户检索总数</td> -->
+          <!-- <td name="locationShareTotal">位置分享数量</td> -->
+
+          <!-- <td name="perHourNullPlaceNumber">每小时空车位数</td>
+
+          <td name="detectorCount">检测器数量</td>
+          <td name="subCount">信标数量</td>
+          <td name="gatewayCount">网关数量</td>
+
+          <td name="placeUseTotal">车位使用总数</td>
+
+          <td name="placeIdleTotalDuration">车位空闲总时长</td>
+
+          <td name="mapPlaceUtilizationRate">车位利用率前10停车场</td>
+
+          <td name="idlePlaceNumber">空闲车位数量</td>
+
+          <td name="monthlyActiveUsers">活跃用户</td>
+
+          <td name="top10Business">检索前10商家</td> -->
+
+          <td name="operating">操作</td>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="listFooter clearfix">
+      <!-- <label class="seleLabel">
+        <input id="allCheck" onclick="allCheck(this)" type="checkbox" class="tabCheck" name="tabCheck">
+        <span class="seleIcon"></span>全选
+      </label> -->
+      <!-- <shiro:hasPermission name="map:del"> -->
+      <!-- <span class="deleBtn" onclick="showAllDele()">删除</span> -->
+      <!-- </shiro:hasPermission> -->
+      <!-- <div class="page">
+        <span id="total" class="total"></span>
+        <span class="turnPage prev" onclick="prevPage()"></span>
+        <ul class="pageList"></ul>
+        <span class="turnPage next" onclick="nextPage(this)"></span>
+        跳至<input type="text" value="1" class="jumpPage" onkeyup="jumpCurPage(this,event)" />页
+      </div> -->
+    </div>
+  </div>
+  <!-- 提示 -->
+  <div class="tips" id="tip"></div>
+  <!-- 遮罩 -->
+  <div class="mask" id="mask"></div>
+  <!-- 确认提示框 -->
+  <div class="confimPop" id="delePop">
+    <div class="confimPopTop">
+      <span class="popClose" onclick="hidePop('#delePop')"></span>
+    </div>
+    <div class="confimPopInfo">
+      <p class="confimPopTitle">是否删除？</p>
+      <p class="txtOverFlow">名称：<span id="deleTxt"></span></p>
+    </div>
+    <div class="confimPopFooter">
+      <span class="confimPopEnt" onclick="entDele()">确定</span><span class="confimPopCancel"
+        onclick="hidePop('#delePop')">取消</span>
+    </div>
+  </div>
+
+  <div id="operating" class="hidden">
+
+    <!-- <shiro:hasAnyPermissions name="map:edit,map:see"> -->
+    <span class="tabOper" id="editBtn">编辑</span>
+    <!-- </shiro:hasAnyPermissions> -->
+
+    <!-- <shiro:hasPermission name="map:del"> -->
+    <!-- <span class="tabOper deleOpa" id="deleteBtn">删除</span> -->
+    <!-- </shiro:hasPermission> -->
+
+  </div>
+  <iframe id="editFrame" class="frameClass"></iframe>
+
+</body>
+
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>检卡测试</title>
+	<link rel="stylesheet" href="../css/common.css" />
+	<script src="../js/jquery-1.8.0.min.js"></script>
+	<script src="../js/testIndex.js"></script>
+</head>
+<body>
+	<div class="heading">
+		<span class="line"></span>
+		<span class="headingTxt" id="headingTxt"></span>
+	</div>
+	<div class="item">
+		<span class="itemTxt">标签数量：</span>
+		<div class="itemR">
+			<span class="btn lineBlock upload">
+				上传文件
+				<input type="file" id="file" accept=".xls,.xlsx" onchange="upload(this)" class="file" />
+			</span>
+			<span id="fileInfo" class="fileInfo"></span>
+			<span class="lineH" style="margin-left:10px"><a href="../download/标签导入模板.xls">下载模板</a></span>
+		</div>
+	</div>
+	<div class="item">
+		<span class="itemTxt">测试地图：</span>
+		<div class="itemR">
+			<select class="sele" id="map" onchange="switchMap(this)"></select>
+		</div>
+	</div>
+	<div>
+		<span class="itemTxt">测试分站：</span>
+		<div class="itemR">
+			<div>
+				<span id="base" class="lineBlock"></span>
+				<span id="addIcon" class="addIcon hide" onclick="addSele()"></span>
+			</div>
+		</div>
+	</div>
+	<div class="item">
+		<span class="itemTxt">运动模式：</span>
+		<div class="itemR">
+			<div class="lineH">
+				<label>
+					<input onclick="check(this,'checkTime')" type="checkbox" name="finishType" />
+					<span>检测完毕自动停止</span>
+				</label>
+			</div>
+			<div class="lineH">
+				<label>
+					<input onclick="check(this,'finishType')" type="checkbox" name="checkTime" />
+					<span>设定持续时间后自动停止</span>
+				</label>
+				<input type="text" class="input" name="setTime" />
+				<span>秒</span>
+			</div>
+		</div>
+	</div>
+	<div class="tabBox">
+		<div class="item">
+			<span class="btn lineBlock" style="margin-right:10px;" onclick="start()">开始</span>
+			<span class="btn lineBlock" onclick="end()">结束</span>
+		</div>
+		<div class="item">
+			<table class="tab" id="tab">
+				<thead>
+					<tr>
+						<td name="lineNum" class="lineNum">序号</td>
+						<td name="state">测试状态</td>
+						<td name="period">测试时长</td>
+						<td name="bsid">分站ID</td>
+						<td name="currenttotal">检卡数</td>
+						<td name="totaldistinct">检卡总数</td>
+						<td name="total">目标总数</td>
+						<td name="lackpercent">漏读率</td>
+						<td name="start">开始时间</td>
+						<td name="end">结束时间</td>
+						<td name="opa">操作</td>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</div>
+		<div>
+			<table class="tab" id="tab2">
+				<thead>
+					<tr>
+						<td name="lineNum" class="lineNum">序号</td>
+						<td name="tagid">卡ID</td>
+						<td name="bsid">分站ID</td>
+						<td name="time">时间信息</td>
+						<td name="position">位置信息</td>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</div>
+	</div>
+	<!-- 遮罩 -->
+	<div class="mask" id="mask" onclick="hideMissedRead()"></div>
+	<div class="pop" id="pop">
+		<div class="popInfo">
+			<span class="popInfoTxt">漏读标签：</span>
+			<div class="popInfoCon" id="popInfoCon"></div>
+		</div>
+		<div class="popEnter btn" onclick="hideMissedRead()">确定</div>
+	</div>
+	<div class="mask" id="sMask"></div>
+	<!-- start -->
+	<div class="startPop" id="startPop">
+		<div class="startTxt">测试程序启动中</div>
+		<div class="load" style="margin:0 auto">
+			<div class="loadItem item1"></div>
+			<div class="loadItem item2"></div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>测试项目</title>
+	<link rel="stylesheet" href="../css/home.css">
+	<script src="../js/jquery-1.8.0.min.js"></script>
+	<script src="../js/home.js"></script>
+</head>
+<body>
+	<div class="header">
+		<div class="logo">测试项目</div>
+	</div>
+	<div class="spacing"></div>
+	<div class="main">
+		<!-- 左侧菜单 -->
+		<div class="main_left">
+			<div class="menu">
+				<div class="menuItem" id="curMenu">
+					<div class="defaCur" onclick="unfold(this)">
+						<span class="menuIcon"></span>并发量测试<span class="menuUnfold"></span>
+					</div>
+					<ul class="memuList">
+						<li>
+							<a href="javascript:void(0)" data-path='./testIndex.html?type=0' class="curA" onclick="childMenu(this)">单分站测试</a>
+						</li>
+						<li>
+							<a href="javascript:void(0)" data-path='./list.html?type=0' onclick="childMenu(this)">单分站测试记录</a>
+						</li>
+						<li>
+							<a href="javascript:void(0)" data-path='./testIndex.html?type=1' onclick="childMenu(this)">多分站测试</a>
+						</li>
+						<li>
+							<a href="javascript:void(0)" data-path='./list.html?type=1' onclick="childMenu(this)">多分站测试记录</a>
+						</li>
+					</ul>
+				</div>
+				<div class="menuItem">
+					<div class="defaCur" onclick="unfold(this)">
+						<span class="menuIcon"></span>精度测试<span class="menuUnfold"></span>
+					</div>
+					<ul class="memuList hide">
+						<li>
+							<a href="javascript:void(0)" data-path='./testIndex.html?type=2' onclick="childMenu(this)">精度测试</a>
+						</li>
+						<li>
+							<a href="javascript:void(0)" data-path='./list.html?type=2' onclick="childMenu(this)">测试记录</a>
+						</li>
+					</ul>
+				</div>
+				<div class="menuItem">
+					<div class="defaCur" onclick="unfold(this)">
+						<span class="menuIcon"></span>误码率测试<span class="menuUnfold"></span>
+					</div>
+					<ul class="memuList hide">
+						<li>
+							<a href="javascript:void(0)" data-path='./bitErrorRate.html' onclick="childMenu(this)">误码率测试</a>
+						</li>
+						<li>
+							<a href="javascript:void(0)" data-path='./bitErrorRateList.html' onclick="childMenu(this)">测试记录</a>
+						</li>
+					</ul>
+				</div>
+				<div class="menuItem">
+					<div class="defaCur" onclick="unfold(this)">
+						<span class="menuIcon"></span>巡检周期测试<span class="menuUnfold"></span>
+					</div>
+					<ul class="memuList hide">
+						<li>
+							<a href="javascript:void(0)" data-path='./testIndex.html?type=3' onclick="childMenu(this)">巡检周期测试</a>
+						</li>
+						<li>
+							<a href="javascript:void(0)" data-path="./list.html?type=3" onclick="childMenu(this)">测试记录</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<!-- 右侧内容 -->
+		<div class="content" id="content">
+			<iframe src="" id="iframeBox" class="iframeBox" frameborder="0"></iframe>
+		</div>
+	</div>
+</body>
+</html>

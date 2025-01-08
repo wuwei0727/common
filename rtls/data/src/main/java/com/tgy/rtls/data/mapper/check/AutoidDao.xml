@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.check.AutoidDao">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.check.AutoidEntity">
+        <id column="id" property="id" />
+        <result column="rediskey" property="rediskey" />
+        <result column="redisvalue" property="redisvalue" />
+    </resultMap>
+  <cache type="com.tgy.rtls.data.config.RedisCache" >
+        <property name="eviction" value="LRU" />
+        <property name="flushInterval" value="6000000" />
+        <property name="size" value="1024" />
+        <property name="readOnly" value="false" />
+    </cache>
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, rediskey, redisvalue
+    </sql>
+    <select id="getIdByRedisKey" resultType="com.tgy.rtls.data.entity.check.AutoidEntity"  useCache="true">
+        select * from autoid where rediskey=#{rediskey}
+    </select>
+
+</mapper>

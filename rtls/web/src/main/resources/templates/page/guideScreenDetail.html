@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:shiro="http://www.pollix.at/thymeleaf/shiro" xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <meta charset="UTF-8">
+    <title>导引屏设备</title>
+    <link rel="stylesheet" href="../css/common/common.css" />
+    <link rel="stylesheet" href="../css/company.css" />
+    <link rel="stylesheet" href="../fMap/3/toolBarStyle.css" />
+    <script src="../js/common/jquery-1.8.0.min.js"></script>
+    <script src="../js/common/url.js"></script>
+    <script src="../js/common/common.js"></script>
+    <script src="../fMap/3/fengmap.map.min.js"></script>
+    <script src="../fMap/3/fengmap.plugins-mapedit.min.js"></script>
+    <script src="../fMap/3/fengmap.plugin.min.js"></script>
+    <script src="../fMap/3.1.2/fengmap.plugins-compositemarker.min.js"></script>
+    <script src="../js/common/initFmap4.js"></script>
+    <script src="../js/guideScreenDetail.js"></script>
+    <script src="../fMap/3/fengmap.analyser.min.js"></script>
+</head>
+
+<body>
+    <div class="top">
+        <span class="topTitle">导引屏设备 > <span id="titleFlag">新增</span></span>
+        <div class="topBtn">
+            <shiro:hasAnyPermissions name="gsd:add,gsd:edit">
+                <span class="save" onclick="save()">
+                    <i></i>保存
+                </span>
+            </shiro:hasAnyPermissions>
+            <span class="refresh" onclick="reload()">
+                <i></i>刷新
+            </span><span class="back" onclick="back()">
+                <i></i>返回
+            </span>
+        </div>
+    </div>
+    <div class="main">
+        <div class="mainBox clearfix">
+            <div class="clearfix">
+                <div class="mainItem">
+                    <span class="itemTxt"><span class="require">*</span>关联地图：</span>
+                    <div class="batchBox" style="width: 210px;" onclick="switchSele(event)">
+                        <div name="map" class="batchTxt" data-val="">--请选择关联地图--</div>
+                        <div class="batchList" id="mapSelect">
+                            <div data-val="">--请选择关联地图--</div>
+                        </div>
+                    </div>
+                </div>   
+                <div class="mainItem">
+                    <span class="itemTxt"><span class="require">*</span>设备ID：</span>
+                    <input autocomplete="off" placeholder="请输入设备ID" data-reg="^\S+$"
+                        onkeyup="this.value=this.value.replace(/\s/g,'')" type="text" name="deviceId" class="itemInput"
+                        style="width:200px;">
+                </div>
+                <!-- <div class="mainItem">
+                    <span class="itemTxt"><span class="require">*</span>设备IP：</span>
+                    <input autocomplete="off" placeholder="请输入设备IP" data-reg="^\S+$"
+                        onkeyup="this.value=this.value.replace(/\s/g,'')" type="text" name="ip" class="itemInput"
+                        style="width:200px;">
+                </div> -->
+                <div class="mainItem">
+                    <span class="itemTxt">位置名称：</span>
+                    <input autocomplete="off" placeholder="请输入位置名称" data-reg="^\S+$"
+                        onkeyup="this.value=this.value.replace(/\s/g,'')" type="text" name="locationName"
+                        class="itemInput" style="width:200px;">
+                </div>
+                <div class="mainItem">
+                    <div class="recomConLButton">
+                        <span class="noActiveBtn" style="margin-left: 13px;" onclick="selectPoint()">选点</span>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="clearfix"> -->
+               
+                <div class="hide">
+                    <!-- <input readonly type="text" name="fid" class="hide" /> -->
+                    <input readonly type="text" name="x" class="hide" />
+                    <input readonly type="text" name="y" class="hide" />
+                    <input readonly type="text" name="z" class="hide" />
+                    <input readonly type="text" name="floor" class="hide" />
+                </div>
+            <!-- </div> -->
+        </div>
+        <div class="recomContent" style="height: 730px;">
+            <!-- <div class="recomConLMap"> -->
+                <div class="fengmap" id="fengmap" style="position: relative;"></div>
+            <!-- </div> -->
+        </div>
+
+    </div>
+    <!-- 提示 -->
+    <div class="tips" id="tip"></div>
+    <!-- 遮罩 -->
+    <div class="mask" id="mask"></div>
+    <!-- 地图选点 -->
+
+</body>
+
+</html>

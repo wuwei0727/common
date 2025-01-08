@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+
+<head>
+  <meta charset="UTF-8">
+  <title>白名单</title>
+  <link rel="stylesheet" href="../css/common/common.css" />
+  <link rel="stylesheet" href="../css/details.css" />
+  <script src="../js/common/jquery-1.8.0.min.js"></script>
+  <script src="../js/common/url.js"></script>
+  <script src="../js/common/common.js"></script>
+  <script src="../js/whiteListDetail.js"></script>
+</head>
+
+<body>
+  <div class="top">
+    <span class="topTitle">白名单 > <span id="titleFlag">新增</span></span>
+    <div class="topBtn">
+       <shiro:hasAnyPermissions name="wli:add,wli:edit">
+      <span class="save" onclick="save()">
+        <i></i>保存
+      </span>
+       </shiro:hasAnyPermissions>
+      <span class="refresh" onclick="location.reload()">
+        <i></i>刷新
+      </span><span class="back" onclick="back()">
+        <i></i>返回
+      </span>
+    </div>
+  </div>
+  <div class="main">
+    <div class="mainBox clearfix">
+      <div class="mainItemB">
+        <span class="itemTxt">
+          <span class="require">*</span>关联配置：
+        </span>
+        <div class="batchBox" onclick="switchSele(event)">
+          <div name="configId" class="batchTxt" data-val="">--请选择--</div>
+          <div class="batchList" id="mapSelect">
+            <div data-val="">--请选择--</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mainItemB">
+        <span class="itemTxt">
+          <span class="require">*</span>关联车位：
+        </span>
+        <div class="batchBox" onclick="switchSele(event)">
+          <div name="placeId" class="batchTxt" data-val="">--请选择--</div>
+          <div class="batchList" id="placeId">
+            <div data-val="">--请选择先关联配置--</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <!-- 遮罩 -->
+  <div class="mask" id="mask"></div>
+  <!-- 提示 -->
+  <div class="tips" id="tip"></div>
+</body>
+
+</html>

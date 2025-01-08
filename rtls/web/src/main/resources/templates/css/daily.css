@@ -1,0 +1,241 @@
+.wrap{
+    margin: 20px;
+    padding: 20px;
+    background-color: #fff;
+}
+.search{
+	padding-left: 20px;
+}
+.searchItem{
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 8px 16px 0;
+    line-height: 30px;
+}
+.searchInp {
+    width: 190px;
+    height: 30px;
+    border: 1px solid #ECECEC;
+    border-radius: 2px;
+    padding: 0 0 0 8px;
+    font-size: inherit;
+    color: #676767;
+}
+.searchTime{
+	cursor: pointer;
+	background: #fff url(../image/common/seleBg.png) no-repeat center right;
+}
+.batchBox{
+	width: 130px;
+}
+.searchBtn{
+	display: inline-block;
+	padding:0 20px;
+	height: 32px;
+	line-height: 32px;
+	color: #fff;
+	background-color: #5474E8;
+	vertical-align: top;
+	cursor: pointer;
+	user-select: none;
+	border-radius: 2px;
+    margin-bottom: 16px;
+}
+.searchBtn:hover{
+	background-color: #4A60CF;
+}
+.resetBtn {
+    margin-left: 16px;
+}
+.box{
+    border:1px solid #ECECEC;
+    padding:20px;
+}
+.info{
+	margin-bottom: 20px;
+}
+.infoTitle{
+	color: #222222;
+	font-size: 16px;
+	font-weight: bold;
+	padding-left: 10px;
+	margin-bottom: 20px;
+}
+.lineIcon{
+	display: inline-block;
+	vertical-align: top;
+	width: 5px;
+	height: 16px;
+	border-radius: 4px;
+	background-color: #4A60CF;
+	margin-top: 3px;
+	margin-right: 8px;
+}
+.list{
+	overflow: hidden;
+}
+.item{
+	margin-bottom: 20px;
+	float: left;
+	color: #676767;
+}
+.mr2{
+	margin-right: 2%;
+}
+.mr20{
+	margin-right: 20px;
+}
+.itemTop{
+	border:1px solid #ECECEC;
+	border-bottom: none;
+	padding: 0 20px;
+}
+.itemTopTitle{
+	height: 40px;
+	line-height: 40px;
+}
+.details{
+	float: right;
+	cursor: pointer;
+}
+.details:hover{
+	color: #4A60CF;
+}
+.details img{
+	margin-left: 10px;
+	margin-top: 13px;
+}
+.searInfo{
+	padding-bottom: 12px;
+}
+.searInfoItem{
+	display: inline-block;
+	vertical-align: top;
+	width: 130px;
+	margin-right: 20px;
+}
+.itemTab{
+	width: 100%;
+	table-layout: fixed;
+	text-align: center;
+}
+.itemTab tr{
+	height: 88px;
+}
+.itemTab td{
+	border: 1px solid #ECECEC;
+}
+.tdInfo{
+	width: 100%;
+	height: 30px;
+	line-height: 30px;
+	margin-bottom: 10px;
+}
+.tdInfoIcon{
+	float: right;
+	/*width: 40%;*/
+	margin:0 30px 0 10px;
+}
+.tdInfoIcon img{
+	vertical-align: middle;
+}
+.tdInfoL{
+	font-size: 20px;
+	color: #4A60CF;
+	/*margin-right: 55%;*/
+	margin-left: 30px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+.deleBtn {
+    display: inline-block;
+    width: 80px;
+    height: 32px;
+    color: #fff;
+    background-color: #5474E8;
+    border-radius: 2px;
+    cursor: pointer;
+    user-select: none;
+    margin-left: 16px;
+    text-align: center;
+}
+.deleBtn:hover{
+    background-color: #4A60CF;
+}
+.hide{
+	display: none;
+}
+
+/*多级下拉*/
+.multiLevel{
+	display: none;
+    position: absolute;
+    left: -1px;
+    width: 250px;
+    top: 34px;
+    background-color: #fff;
+    border: 1px solid #ececec;
+    -webkit-box-shadow: 0px 0px 2px 1px #ececec;
+    box-shadow: 0px 0px 2px 1px #ececec;
+}
+.multiLevelSear{
+	margin: 20px 0 10px;
+	padding: 0 10px;
+}
+.multiLevelSear input{
+	width: 220px;
+	height: 30px;
+	border:1px solid #ECECEC;
+	padding-left: 8px;
+}
+.multiLevelTop{
+    line-height: 30px;
+    padding: 0 20px;
+}
+.fold{
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 20px;
+    width: 16px;
+    height: 30px;
+    cursor: pointer;
+    background: url(../image/common/next.png) no-repeat center center;
+}
+.unfold{
+    transform: rotate(90deg);
+}
+.multiLevelBox input{
+	width: 14px;
+	height: 14px;
+	margin-top: 8px;
+	margin-right: 5px;
+	cursor: pointer;
+}
+.multiLevelList{
+	max-height: 240px;
+    overflow-y: auto;
+}
+.multiLevelUl{
+	display: none;
+}
+.multiLevelUl li{
+	padding-left: 40px;
+}
+.multiLevelUl li:hover{
+	background-color: #f2f2f2;
+}
+.multiLevelBox input:checked + span{
+	color: #5474E8;
+}
+.checkBtn{
+    height: 30px;
+    line-height: 30px;
+    margin-top: 10px;
+    color: #fff;
+    background-color: #5474E8;
+    text-align: center;
+    border-radius: 2px;
+    cursor: pointer;
+    user-select: none;
+}

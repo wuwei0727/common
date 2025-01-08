@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	<meta charset="UTF-8">
+	<title>蓝牙测试-分析记录</title>
+	<link rel="stylesheet" href="../css/common/common.css">
+	<link rel="stylesheet" href="../css/bluetoothTest.css">
+	<script src="../js/common/jquery-1.8.0.min.js"></script>
+	<script src="../js/common/laydate.js"></script>
+	<script src="../js/common/common.js"></script>
+	<script src="../js/common/page.js"></script>
+	<script src="../js/analysis.js"></script>
+</head>
+<body>
+	<div class="menu">
+		<ul class="menuList">
+			<li class="menuItem">
+				<a href="javascript:void(0)">蓝牙测试</a>
+				<ul class="menuTwo">
+					<li class="menuItem">
+						<a href="original.html">原始记录</a>
+					</li>
+					<li class="menuItem curMenu">
+						<a href="analysis.html">分析记录</a>
+					</li>
+				</ul>
+			</li>
+			<li class="menuItem">
+				<a href="hallTest.html">霍尔测试</a>
+			</li>
+		</ul>
+	</div>
+	<div class="main">
+		<div class="header">
+			<div class="search">
+				<span class="searchItem">
+			 		时间范围选择：<span class="searchTime">
+						<input type="text" id="seleTime" readonly="readonly" placeholder="yyyy-MM-dd HH:mm:ss" lay-key="1">
+					</span>
+				</span><!-- 
+			 --><span class="searchBtn mainBtn" onclick="search(1)">搜索</span>
+			</div>
+		</div>
+		<div class="center">
+			<table class="tab" id="tab">
+				<thead>
+					<tr>
+						<td name="id" class="line">序号</td>
+						<td name="timestamp">时间</td>
+						<td name="gatewaynum">网关</td>
+						<td name="infrarednum">车位检测器</td>
+						<td name="count" >时间戳</td>
+						<td name="state">状态</td>
+						<td name="ot">时间差</td>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+			<div class="listFooter clearfix">
+				<div class="page">
+					<span class="turnPage prev" onclick="prevPage()"></span>
+				 	<ul class="pageList"></ul>
+				 	<span class="turnPage next" onclick="nextPage(this)"></span><!-- 
+				 -->跳至<input type="text" value="1" class="jumpPage" onkeyup="jumpCurPage(this,event)">页
+				</div>
+			</div>
+		</div>
+	</div>	
+	<!-- 遮罩 -->
+	<div id="mask" class="mask"></div>
+	<!-- 单行删除询问框 -->
+	<div class="inquiryBox" id="deleInq">
+		<div class="inquiryBoxTop">
+			<img src="../image/common/close.png" onclick="hidePop('#deleInq')" class="closeBox floatR">
+		</div>
+		<div class="inquiryBoxInfo">
+			是否删除序号为<span class="inquiryBoxTxt" id="deleTxt"></span>的批次？
+		</div>
+		<div class="inquiryBoxFooter">
+			<span class="inquiryEnt" onclick="entDele()">确定</span><span class="inquiryCancel" onclick="hidePop('#deleInq')">取消</span>
+		</div>
+	</div>
+	
+	<div class="pop" id="analysisPop">
+		<div class="popTitle">
+			分析结果
+			<img src="../image/common/close.png" onclick="hidePop('#analysisPop')" class="popCloseIcon floatR" />
+		</div>
+		<div style="border-bottom:1px solid #e5e5e5;padding-bottom: 10px">
+			扫描时间段：<span style="margin-right: 20px" id="scanTime"></span>
+			共<span id="scanDuration"></span>秒
+		</div>
+		<ul class="styleTitle">
+			<li>挂钩</li>
+			<li>卡扣</li>
+			<li>信标</li>
+			<li>PA信标</li>
+		</ul>
+		<div class="addStyle">
+			<div class="addStyleList" id="aHookUp">
+				<div class="showStyleItem">
+					<span class="addStyleTxt">RSSI平均</span>
+					<div class="addStyleFill mL66">
+						<input type="text" name="rssi_avg" readonly value="" />
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<span class="addStyleTxt">RSSI方差</span>
+					<div class="addStyleFill mL66">
+						<input type="text" name="rssi_variance" readonly value="" />
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<span class="addStyleTxt">电压平均</span>
+					<div class="addStyleFill mL66">
+						<input type="text" readonly name="voltage_avg" />
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<span class="addStyleTxt">电压MAX</span>
+					<div class="addStyleFill mL66">
+						<input type="text" readonly name="voltage_max" />
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<span class="addStyleTxt">电压MIN</span>
+					<div class="addStyleFill mL66">
+						<input type="text" readonly name="voltage_min" />
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<span class="addStyleTxt">气压平均</span>
+					<div class="addStyleFill mL66">
+						<input type="text" readonly name="air_pressure_avg" />
+					</div>
+				</div>
+			</div>
+			<div class="addStyleList" id="aBuckle">
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="rssi_avg" />
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="rssi_variance">
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="voltage_avg" >
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="voltage_max" />
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="voltage_min">
+					</div>
+				</div>
+				<div class="showStyleItem" style="text-align: center;">
+					------
+					<!-- 
+					<div class="addStyleFill">
+						<input type="text" readonly name="air_pressure_avg">
+					</div> -->
+				</div>
+			</div>
+			<div class="addStyleList" id="aBeacon" data-index="3">
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="rssi_avg" />
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="rssi_variance">
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="voltage_avg" >
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="voltage_max" />
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="voltage_min">
+					</div>
+				</div>
+				<div class="showStyleItem" style="text-align: center;">------</div>
+			</div>
+			<div class="addStyleList lastAdd" id="aPaBeacon">
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="rssi_avg" />
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="rssi_variance">
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="voltage_avg" >
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="voltage_max" />
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="voltage_min">
+					</div>
+				</div>
+				<div class="showStyleItem">
+					<div class="addStyleFill">
+						<input type="text" readonly name="air_pressure_avg">
+					</div>
+				</div>
+			</div>
+		</div>
+		<div style="height: 220px;overflow-y: auto;margin-top: 10px" onscroll="tabScroll(this)">
+			<table class="tab" id="analysisTab">
+				<thead id="thead">
+					<tr>
+						<td name="line" class="line">序号</td>
+						<td name="bid">ID</td>
+						<td name="subtype_name" style="width: 90px">
+							<div class="downBox">
+								<span id="subtypeTxt">类型</span><span class="downIcon"></span>
+								<div class="downList">
+									<div class="downAll" onclick="seleType(this,'')">全部</div>
+									<ul class="downItem" style="border-right: 1px solid #ececec;width: 79px">
+										<li data-index="11" onclick="seleType(this,'11')">左胯扣</li>
+										<li data-index="12" onclick="seleType(this,'12')">右胯扣</li>
+										<li data-index="13" onclick="seleType(this,'13')">胸扣</li>
+										<li data-index="14" onclick="seleType(this,'14')">左挂钩</li>
+										<li data-index="15" onclick="seleType(this,'15')">右挂钩</li>
+									</ul>
+									<ul class="downItem">
+										<li data-index="2" onclick="seleType(this,'2')">安全信标</li>
+										<li data-index="3" onclick="seleType(this,'3')">A信标</li>
+										<li data-index="4" onclick="seleType(this,'4')">B信标</li>
+										<li data-index="5" onclick="seleType(this,'5')">危险信标</li>
+										<li data-index="6" onclick="seleType(this,'6')">高度信标</li>
+									</ul>
+								</div>
+							</div>
+						</td>
+						<td name="rssi_avg_result">RSSI平均</td>
+						<td name="rssi_variance_result">RSSI方差</td>
+						<td name="voltage_avg_result">电压平均</td>
+						<td name="voltage_max_result">电压MAX</td>
+						<td name="voltage_min_result">电压MIN</td>
+						<td name="air_pressure_avg_result">气压平均</td>
+						<td name="qualifiedNum">合格项</td>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</div>
+	</div>
+	<!-- 提示 -->
+	<div class="tips" id="tip"></div>
+</body>
+</html>

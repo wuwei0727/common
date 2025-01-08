@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.view.UserActiveSelectPlaceMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.view.UserActiveSelectPlace">
+    <!--@mbg.generated-->
+    <!--@Table user_active_select_place-->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="map" jdbcType="VARCHAR" property="map" />
+    <result column="map_name" jdbcType="VARCHAR" property="mapName" />
+    <result column="place" jdbcType="VARCHAR" property="place" />
+    <result column="place_name" jdbcType="VARCHAR" property="placeName" />
+    <result column="addTime" jdbcType="TIMESTAMP" property="addtime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, `map`, map_name, place, place_name, addTime
+  </sql>
+</mapper>

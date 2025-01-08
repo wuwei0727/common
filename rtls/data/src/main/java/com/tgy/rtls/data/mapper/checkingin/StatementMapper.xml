@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.checkingin.StatementMapper">
+    <select id="findByRule" resultType="com.tgy.rtls.data.entity.checkingin.Attendancerule">
+        select *,
+        (select ${name} from status where type='attendance' and typeid=a.type) as typeName
+        from attendancerule a
+        where instanceid=#{instanceid}
+    </select>
+
+    <select id="findByRuleId" resultType="com.tgy.rtls.data.entity.checkingin.Attendancerule">
+        select *
+        from attendancerule
+        where instanceid=#{instanceid} and type=#{type} and enable=1
+    </select>
+
+    <insert id="addRule">
+        insert into attendancerule(type,rule,instanceid)
+        values (1,'5,30',#{instanceid}),
+         (2,'5,30',#{instanceid}),
+         (3,'30,30',#{instanceid})
+    </insert>
+
+    <update id="updateRule">
+        update attendancerule
+        <set>
+            <if test="rule.rule!=null and rule.rule!=''">
+                rule=#{rule.rule},
+            </if>
+            <if test="rule.enable!=null">
+                enable=#{rule.enable},
+            </if>
+        </set>
+        where id=#{rule.id}
+    </update>
+
+    <delete id="delRule">
+        delete from attendancerule
+        where instanceid=#{instanceid}
+    </delete>
+
+    <select id="findByAll" resultType="com.tgy.rtls.data.entity.checkingin.StatementVO">
+        select id,name,
+        (select name from department where department=id)as departmentName
+        from person
+        where instanceid=#{instanceid}
+        <if test="departmentid!=null and departmentid!=''">
+            and department=#{departmentid}
+        </if>
+        <if test="jobid!=null and jobid!=''">
+            and job=#{jobid}
+        </if>
+        <if test="worktypeid!=null and worktypeid!=''">
+            and worktype=#{worktypeid}
+        </if>
+        <if test="classid!=null and classid!=''">
+            and id in
+            (select personid from sys_person_classgroup where classgroupid=#{classid})
+        </if>
+    </select>
+
+    <select id="findByStatement" resultType="com.tgy.rtls.data.entity.checkingin.Statement">
+         SELECT day,
+         (SELECT ${name} FROM status WHERE typeid=s.type AND type=CAST((SELECT system FROM workorder WHERE id=woid)AS CHAR))AS typeName,
+         (SELECT startTime FROM worksystem WHERE woid=s.`woid` AND TYPE=s.`type`)AS startTime,
+         (SELECT endTime FROM worksystem WHERE woid=s.`woid` AND TYPE=s.`type`)AS endTime,
+         (SELECT CONCAT(DATE_FORMAT(MIN(inTime),'%H'),':',DATE_FORMAT(MIN(inTime),'%i')) FROM `incoalrecord`
+         WHERE personid=#{personid} AND CONCAT(YEAR(inTime),MONTH(inTime))=s.`month` AND DAY(inTime)=s.`day`)AS inTime,
+         (select (CASE WHEN outTime is null THEN null
+        ELSE  CONCAT(DATE_FORMAT((outTime),'%H'),':',DATE_FORMAT((outTime),'%i')) END) FROM `incoalrecord`
+         WHERE personid=#{personid} AND CONCAT(YEAR(inTime),MONTH(inTime))=s.`month` AND DAY(inTime)=s.`day` order by inTime desc limit 1  )AS outTime
+         FROM scheduling s
+         WHERE personid=#{personid} AND `month`=#{month}
+         HAVING inTime IS NOT NULL
+    </select>
+</mapper>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.park.floorLock.TimePeriodAdminMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.park.floorLock.TimePeriodAdmin">
+    <!--@mbg.generated-->
+    <!--@Table time_period_admin-->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="mapId" jdbcType="INTEGER" property="mapId" />
+    <result column="map_name" jdbcType="VARCHAR" property="mapName" />
+    <result column="company_id" jdbcType="INTEGER" property="companyId" />
+    <result column="company_name" jdbcType="INTEGER" property="companyName" />
+    <result column="day_of_week" jdbcType="OTHER" property="dayOfWeek" />
+    <result column="start_time" jdbcType="TIME" property="startTime" />
+    <result column="end_time" jdbcType="TIME" property="endTime" />
+<!--    <result column="period_type" jdbcType="OTHER" property="periodType" />-->
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    <!--@sql select -->
+    t.id,t.mapId,t.map_name,t.company_id,t.company_name,t.day_of_week,t.start_time,t.end_time,t.period_type,t.create_time,t.update_time
+    <!--@sql from time_period_admin t left join map_2d m on m.id=t.mapId-->
+  </sql>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.tgy.rtls.data.entity.park.floorLock.TimePeriodAdmin" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into time_period_admin
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="companyId != null">
+        company_id,
+      </if>
+      <if test="companyName != null and companyName != '' != null">
+        company_name,
+      </if>
+      <if test="mapId != null">
+        `mapId`,
+      </if>
+      <if test="mapName != null and mapName != ''">
+        `map_name`,
+      </if>
+      <if test="dayOfWeek != null">
+        day_of_week,
+      </if>
+      <if test="startTime != null">
+        start_time,
+      </if>
+      <if test="endTime != null">
+        end_time,
+      </if>
+      <if test="periodType != null">
+        period_type,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="companyId != null">
+        #{companyId,jdbcType=INTEGER},
+      </if>
+      <if test="companyName != null and companyName != '' != null">
+        #{companyName},
+      </if>
+      <if test="mapId != null">
+        #{mapId,jdbcType=INTEGER},
+      </if>
+      <if test="mapName != null and mapName != ''">
+        #{mapName},
+      </if>
+      <if test="dayOfWeek != null">
+        #{dayOfWeek,jdbcType=OTHER},
+      </if>
+      <if test="startTime != null">
+        #{startTime,jdbcType=TIME},
+      </if>
+      <if test="endTime != null">
+        #{endTime,jdbcType=TIME},
+      </if>
+      <if test="periodType != null">
+        #{periodType,jdbcType=OTHER},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.tgy.rtls.data.entity.park.floorLock.TimePeriodAdmin">
+    <!--@mbg.generated-->
+    update time_period_admin
+    <set>
+      <if test="companyId != null">
+        company_id = #{companyId,jdbcType=INTEGER},
+      </if>
+      <if test="companyName != null and companyName != '' != null">
+        company_name=#{companyName},
+      </if>
+      <if test="mapId != null">
+        `mapId` = #{mapId,jdbcType=INTEGER},
+      </if>
+      <if test="mapName != null and mapName != ''">
+        map_name=#{mapName},
+      </if>
+      <if test="dayOfWeek != null">
+        day_of_week = #{dayOfWeek,jdbcType=OTHER},
+      </if>
+      <if test="startTime != null">
+        start_time = #{startTime,jdbcType=TIME},
+      </if>
+      <if test="endTime != null">
+        end_time = #{endTime,jdbcType=TIME},
+      </if>
+      <if test="periodType != null">
+        period_type = #{periodType,jdbcType=OTHER},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <!--$var desc=1-->
+  <select id="getTimePeriodAdminInfo" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from time_period_admin t
+        left join map_2d m on m.id = t.mapId
+        left join parking_company c on c.id = t.company_id
+    where 1 = 1
+    <if test="map != null">
+      and mapId = #{map}
+    </if>
+    <if test="companyId != null and companyId != ''">
+      and company_id = #{companyId}
+    </if>
+    <if test="dayOfWeek != null and dayOfWeek != ''">
+      and day_of_week = #{dayOfWeek}
+    </if>
+    <if test="mapids != null and mapids.length != 0">
+      and m.id in
+      <foreach collection="mapids" item="mapId" separator="," open="(" close=")">
+        #{mapId}
+      </foreach>
+    </if>
+    <if test="num != null">
+      AND EXISTS (
+        SELECT 1
+        FROM parking_place p
+        JOIN floor_lock fl ON fl.place = p.id
+        WHERE p.company = t.company_id
+        AND fl.device_num = #{num}
+      )
+    </if>
+    <if test="desc != null and desc != ''">
+      order by ${desc}
+    </if>
+<!--    <if test=""></if>-->
+  </select>
+
+  <select id="getTimePeriodAdminInfoById" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List"/>
+      from time_period_admin t
+           left join map_2d m on m.id = t.mapId
+           left join parking_company c on c.id = t.company_id
+      where 1 = 1
+      <if test="id != null">
+          and t.id = #{id}
+      </if>
+  </select>
+</mapper>

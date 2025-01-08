@@ -1,0 +1,36 @@
+.wrap{
+	background-color: #fff;
+	padding: 20px;
+	margin: 20px;
+	color: #656565;
+	overflow:hidden;
+	font-size: 30px;
+	text-align: center;
+}
+.tabTop{
+	width: 100%;
+    table-layout: fixed;
+}
+.tabTop tr{
+	height: 100px;
+}
+.tabTop td{
+    border: 1px solid #e5e5e5;
+}
+.tabNum{
+	display: inline-block;
+	vertical-align: middle;
+	color: #525151;
+	font-size: 40px;
+	margin-left: 8px;
+}
+.unit{
+	vertical-align: sub;
+    font-size: 18px;
+	margin-left: 8px;
+}
+.chart{
+	height: 430px;
+	border: 1px solid #e5e5e5;
+	border-top: none;
+}

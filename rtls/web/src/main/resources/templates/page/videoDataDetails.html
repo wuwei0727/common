@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+
+<head>
+  <meta charset="UTF-8">
+  <title>AI智能摄像头管理</title>
+  <link rel="stylesheet" href="../css/common/common.css" />
+  <link rel="stylesheet" href="../css/company.css" />
+  <link rel="stylesheet" href="../css/details.css" />
+  <link rel="stylesheet" href="../fMap/3/toolBarStyle.css" />
+  <script src="../js/common/jquery-1.8.0.min.js"></script>
+  <script src="../js/common/url.js"></script>
+  <script src="../js/common/common.js"></script>
+  <script src="../fMap/3/fengmap.map.min.js"></script>
+  <script src="../fMap/3/fengmap.plugins-mapedit.min.js"></script>
+  <script src="../fMap/3/fengmap.plugin.min.js"></script>
+  <script src="../fMap/3.1.2/fengmap.plugins-compositemarker.min.js"></script>
+  <script src="../js/common/initFmap5.js"></script>
+  <script src="../js/videoDataDetails.js"></script>
+  <script src="../fMap/3/fengmap.analyser.min.js"></script>
+  <style>
+    .awidth {
+      width: 220px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top">
+    <span class="topTitle">AI智能摄像头管理 > <span id="titleFlag">新增</span></span>
+    <div class="topBtn">
+      <shiro:hasAnyPermissions name="cac:add,cac:edit">
+        <span class="save" onclick="save()">
+          <i></i>保存
+        </span>
+      </shiro:hasAnyPermissions>
+      <span class="refresh" onclick="location.reload()">
+        <i></i>刷新
+      </span><span class="back" onclick="back()">
+        <i></i>返回
+      </span>
+    </div>
+  </div>
+  <div class="main">
+    <div class="clearfix">
+      <div class="mainItem">
+        <span class="itemTxt"><span class="require">*</span>摄像头序列号：</span>
+        <input autocomplete="off" type="text" name="serialNumber" class="itemInput awidth" placeholder="请输入摄像头ID" />
+      </div>
+
+      <div class="mainItem">
+        <span class="itemTxt"><span class="require">*</span>摄像头名称：</span>
+        <input autocomplete="off" type="text" name="name" class="itemInput awidth" placeholder="请输入摄像头名称" />
+      </div>
+
+      <div class="mainItem">
+        <span class="itemTxt"><span class="require">*</span>区域名称：</span>
+        <input autocomplete="off" type="text" name="areaName" class="itemInput awidth" placeholder="请输入区域名称" />
+      </div>
+
+      <div class="mainItem">
+        <span class="itemTxt"><span class="require">*</span>摄像头半径：</span>
+        <input id="r" autocomplete="off" type="number" name="radius" class="itemInput awidth" placeholder="请输入摄像头半径(米)" value="30" />
+      </div>
+
+      <div class="mainItem">
+        <span class="itemTxt">状态：</span>
+        <div class="batchBox awidth" onclick="switchSele(event)">
+          <div name="networkState" class="batchTxt" data-val="">--请选择--</div>
+          <div class="batchList" id="state">
+            <div onclick="seleBatch(this,'0')">离线</div>
+            <div onclick="seleBatch(this,'1')">在线</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mainItem">
+        <span class="itemTxt">
+          <span class="require">*</span>关联地图：
+        </span>
+        <div class="batchBox managWid" onclick="switchSele(event)">
+          <div name="map" class="batchTxt" data-val="">--请选择--</div>
+          <div class="batchList" id="mapSelect">
+            <div data-val="">--请选择关联地图--</div>
+          </div>
+        </div><span class="manag" onclick="selectPoint1()">选点</span>
+      </div>
+      <div class="hide">
+        <input readonly type="text" name="x" class="hide" />
+        <input readonly type="text" name="y" class="hide" />
+        <input readonly type="text" name="floor" class="hide" />
+        <input readonly type="text" name="fid" class="hide" />
+      </div>
+
+    </div>
+
+    <div class="recomContent">
+      <div class="recomContentL">
+        <div class="recomConLButton">
+          <span id="vpolygon" class="noActiveBtn" style="width: 118px;" onclick="drawOpetion1('vpolygon')">绘制摄像头区域</span>
+          <span id="polygon" class="noActiveBtn" style="width: 90px;" onclick="drawOpetion1('polygon')">绘制多边形</span>
+          <span id="edit" class="noActiveBtn" onclick="drawOpetion1('edit')">编辑</span>
+          <span id="del" class="noActiveBtn" onclick="drawOpetion1('del')">删除</span>
+          <span class="recomConLTip">(保存成功的区域不能二次修改，点击【绘制多边形】 >【编辑】 新增区域)</span>
+        </div>
+        <div class="recomConLMap" style="height: 750px;">
+          <div class="fengmap" id="fengmap" style="position: relative;"></div>
+        </div>
+      </div>
+      <div class="recomContentR">
+        <div class="recomContentRT">
+          <span class="recomContentRTIcon"></span>
+          <span class="recomContentRTText">绑定车位</span>
+        </div>
+        <div class="recomContentRC" id="recomPlaceList"></div>
+        <div class="recomContentRB">
+          <div class="recomContentRBL">
+            <span class="seleAllPlaceLabel" onclick="allcheckPlace()">
+              <input type="checkbox" style="display: none;" class="placeAllCheck" />
+              <span class="recomConCheckIcon"></span>
+              <span>全选</span>
+            </span>
+            <span class="delRecomPlace" onclick="delCheckPlace()">删除</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- 提示 -->
+  <div class="tips" id="tip"></div>
+  <!-- 遮罩 -->
+  <div class="mask" id="mask"></div>
+  <!-- 地图选点 -->
+
+</body>
+
+</html>

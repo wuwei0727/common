@@ -1,0 +1,66 @@
+.detail{
+	display: none;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    z-index: 99;
+    width: 460px;
+    transform: translateY(-50%);
+    margin-left: -230px;
+    background-color: #fff;
+    border-radius: 2px;
+    box-shadow: 0 0 8px 6px rgba(0,0,0,.1);
+}
+.detailTop{
+    height: 40px;
+    line-height: 40px;
+    border-radius: 2px 2px 0 0;
+    color: #222222;
+    font-size: 16px;
+    padding: 0 20px;
+    border-bottom: 1px solid #ececec;
+}
+.detailClose{
+    margin-top: 12px;
+    float: right;
+    cursor: pointer;
+}
+.detailCen{
+    margin:0 20px;
+}
+
+.addBox{
+    margin:20px 0;
+}
+.addBox input{
+    width: 310px;
+    height: 30px;
+    padding: 0 0 0 8px;
+    font-size: inherit;
+    color: #222222;
+    border-radius: 2px;
+    border: 1px solid #ececec;
+}
+.managBtn,.managBtnCen{
+    width: 80px;
+    height: 32px;
+    line-height: 32px;
+    color: #fff;
+    background-color: #5474E8;
+    text-align: center;
+    border-radius: 2px;
+    vertical-align: top;
+    cursor: pointer;
+    user-select: none;
+}
+.managBtn{
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 20px;
+}
+.managBtnCen{
+    margin:0 auto;
+}
+.managBtn:hover{
+    background-color: #4A60CF;
+}

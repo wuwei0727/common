@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.park.PlaceVideoDetectionMapper">
+    <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.park.PlaceVideoDetection">
+        <!--@mbg.generated-->
+        <!--@Table place_video_detection-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="map" jdbcType="BIGINT" property="map"/>
+        <result column="status" jdbcType="BIGINT" property="status"/>
+        <result property="serviceStatusTime" column="service_status_time"/>
+        <result column="mapName" jdbcType="BIGINT" property="mapName"/>
+        <result column="ip" jdbcType="VARCHAR" property="ip"/>
+        <result column="photo" jdbcType="VARCHAR" property="photo"/>
+        <result column="photolocal" jdbcType="VARCHAR" property="photolocal"/>
+        <result column="place_Inquire_address" jdbcType="VARCHAR" property="placeInquireAddress"/>
+        <result column="license_Inquire_address" jdbcType="VARCHAR" property="licenseInquireAddress"/>
+        <result column="addTime" jdbcType="TIMESTAMP" property="addTime"/>
+        <result column="updateTime" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        <!--@sql select -->pvd.id,
+                           pvd.`map`,
+                           pvd.ip,
+                           pvd.place_Inquire_address,
+                           pvd.license_Inquire_address,
+                           pvd.addTime,
+                           pvd.photo,
+                           pvd.photolocal,
+                           pvd.updateTime,
+                            pvd.status,
+                            pvd.service_status_time,
+                           m2d.name mapName
+        <!--@sql from place_video_detection pvd
+                    left join map_2d m2d on pvd.map = m2d.id -->
+    </sql>
+
+    <select id="getAllGuideScreenDeviceOrConditionQuery" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from place_video_detection pvd
+                 left join map_2d m2d on pvd.map = m2d.id
+        where 1 = 1
+        <if test="map != null and map != ''">
+            and pvd.map = #{map}
+        </if>
+        <if test="ip != null and ip != ''">
+            and pvd.ip like concat('%', #{ip}, '%')
+        </if>
+        <if test="status!=null and status!=''">
+            and pvd.status = #{status}
+        </if>
+        <if test="placeInquireAddress != null and placeInquireAddress != ''">
+            and pvd.place_Inquire_address like concat('%', #{placeInquireAddress}, '%')
+        </if>
+        <if test="licenseInquireAddress != null and licenseInquireAddress != ''">
+            and pvd.license_Inquire_address like concat('%', #{licenseInquireAddress}, '%')
+        </if>
+        <if test="mapids != null and mapids != ''">
+            and m2d.id in
+            <foreach close=")" collection="mapids" item="mapids" open="(" separator=",">
+                #{mapids}
+            </foreach>
+        </if>
+        group by pvd.id desc
+        <if test="desc != null and desc != ''">
+            order by ${desc}
+        </if>
+    </select>
+
+    <insert id="addPlaceVideoDetection">
+        insert into place_video_detection (map, ip, place_Inquire_address, license_Inquire_address, addTime, updateTime,photo,photolocal,service_status_time)
+        values (#{map}, #{ip}, #{placeInquireAddress}, #{licenseInquireAddress}, #{addTime}, #{updateTime},#{photo},#{photolocal},#{serviceStatusTime});
+    </insert>
+
+    <update id="updatePlaceVideoDetection">
+        update place_video_detection
+        set
+        <if test="map != null">
+            map = #{map},
+        </if>
+        <if test="ip != null and ip != ''">
+            ip = #{ip},
+        </if>
+        <if test="placeInquireAddress != null and placeInquireAddress != ''">
+            place_Inquire_address = #{placeInquireAddress},
+        </if>
+        <if test="licenseInquireAddress != null and licenseInquireAddress != ''">
+            license_Inquire_address = #{licenseInquireAddress},
+        </if>
+        <if test="serviceStatusTime != null">
+            service_status_time=#{serviceStatusTime},
+        </if>
+        photo = #{photo},
+        photolocal = #{photolocal}
+        where id = #{id}
+    </update>
+
+    <delete id="delPlaceVideoDetection">
+        delete
+        from place_video_detection
+        where id = #{id}
+    </delete>
+
+    <select id="getPlaceVideoDetectionById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from place_video_detection pvd
+                 left join map_2d m2d on pvd.map = m2d.id
+        where 1 = 1
+          and pvd.id = #{id}
+    </select>
+
+    <select id="getPlaceVideoDetectiontByMap" resultType="com.tgy.rtls.data.entity.park.PlaceVideoDetection">
+        select map, ip, place_Inquire_address, license_Inquire_address,photo,photolocal,addTime,updateTime
+        from place_video_detection pvd
+        where 1 = 1
+        <if test="map != null and map != ''">
+            and map = #{map}
+        </if>
+        <if test="id != null and id != ''">
+            and id = #{id}
+        </if>
+        <if test="update != null and update != ''">
+            and id != #{update}
+        </if>
+    </select>
+
+    <select id="getAllPlaceByMap" resultType="com.tgy.rtls.data.entity.park.ParkingPlace">
+        select id,name
+        from parking_place
+        where
+        <if test="map != null and map != ''">
+            map = #{map}
+        </if>
+        <if test="placeId != null and placeId != ''">
+            and  id = #{placeId}
+        </if>
+    </select>
+
+    <select id="getAllGuideScreenDeviceTest" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from place_video_detection pvd
+                 left join map_2d m2d on pvd.map = m2d.id
+        where 1 = 1
+        <if test="map != null and map != ''">
+            and pvd.map = #{map}
+        </if>
+    </select>
+
+    <select id="getAllPlaceByMapTest" resultType="com.tgy.rtls.data.entity.park.ParkingPlace">
+        select id,name,map
+        from parking_place
+        where map = #{map}
+    </select>
+
+    <select id="getPlaceByPlaceNamesTest" resultType="com.tgy.rtls.data.entity.park.ParkingPlace">
+        select id,name,x,y,z,map,company,floor,state,fid,addTime
+        from parking_place
+        where 1=1
+        <if test="mapId != null and mapId != ''">
+            and map = #{mapId}
+        </if>
+        <if test="placeName != null and placeName != ''">
+            and name = #{placeName}
+        </if>
+    </select>
+</mapper>

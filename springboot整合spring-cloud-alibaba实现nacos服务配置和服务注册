@@ -1,0 +1,57 @@
+springboot：2.3.12.RELEASE
+父pom加入  
+ <properties>
+        <spring-cloud.version>Hoxton.SR12</spring-cloud.version>
+        <spring-cloud.alibaba>2.2.7.RELEASE</spring-cloud.alibaba>
+        <skipTests>true</skipTests>
+    </properties>
+<!--    <dependencyManagement>-->
+<!--        <dependencies>-->
+<!--            &lt;!&ndash; springCloud &ndash;&gt;-->
+<!--            <dependency>-->
+<!--                <groupId>org.springframework.cloud</groupId>-->
+<!--                <artifactId>spring-cloud-dependencies</artifactId>-->
+<!--                <version>${spring-cloud.version}</version>-->
+<!--                <type>pom</type>-->
+<!--                <scope>import</scope>-->
+<!--            </dependency>-->
+<!--            <dependency>-->
+<!--                <groupId>com.alibaba.cloud</groupId>-->
+<!--                <artifactId>spring-cloud-alibaba-dependencies</artifactId>-->
+<!--                <version>${spring-cloud.alibaba}</version>-->
+<!--                <type>pom</type>-->
+<!--                <scope>import</scope>-->
+<!--            </dependency>-->
+<!--        </dependencies>-->
+<!--    </dependencyManagement>-->
+子pom
+<!--     nacos注册中心 -->
+<!--        <dependency>-->
+<!--            <groupId>com.alibaba.cloud</groupId>-->
+<!--            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>-->
+<!--        </dependency>-->
+<!--       nacos配置中心-->
+<!--        <dependency>-->
+<!--            <groupId>com.alibaba.cloud</groupId>-->
+<!--            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>-->
+<!--        </dependency>-->
+启动类：@EnableDiscoveryClient。
+
+bootstrap.properties：
+spring.application.name=application-localdev
+spring.cloud.nacos.config.username=nacos
+spring.cloud.nacos.config.password=nacos
+spring.cloud.nacos.config.group=DEV_GROUP
+spring.cloud.nacos.server-addr=192.168.1.160:8848
+spring.cloud.nacos.config.server-addr=192.168.1.160:8848
+spring.cloud.nacos.config.file-extension=properties
+spring.cloud.nacos.config.prefix=${spring.application.name}
+spring.cloud.nacos.config.namespace=2a4e26b6-ba9e-4e59-b960-19952630d799
+spring.cloud.nacos.discovery.server-addr=192.168.1.160:8848
+spring.cloud.nacos.discovery.namespace=2a4e26b6-ba9e-4e59-b960-19952630d799
+spring.cloud.nacos.discovery.group=DEV_GROUP
+spring.cloud.nacos.discovery.username=nacos
+spring.cloud.nacos.discovery.password=nacos
+
+在需要刷新的类加入：@RefreshScope
+@Value(value = "${xxx}")读取

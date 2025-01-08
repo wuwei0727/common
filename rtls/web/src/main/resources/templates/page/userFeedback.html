@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+
+<head>
+    <meta charset="UTF-8">
+    <title>用户反馈</title>
+    <link rel="stylesheet" href="../css/common/common.css" />
+    <link rel="stylesheet" href="../css/list.css" />
+    <script src="../js/common/jquery-1.8.0.min.js"></script>
+    <script src="../js/common/url.js"></script>
+    <script src="../js/common/common.js"></script>
+    <script src="../js/common/page.js"></script>
+
+    <script src="../js/userFeedback.js"></script>
+</head>
+
+<body>
+    <div class="contentTop">
+        <span class="contentTitle">用户反馈</span>
+        <div class="search">
+            <div class="searchItem seleBox">
+                关联地图：
+                <div class="batchBox mapWidth" onclick="switchSele(event)">
+                    <div name="map" class="batchTxt" data-val="">--请选择关联地图--</div>
+                    <div class="batchList" id="mapSelect">
+                        <div onclick="seleBatch(this,'')">--请选择关联地图--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="searchItem">
+                车位号：<input type="text" onkeyup="this.value=this.value.replace(/\s/g,'')" name="placeName" id="placeName"
+                    class="searchInp" autocomplete="off" placeholder="请输入车位号" style="width:112px" />
+            </div>
+
+            <div class="searchItem seleBox">
+                类型：
+                <div class="batchBox" onclick="switchSele(event)" style="width: 150px;">
+                    <div name="feedbackType" class="batchTxt" data-val="">--请选择--</div>
+                    <div class="batchList">
+                        <div onclick="seleBatch(this,'')">--请选择--</div>
+                        <div onclick="seleBatch(this,'名称错误')">名称错误</div>
+                        <div onclick="seleBatch(this,'位置错误')">位置错误</div>
+                        <div onclick="seleBatch(this,'状态错误')">状态错误</div>
+                        <div onclick="seleBatch(this,'地点维护')">地点维护</div>
+                        <div onclick="seleBatch(this,'无法通行')">无法通行</div>
+                        <div onclick="seleBatch(this,'其他信息错误')">其他信息错误</div>
+                    </div>
+                </div>
+            </div>
+
+            <span class="searchBtn" onclick="search()">搜索</span>
+            <span class="searchBtn resetBtn" onclick="resetSearch()">重置</span>
+        </div>
+    </div>
+    <!-- 信息 -->
+    <div class="wrap">
+        <table class="tab" id="tab">
+            <thead>
+                <tr>
+                    <td name="line" class="line">序号</td>
+                    <td name="mapName">关联地图</td>
+                    <td name="placeName">车位名称</td>
+                    <td name="feedbackType">反馈类型</td>
+                    <td name="content">反馈内容</td>
+                    <td name="contactInfo">联系方式</td>
+                    <td name="createTime">添加时间</td>
+                    <td name="operating">操作</td>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="listFooter clearfix">
+            <label class="seleLabel">
+                <input id="allCheck" onclick="allCheck(this)" type="checkbox" class="tabCheck" name="tabCheck">
+                <span class="seleIcon"></span>全选
+            </label>
+
+             <shiro:hasPermission name="fb:del">
+            <span class="deleBtn" onclick="showAllDele()">删除</span>
+             </shiro:hasPermission>
+            <div class="page">
+                <span id="total" class="total"></span>
+                <span class="turnPage prev" onclick="prevPage()"></span>
+                <ul class="pageList"></ul>
+                <span class="turnPage next" onclick="nextPage(this)"></span>
+                跳至<input type="text" value="1" class="jumpPage" onkeyup="jumpCurPage(this,event)" />页
+            </div>
+        </div>
+    </div>
+    <!-- 提示 -->
+    <div class="tips" id="tip"></div>
+    <!-- 遮罩 -->
+    <div class="mask" id="mask"></div>
+    <!-- 确认提示框 -->
+    <div class="confimPop" id="delePop">
+        <div class="confimPopTop">
+            <span class="popClose" onclick="hidePop('#delePop')"></span>
+        </div>
+        <div class="confimPopInfo">
+            <p class="confimPopTitle">是否删除？</p>
+            <p class="txtOverFlow">车位名称：<span id="deleTxt"></span></p>
+        </div>
+        <div class="confimPopFooter">
+            <span class="confimPopEnt" onclick="entDele()">确定</span><span class="confimPopCancel"
+                onclick="hidePop('#delePop')">取消</span>
+        </div>
+    </div>
+
+    <div id="operating" class="hidden">
+         <shiro:hasPermission name="fb:del">
+        <span class="tabOper deleOpa" id="deleteBtn">删除</span>
+         </shiro:hasPermission>
+    </div>
+
+</body>
+<script>
+    //回车搜索
+    $("#placeName").keydown(function (event) {
+        if (event.keyCode === 13) {
+            search();
+        }
+    });
+</script>
+
+</html>

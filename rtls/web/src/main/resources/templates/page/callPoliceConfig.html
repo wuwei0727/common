@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+
+<head>
+  <meta charset="UTF-8">
+  <title>报警类型配置</title>
+  <link rel="stylesheet" href="../css/common/common.css" />
+  <link rel="stylesheet" href="../css/list.css" />
+  <script src="../js/common/jquery-1.8.0.min.js"></script>
+  <script src="../js/common/url.js"></script>
+  <script src="../js/common/common.js"></script>
+  <script src="../js/common/page.js"></script>
+  <script src="../fMap/2/fengmap.core.min.js"></script>
+  <script src="../fMap/2/fengmap.control.min.js"></script>
+  <script src="../js/common/initFmap3.js"></script>
+  <script src="../js/callPoliceConfig.js"></script>
+</head>
+
+<body>
+  <div class="contentTop">
+    <span class="contentTitle">报警类型配置</span>
+    <div class="search">
+
+      <div class="searchItem seleBox">
+        设备类别：
+        <div class="batchBox" onclick="switchSele(event)">
+          <div name="deviceName" class="batchTxt" data-val="">全部</div>
+          <div class="batchList" id="deviceNameSelect">
+            <div onclick="seleBatch(this,'')">全部</div>
+            <div onclick="seleBatch(this,'1')">信标/道钉</div>
+            <div onclick="seleBatch(this,'2')">网关</div>
+            <div onclick="seleBatch(this,'3')">车位检测器</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="searchItem seleBox">
+        报警类型：
+        <div class="batchBox" onclick="switchSele(event)">
+          <div name="alarmType" class="batchTxt" data-val="">全部</div>
+          <div class="batchList" id="alarmTypeSelect">
+            <div onclick="seleBatch(this,'')">全部</div>
+            <div onclick="seleBatch(this,'1')">离线报警</div>
+            <div onclick="seleBatch(this,'2')">低电量报警</div>
+            <div onclick="seleBatch(this,'3')">其他故障</div>
+          </div>
+        </div>
+      </div>
+
+
+      <span class="searchBtn" onclick="search()">搜索</span>
+      <span class="searchBtn resetBtn" onclick="resetSearch()">重置</span>
+       <shiro:hasPermission name="atc:add">
+      <div class="topBtn">
+        <span onclick="addCompany()">新增</span>
+      </div>
+       </shiro:hasPermission>
+    </div>
+  </div>
+  <!-- 信息 -->
+  <div class="wrap">
+    <table class="tab" id="tab">
+      <thead>
+        <tr>
+          <td name="line" class="line">序号</td>
+          <td name="deviceName">设备类别</td>
+          <td name="alarmName">报警类型</td>
+          <td name="operating">操作</td>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="listFooter clearfix">
+      <label class="seleLabel">
+        <input id="allCheck" onclick="allCheck(this)" type="checkbox" class="tabCheck" name="tabCheck">
+        <span class="seleIcon"></span>全选</label>
+       <shiro:hasPermission name="atc:del">
+      <span class="deleBtn" onclick="showAllDele()">删除</span>
+       </shiro:hasPermission>
+      <div class="page">
+        <span id="total" class="total"></span>
+        <span class="turnPage prev" onclick="prevPage()"></span>
+        <ul class="pageList"></ul>
+        <span class="turnPage next" onclick="nextPage(this)"></span>
+        跳至<input type="text" value="1" class="jumpPage" onkeyup="jumpCurPage(this,event)" />页
+      </div>
+    </div>
+  </div>
+  <!-- 提示 -->
+  <div class="tips" id="tip"></div>
+  <!-- 遮罩 -->
+  <div class="mask" id="mask"></div>
+  <!-- 确认提示框 -->
+  <div class="confimPop" id="delePop">
+    <div class="confimPopTop">
+      <span class="popClose" onclick="hidePop('#delePop')"></span>
+    </div>
+    <div class="confimPopInfo">
+      <p class="confimPopTitle">确定删除？</p>
+      <p class="txtOverFlow">设备名称：<span id="deleTxt"></span></p>
+    </div>
+    <div class="confimPopFooter">
+      <span class="confimPopEnt" onclick="entDele()">确定</span>
+      <span class="confimPopCancel" onclick="hidePop('#delePop')">取消</span>
+    </div>
+  </div>
+
+
+
+  <div id="operating" class="hidden">
+    <shiro:hasanypermissions name="atc:edit">
+    <span class="tabOper" id="editBtn">编辑</span>
+    </shiro:hasanypermissions>
+
+    <shiro:hasanypermissions name="atc:del">
+    <span class="tabOper deleOpa" id="deleteBtn">删除</span>
+    </shiro:hasanypermissions>
+  </div>
+
+  <iframe id="addFrame" class="frameClass"></iframe>
+  <iframe id="editFrame" class="frameClass"></iframe>
+</body>
+<script>
+  //回车搜索
+  $("#name").keydown(function (event) {
+    if (event.keyCode === 13) {
+      search(); //搜索
+    }
+  });
+</script>
+
+</html>

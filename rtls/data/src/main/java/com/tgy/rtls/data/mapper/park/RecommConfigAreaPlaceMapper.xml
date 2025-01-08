@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.park.RecommConfigAreaPlaceMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.park.RecommConfigAreaPlace">
+    <!--@mbg.generated-->
+    <!--@Table park.recommconfigareaplace-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="areaId" jdbcType="BIGINT" property="areaid" />
+    <result column="placeId" jdbcType="BIGINT" property="placeid" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, areaId, placeId
+  </sql>
+</mapper>

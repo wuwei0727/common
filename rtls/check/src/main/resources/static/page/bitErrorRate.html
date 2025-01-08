@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>误码率测试</title>
+	<link rel="stylesheet" href="../css/common.css" />
+	<script src="../js/jquery-1.8.0.min.js"></script>
+	<script src="../js/bitErrorRate.js"></script>
+</head>
+<body>
+	<div class="heading">
+		<span class="line"></span>
+		<span class="headingTxt">误码率测试</span>
+	</div>
+	<div class="item">
+		<span class="itemTxt">基站编号：</span>
+		<div class="itemR">
+			<input type="text" name="bslist" class="fillInput" />
+		</div>
+	</div>
+	<div class="item">
+		<span class="itemTxt">发送包数：</span>
+		<div class="itemR">
+			<input type="text" name="count" class="fillInput" />
+			<span class="lineH" style="margin-left:10px">（0表示一直发送）</span>
+		</div>
+	</div>
+	<div class="item">
+		<span class="itemTxt">测试间隔：</span>
+		<div class="itemR">
+			<input type="text" name="interval" value="10" class="fillInput" />
+			<span class="lineH" style="margin-left:10px">毫秒</span>
+		</div>
+	</div>
+	<div class="tabBox">
+		<div class="item">
+			<span class="btn lineBlock" style="margin-right:10px;" onclick="start()">开始</span>
+			<span class="btn lineBlock" onclick="end()">结束</span>
+		</div>
+		<div class="item">
+			<table class="tab" id="tab">
+				<thead>
+					<tr>
+						<td name="lineNum" class="lineNum">序号</td>
+						<td name="sendnum">已发数据包</td>
+						<td name="receivenum">返回数据包</td>
+						<td name="errornum">错误数据包</td>
+						<td name="errorrate">误码率</td>
+						<td name="lost">丢包数</td>
+						<td name="lostrate">丢包率</td>
+						<td name="start">开始时间</td>
+						<td name="end">结束时间</td>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</div>
+	</div>
+	<!-- loading -->
+	<div class="loadBox" id="loadBox">
+		<div class="load">
+			<div class="loadItem item1"></div>
+			<div class="loadItem item2"></div>
+		</div>
+	</div>
+</body>
+</html>

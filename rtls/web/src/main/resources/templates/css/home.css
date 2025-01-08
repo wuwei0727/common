@@ -1,0 +1,724 @@
+html,
+body,
+div,
+span,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+a,
+em,
+img,
+i,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+table,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+}
+
+ul {
+    list-style: none;
+}
+
+img {
+    vertical-align: top;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+body {
+    font-family: Microsoft YaHei;
+    background-color: #ECECEC;
+    font-size: 14px;
+}
+
+.txtOverFlow {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/*header*/
+.header {
+    position: fixed;
+    width: 100%;
+    z-index: 1;
+    line-height: 60px;
+    height: 60px;
+    background-color: #4A60CF;
+    /*background:-webkit-linear-gradient(left, #004EA2, #26AFC3);
+    background:-o-linear-gradient(left, #004EA2, #26AFC3);
+    background:linear-gradient(to right,, #004EA2, #26AFC3);*/
+}
+
+.logo {
+    float: left;
+    font-size: 24px;
+    text-align: center;
+    color: #fff;
+    margin-left: 24px;
+}
+
+.logo img {
+    margin-right: 6px;
+    margin-top: 19px;
+}
+
+.headerRig {
+    float: right;
+    margin-right: 40px;
+    padding-right: 16px;
+}
+
+.navBox {
+    margin: 0 400px 0 340px;
+    overflow: hidden;
+    color: #D8D8D8;
+    font-size: 16px;
+    position: relative;
+    left: 0;
+    top: 0;
+}
+
+.nav {
+    float: left;
+    text-align: center;
+}
+
+.nav li {
+    float: left;
+    width: 90px;
+    padding: 0 10px;
+}
+
+.curNav,
+.nav li:hover {
+    color: #FFFFFF;
+}
+
+.slide {
+    position: absolute;
+    left: 10px;
+    bottom: 0;
+    width: 90px;
+    height: 4px;
+    transition: left 0.5s;
+    background-color: #fff;
+}
+
+.user {
+    margin-right: 48px;
+    color: #fff;
+}
+
+.notice {
+    margin-right: 48px;
+    position: relative;
+    left: 0;
+    top: 0;
+    font-size: 0;
+    display: inline-block;
+    vertical-align: top;
+    /*width: 24px;*/
+    height: 100%;
+}
+
+.noticeNum {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    font-size: 12px;
+    text-align: center;
+    color: #fff;
+    background-color: #FF5C62;
+    border-radius: 50%;
+    cursor: pointer;
+
+    display: none;
+}
+
+.notice img,
+.exit {
+    margin-top: 17px;
+    height: 26px;
+    cursor: pointer;
+}
+
+.spacing {
+    width: 100%;
+    height: 60px;
+}
+
+.iframeBox {
+    width: 100%;
+}
+
+.main_left {
+    overflow: hidden;
+    width: 220px;
+    position: fixed;
+    left: 0;
+    top: 60px;
+    bottom: 0;
+    background-color: #FBFBFB;
+    font-size: 15px;
+    z-index: 1;
+}
+
+.menu {
+    height: 100%;
+    width: 240px;
+    overflow-y: scroll;
+    color: #676767;
+}
+
+.menuIcon {
+    display: inline-block;
+    vertical-align: top;
+    width: 16px;
+    height: 16px;
+    background-image: url(../image/common/menuSprite.png);
+    margin: 16px 16px 0 24px;
+}
+
+.floorLockIcon {
+    background-image: url(../image/common/floorLock-default.png);
+}
+
+.barrierIcon {
+    background-image: url(../image/common/barrier-default.png);
+}
+
+.carBitMenuIcon {
+    display: inline-block;
+    width: 15px;
+    height: 18px;
+    background-image: url(../image/common/carBit-default.png);
+    vertical-align: top;
+    margin: 16px 16px 0 24px;
+}
+
+.vipPlaceMenuIcon {
+    display: inline-block;
+    width: 16px;
+    height: 14px;
+    background-image: url(../image/common/vipPlace-default.png);
+    vertical-align: top;
+    margin: 16px 16px 0 24px;
+}
+
+.vipAreaMenuIcon {
+    display: inline-block;
+    width: 14px;
+    height: 16px;
+    background-image: url(../image/common/vipArea-default.png);
+    vertical-align: top;
+    margin: 16px 16px 0 24px;
+}
+
+.placeVideoMenuIcon {
+    display: inline-block;
+    width: 16px;
+    height: 14px;
+    background-image: url(../image/common/placeVideo-default.png);
+    vertical-align: top;
+    margin: 16px 16px 0 24px;
+}
+
+.recommendMenuIcon {
+    display: inline-block;
+    width: 16px;
+    height: 14px;
+    background-image: url(../image/common/recommendMenuIcon-default.png);
+    vertical-align: top;
+    margin: 16px 16px 0 24px;
+}
+
+.guideScreenMenuIcon {
+    display: inline-block;
+    width: 16px;
+    height: 10px;
+    background-image: url(../image/common/guideScreen-default.png);
+    vertical-align: top;
+    margin: 20px 16px 0 24px;
+}
+
+.displayScreenMenuIcon {
+    display: inline-block;
+    vertical-align: top;
+    width: 16px;
+    height: 16px;
+    background-image: url(../image/common/displayScreen-default.png);
+    margin: 16px 16px 0 24px;
+}
+
+.businessMenuIcon {
+    display: inline-block;
+    width: 15px;
+    height: 17px;
+    background-image: url(../image/common/business.png);
+    vertical-align: top;
+    margin: 16px 16px 0 24px;
+}
+
+.menuIconRealTime {
+    display: inline-block;
+    vertical-align: top;
+    width: 16px;
+    height: 16px;
+    background-image: url(../image/common/realTimeData-default.png);
+    margin: 16px 16px 0 24px;
+}
+
+.menuIconGateway {
+    display: inline-block;
+    vertical-align: top;
+    width: 16px;
+    height: 16px;
+    background-image: url(../image/common/gateway-default.png);
+    margin: 16px 16px 0 24px;
+}
+
+.menuIconMap {
+    display: inline-block;
+    vertical-align: top;
+    width: 16px;
+    height: 17px;
+    background-image: url(../image/common/mapAdmin-default.png);
+    margin: 16px 16px 0 24px;
+}
+
+.menuIconCom {
+    display: inline-block;
+    width: 16px;
+    height: 14px;
+    background-image: url(../image/common/companyAdmin-default.png);
+    vertical-align: top;
+    margin: 16px 16px 0 24px;
+}
+
+.menuIconElevator {
+    display: inline-block;
+    width: 16px;
+    height: 18px;
+    background-image: url(../image/common/elevator-default.png);
+    vertical-align: top;
+    margin: 16px 16px 0 24px;
+}
+
+.menuIcon1 {
+    display: inline-block;
+    vertical-align: top;
+    width: 16px;
+    height: 16px;
+    background-image: url(../image/common/garageEntrance-default.png);
+    margin: 16px 16px 0 24px;
+}
+
+.mapPathLabelsMenuIcon {
+    display: inline-block;
+    vertical-align: top;
+    width: 15px;
+    height: 16px;
+    background-image: url(../image/common/mapPathLabeling-default.png);
+    margin: 16px 16px 0 24px;
+}
+
+.menuIconUserAdmin {
+    display: inline-block;
+    vertical-align: top;
+    width: 16px;
+    height: 16px;
+    background-image: url(../image/common/mobileUserAdmin-default.png);
+    margin: 16px 16px 0 24px;
+}
+
+.loginLogMenuIcon {
+    display: inline-block;
+    vertical-align: top;
+    width: 16px;
+    height: 16px;
+    background-image: url(../image/common/loginLog-default.png);
+    margin: 16px 16px 0 24px;
+}
+
+.useIcon {
+    background-position-y: -16px;
+}
+
+.chargingIcon {
+    background-position-y: -48px;
+}
+
+.businessIcon {
+    background-position-y: -128px;
+}
+
+.companyIcon {
+    background-position-y: -71px;
+}
+
+.violationIcon {
+    background-position-y: -96px;
+}
+
+.clockInIcon {
+    background-position-y: -112px;
+}
+
+.baseIcon {
+    background-position-y: -144px;
+}
+
+.magneticIcon {
+    background-position-y: -160px;
+}
+
+.mapIcon {
+    background-position-y: -176px;
+}
+
+.memberIcon {
+    background-position-y: -192px;
+}
+
+.permissIcon {
+    background-position-y: -208px;
+}
+
+.loginIcon {
+    background-position-y: -224px;
+}
+
+.backupIcon {
+    background-position-y: -240px;
+}
+
+.memuList li a {
+    display: block;
+    height: 48px;
+    line-height: 48px;
+    padding-left: 56px;
+    /*padding-left: 72px;*/
+}
+
+.menuItem {
+    margin-bottom: 2px;
+}
+
+#curMenu .curA,
+#curMenu .defaCur {
+    color: #4A60CF;
+}
+
+.memuList li:hover,
+.defaCur:hover {
+    color: #4A60CF;
+    background-color: #F4F4F4;
+}
+
+#curMenu {
+    background-color: #F4F4F4;
+}
+
+#curMenu .menuIcon {
+    background-position-x: 16px;
+}
+
+#curMenu .menuIconRealTime {
+    background-position-y: 28px;
+    background-image: url(../image/common/realTimeData-selected.png);
+}
+
+#curMenu .carBitMenuIcon {
+    background-image: url(../image/common/carBit-selected.png);
+}
+
+#curMenu .vipPlaceMenuIcon {
+    background-image: url(../image/common/vipPlace-selected.png);
+}
+
+#curMenu .placeVideoMenuIcon {
+    background-image: url(../image/common/placeVideo-selected.png);
+}
+
+#curMenu .vipAreaMenuIcon {
+    background-image: url(../image/common/vipArea-selected.png);
+}
+
+#curMenu .recommendMenuIcon {
+    background-image: url(../image/common/recommend-selected.png);
+}
+
+#curMenu .guideScreenMenuIcon {
+    background-image: url(../image/common/guideScreen-selected.png);
+}
+
+#curMenu .displayScreenMenuIcon {
+    background-image: url(../image/common/displayScreen-selected.png);
+}
+
+#curMenu .menuIcon1 {
+    background-image: url(../image/common/garageEntrance-selected.png);
+}
+
+#curMenu .mapPathLabelsMenuIcon {
+    background-image: url(../image/common/mapPathLabeling-selected.png);
+}
+
+#curMenu .menuIconCom {
+    background-image: url(../image/common/companyAdmin-selected.png);
+}
+
+#curMenu .menuIconElevator {
+    background-image: url(../image/common/elevator-selected.png);
+}
+
+#curMenu .menuIconGateway {
+    background-image: url(../image/common/gateway-selected.png);
+}
+
+#curMenu .menuIconMap {
+    background-image: url(../image/common/mapAdmin-selected.png);
+}
+
+#curMenu .menuIconUserAdmin {
+    background-image: url(../image/common/mobileUserAdmin-selected.png);
+}
+
+#curMenu .loginLogMenuIcon {
+    background-image: url(../image/common/loginLog-selected.png);
+}
+
+#curMenu .floorLockIcon {
+    background-image: url(../image/common/floorLock-selected.png);
+}
+
+#curMenu .barrierIcon {
+    background-image: url(../image/common/barrier-selected.png);
+}
+
+#curMenu .menuUnfold {
+    transform: rotate(90deg);
+}
+
+.defaCur {
+    height: 48px;
+    line-height: 48px;
+    cursor: pointer;
+    color: #484848;
+}
+
+.menuUnfold {
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 20px;
+    width: 16px;
+    height: 48px;
+    background: url(../image/common/next.png) no-repeat center center;
+}
+
+.content {
+    margin-left: 220px;
+    font-size: 0;
+}
+
+.hide {
+    display: none;
+}
+
+/*提示*/
+.tips {
+    position: fixed;
+    padding: 6px 16px;
+    background-color: #696969;
+    color: #fff;
+    border-radius: 2px;
+    left: 50%;
+    top: -30px;
+    transform: translateX(-50%);
+    z-index: 999;
+    transition: top 0.4s;
+}
+
+.logo1 {
+    float: left;
+    position: relative;
+    left: 12px;
+    top: 12px;
+}
+
+.showNoticeBox {
+    display: none;
+    width: 400px;
+    height: calc(100vh - 80px);
+    position: absolute;
+    top: 65px;
+    left: -280px;
+    z-index: 99;
+    background-color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 0 5px #666;
+    overflow: hidden;
+
+    cursor: pointer;
+}
+
+.allNoticeH {
+    width: 100%;
+    height: 50px;
+    background-color: #416BCD;
+    font-size: 18px;
+    font-weight: 400;
+    color: #fff;
+    padding: 0 20px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.allNHtext {
+    width: 100%;
+    height: 100%;
+    line-height: 50px;
+}
+
+.allNHicon {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translate(0, -50%);
+    z-index: 2;
+}
+
+.allNHicon::after,
+.allNHicon::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    width: 25px;
+    height: 3px;
+    border-radius: 3px;
+    background: #fff;
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+}
+
+.allNHicon::before {
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+}
+
+.showNoticeBox ::-webkit-scrollbar {
+    width: 0px;
+}
+
+.showNoticeList {
+    width: 100%;
+    height: calc(100% - 90px);
+    overflow: auto;
+}
+
+/* 报警样式 */
+.cp_list_item {
+    font-size: 16px;
+    color: #34485B;
+    width: 100%;
+    line-height: 30px;
+    border-bottom: 1px solid #BDC9D1;
+    padding: 10px 20px;
+    box-sizing: border-box;
+}
+
+.cp_list_item .big {
+    font-weight: bold;
+}
+
+.cp_list_item_top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.cp_top_name {
+    flex: 1;
+    flex-shrink: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-break: break-all;
+    white-space: nowrap;
+}
+
+.cp_top_priority1 {
+    width: 14px;
+    height: 14px;
+    text-align: center;
+    line-height: 14px;
+    border-radius: 20px;
+    background-color: #FF0000;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.cp_top_priority2 {
+    width: 14px;
+    height: 14px;
+    text-align: center;
+    line-height: 14px;
+    border-radius: 20px;
+    background-color: yellow;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.cp_bottom_state {
+    width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-break: break-all;
+    white-space: nowrap;
+}
+
+.seeMoreNotice {
+    width: 100%;
+    height: 35px;
+    line-height: 35px;
+    color: #4A60CF;
+    text-align: center;
+    font-size: 14px;
+    border-top: 1px solid #BDC9D1;
+}
+
+.nolistData {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+}

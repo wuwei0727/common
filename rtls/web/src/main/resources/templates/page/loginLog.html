@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	<meta charset="UTF-8">
+	<title>登录日志</title>
+	<link rel="stylesheet" href="../css/common/common.css" />
+	<link rel="stylesheet" href="../css/jedate/jedate.css" />
+	<link rel="stylesheet" href="../css/list.css" />
+	<script src="../js/common/jquery-1.8.0.min.js"></script>
+	<script src="../js/common/url.js"></script>
+	<script src="../js/common/jedate.min.js"></script>
+	<script src="../js/common/common.js"></script>
+	<script src="../js/common/page.js"></script>
+	<script src="../js/loginLog.js"></script>
+</head>
+<body>
+	<div class="contentTop">
+		<span class="contentTitle">登录日志</span>
+		<div class="search">
+			<div class="searchItem">
+				账号：<input type="text" autocomplete="off" name="phone" class="searchInp" placeholder="请输入账号" />
+			</div>
+			<div class="searchItem">
+				时间范围：<input id="timeDate" autocomplete="off" readonly="readonly" style="width:200px;" type="text" class="searchInp searchTime" placeholder="请选择开始时间和结束时间" />
+			</div>
+			<span class="searchBtn" onclick="search()">搜索</span>
+		 	<span class="searchBtn resetBtn" onclick="pageReset()">重置</span>
+		</div>
+	</div>
+	<!-- 信息 -->
+	<div class="wrap">
+		<table class="tab" id="tab">
+			<thead>
+				<tr>
+					<td name="line" class="line">序号</td>
+					<td name="ip">登录IP</td>
+					<td name="address">登录地址</td>
+					<td name="phone">登陆账号</td>
+					<td name="addTime">登录时间 </td>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+		<div class="listFooter clearfix">
+			<div class="page">
+				<span id="total" class="total"></span>
+				<span class="turnPage prev" onclick="prevPage()"></span>
+				<ul class="pageList"></ul>
+				<span class="turnPage next" onclick="nextPage(this)"></span>
+				跳至<input type="text" value="1" class="jumpPage" onkeyup="jumpCurPage(this,event)" />页
+			</div>
+		</div>
+	</div>
+	<!-- 提示 -->
+	<div class="tips" id="tip"></div>
+	<!-- 遮罩 -->
+	<div class="mask" id="mask"></div>
+</body>
+</html>

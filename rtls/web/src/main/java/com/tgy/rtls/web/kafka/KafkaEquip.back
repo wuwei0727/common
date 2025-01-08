@@ -1,0 +1,92 @@
+package com.tgy.rtls.web.kafka;
+
+import com.tgy.rtls.data.common.NullUtils;
+import com.tgy.rtls.data.entity.equip.Tag;
+import com.tgy.rtls.data.service.common.RedisService;
+import com.tgy.rtls.data.service.equip.SubService;
+import com.tgy.rtls.data.service.equip.TagService;
+import com.tgy.rtls.data.service.lock.impl.RedissonDistributedLocker;
+import com.tgy.rtls.data.service.user.InstanceService;
+import com.tgy.rtls.data.service.user.PersonService;
+import net.sf.json.JSONObject;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.text.SimpleDateFormat;
+import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+
+@Service
+public class KafkaEquip {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    private PersonService personService;
+    @Autowired
+    private TagService tagService;
+    @Autowired
+    private RedisService redisService;
+    @Autowired
+    private InstanceService instanceService;
+    @Autowired
+    private SubService subService;
+    @Autowired
+    Executor scheduledExecutorService;
+  /*  private ScheduledExecutorService scheduledExecutorService= Executors.newScheduledThreadPool(5);*/
+    @Autowired
+    private RedissonDistributedLocker redissonDistributedLocker;
+    private double batter=0.15;//标签电压变化临界值
+    /*
+     * 传感数据接收
+     * */
+   // @KafkaListener(topics = {KafukaTopics.TAG_SENSOR})
+    public void tagsensor(ConsumerRecord<?, ?> record) {
+        scheduledExecutorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Optional<?> kafkaMessage = Optional.ofNullable(record.value());
+                    if (kafkaMessage.isPresent()) {
+                        Object message = kafkaMessage.get();
+                         logger.info("------------------ 接收到标签传感器数据 =" + message);
+                        JSONObject json = JSONObject.fromObject(message);
+                        String tagid = json.getString("tagid");
+                        double power = json.getDouble("power");//电量
+                        double temper = json.getDouble("temper");//温度
+                        int broken = json.getInt("broken");//破拆 0正常 1破拆
+                        int moveState = json.getInt("moveState");//运动状态 0静止 1运动
+                        int heart = json.getInt("heart");//0心率
+                        int sos = json.getInt("sos");//0不报警 1报警
+                        long time=json.getLong("time");
+                        //1.判断标签是否属于当前项目-->通过识别码判断
+                        //修改标签电压信息
+                        redissonDistributedLocker.lock("sensor"+tagid, TimeUnit.SECONDS,5);
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        Tag tag=tagService.findByNum(tagid);
+                        if (!NullUtils.isEmpty(tag)) {
+                            if (NullUtils.isEmpty(tag.getBatteryVolt())) {
+                                //修改电压信息
+                                tagService.updateTagBatteryTime(tagid,power,dateFormat.format(time));
+                            }else {
+                                //如果电压变化超过了临界值就修改
+                                boolean result=Math.abs(Double.parseDouble(tag.getBatteryVolt())-power)>=batter;
+                                if (result){
+                                    tagService.updateTagBatteryTime(tagid,power,dateFormat.format(time));
+                                }
+                            }
+                        }
+                        redissonDistributedLocker.unlock("sensor"+tagid);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+
+}

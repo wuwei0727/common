@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.type.DepartmentMapper">
+   <select id="findByAll" resultType="com.tgy.rtls.data.entity.type.Department">
+        select *
+        from department
+        where instanceid=#{instanceid}
+    </select>
+
+    <select id="findById" resultType="com.tgy.rtls.data.entity.type.Department">
+        select *
+        from department
+        where id=#{id}
+    </select>
+
+    <select id="findByName" resultType="com.tgy.rtls.data.entity.type.Department">
+        select *
+        from department
+        where instanceid=#{instanceid} and name=#{name}
+    </select>
+
+    <insert id="addDepartment" useGeneratedKeys="true" keyProperty="id">
+        insert into department(name,worksystem,instanceid)
+        value (#{department.name},#{department.worksystem},#{department.instanceid})
+    </insert>
+
+    <update id="updateDepartment">
+        update department
+        <set>
+            <if test="department.name!=null and department.name!=''">
+                name=#{department.name},
+            </if>
+            <if test="department.worksystem!=null and department.worksystem!=''">
+                worksystem=#{department.worksystem},
+            </if>
+        </set>
+        where id=#{department.id}
+    </update>
+
+    <delete id="delDepartment">
+        delete from department
+        where id in
+        <foreach collection="ids" separator="," close=")" open="(" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="delDepartmentInstance">
+        delete from department
+        where instanceid=#{instanceid}
+    </delete>
+</mapper>

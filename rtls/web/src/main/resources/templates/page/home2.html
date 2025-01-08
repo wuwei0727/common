@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html  xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>易PARK智慧停车</title>
+    <link rel="shortcut icon" href="../image/titleIcon.ico">
+    <link rel="stylesheet" href="../css/home.css">
+    <script src="../js/common/jquery-1.8.0.min.js"></script>
+    <script src="../js/common/url.js"></script>
+    <script src="../js/common/page.js"></script>
+    <script src="../js/common/common.js"></script>
+    <script src="../js/home.js"></script>
+</head>
+<body>
+<div class="header">
+    <!--用于连接websocket-->
+    <span id="websocket" hidden>
+			<shiro:authenticated><!-- 登录之后-->
+				<shiro:principal property="uid"/> <!--显示用户身份名称-->
+			</shiro:authenticated>
+    </span>
+    <div>
+        <img  src="../image/common/PARKHome.png" class="logo1" alt="logo"/>
+    </div>
+    <div class="headerRig">
+			<span class="user">
+				<shiro:authenticated><!-- 登录之后-->
+					<shiro:principal property="membername"/><!--显示用户身份中的属性值-->
+				</shiro:authenticated>
+			</span>
+        <!-- 通知 -->
+        <div class="notice">
+            <div onclick="notice(event)">
+                <img src="../image/common/notice.png" />
+                <span class="noticeNum" id="noticeNum">0</span>
+            </div>
+
+            <div class="showNoticeBox" id="showNoticeBox">
+                <div class="allNoticeH">
+                    <div class="allNHtext">全部消息</div>
+                    <div class="allNHicon" onclick="notice(event)"></div>
+                </div>
+                <div class="showNoticeList" id="showNoticeList"></div>
+                <div class="seeMoreNotice" onclick="seeMoreData()">查看更多</div>
+            </div>
+        </div>
+
+        <img class="exit" src="../image/common/exit.png" onclick="exit()"/>
+    </div>
+    <div class="navBox">
+        <ul class="nav">
+            <li class="curNav" id="dataCenterNav"  onclick="switchNav(this,'dataCenter',0)">
+                <a href="javascript:void(0)">数据中心</a>
+            </li>
+            <shiro:hasAnyPermissions name="pak:add,pak:del,pak:edit,pak:see,vps:add,vps:del,vps:edit,vps:see,vaa:add,vaa:del,vaa:edit,vaa:see,pvd:add,pvd:del,pvd:edit,pvd:see,rcg:add,rcg:del,rcg:edit,rcg:see,pet:add,clc:add,clc:del,clc:edit,clc:see,pet:del,pet:edit,pet:see,mpl:add,mpl:del,mpl:edit,mpl:see,cpy:add,cpy:del,cpy:edit,cpy:see,peb:add,peb:del,peb:edit,peb:see,mp:add,mp:del,mp:edit,mp:see,cp:add,cp:del,cp:edit,cp:see,ucm:add,ucm:del,ucm:edit,ucm:see,plt:add,plt:del,plt:edit,plt:see">
+                <li id="parkingManagNav"  onclick="switchNav(this,'parkingManag',1)">
+                    <a href="javascript:void(0)">车场管理</a>
+                </li>
+            </shiro:hasAnyPermissions>
+
+            <shiro:hasAnyPermissions name="bss:add,bss:del,bss:edit,bss:see,sjt:add,sjt:del,sjt:edit,sjt:see,sqa:add,sqa:del,sqa:edit,sqa:see,po:add,po:del,po:edit,po:see,pqc:add,pqc:del,pqc:edit,pqc:see">
+                <li id="businessManagNav"  onclick="switchNav(this,'businessManag',2)">
+                    <a href="javascript:void(0)">商家管理</a>
+                </li>
+            </shiro:hasAnyPermissions>
+
+            <shiro:hasAnyPermissions name="sub:add,sub:del,sub:edit,sub:see,gy:add,gy:del,gy:edit,gy:see,ir:add,ir:del,ir:edit,ir:see,fk:add,fk:del,fk:edit,fk:see,fk:call,flc:add,flc:del,flc:edit,flc:see,ba:add,ba:del,ba:edit,ba:see,cac:add,cac:del,cac:edit,cac:see,gsd:add,gsd:del,gsd:edit,gsd:see,sg:add,sg:del,sg:edit,sg:see,map:add,map:del,map:edit,map:see,tp:add,tp:del,tp:edit,tp:see,pur:add,pur:del,pur:edit,pur:see">
+
+                <li id="deviceManagNav"  onclick="switchNav(this,'deviceManag',3)">
+                    <a href="javascript:void(0)">设备管理</a>
+                </li>
+            </shiro:hasAnyPermissions>
+<!--            <shiro:hasAnyPermissions name="mc:add,mc:del,mc:edit,mc:see,atc:add,atc:del,atc:edit,atc:see,pac:add,pac:del,pac:edit,pac:see,wli:add,wli:del,wli:edit,wli:see,das:se,apb:add,apb:del,apb:edit,apb:see">-->
+            <li id="callpoliceManagNav" onclick="switchNav(this,'callpolice',4)">
+                <a href="javascript:void(0)">报警管理</a>
+            </li>
+<!--            </shiro:hasAnyPermissions>    -->
+
+<!--            <shiro:hasAnyPermissions name="mc:add,mc:del,mc:edit,mc:see,atc:add,atc:del,atc:edit,atc:see,pac:add,pac:del,pac:edit,pac:see,wli:add,wli:del,wli:edit,wli:see,das:se,apb:add,apb:del,apb:edit,apb:see">-->
+                <li id="userManagNav"  onclick="switchNav(this,'userManag',5)">
+                    <a href="javascript:void(0)">用户管理</a>
+                </li>
+<!--            </shiro:hasAnyPermissions>-->
+
+        </ul>
+        <span class="slide" id="slide"></span>
+    </div>
+</div>
+<div class="spacing"></div>
+
+<div class="main">
+    <!-- 左侧菜单 -->
+    <div class="main_left">
+        <div class="menu">
+            <!-- 首页 -->
+            <div id="dataCenter" class="show">
+                <div class="menuTxt">
+                    <div class="menuItem" id="curMenu">
+                        <div class="defaCur" data-path="realtime" id="realtime"  onclick="switchMenu(this)">
+                            <span class="menuIconRealTime"></span>实时数据
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="parkingManag" class="hide">
+                <shiro:hasAnyPermissions name="pak:add,pak:edit,pak:del,pak:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='place' id="place" onclick="switchMenu(this)">
+                            <span class="carBitMenuIcon"></span>车位规划
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+                <shiro:hasAnyPermissions name="vps:add,vps:edit,vps:del,vps:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='vipPlace'  onclick="switchMenu(this)">
+                            <span class="vipPlaceMenuIcon"></span>VIP车位管理
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+                <shiro:hasAnyPermissions name="vaa:add,vaa:edit,vaa:del,vaa:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='vipArea'  onclick="switchMenu(this)">
+                            <span class="vipAreaMenuIcon"></span>VIP区域管理
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+                <shiro:hasAnyPermissions name="pvd:add,pvd:del,pvd:edit,pvd:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='placeVideo'  onclick="switchMenu(this)">
+                            <span class="placeVideoMenuIcon"></span>车位视频检测
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+                <shiro:hasAnyPermissions name="rcg:add,rcg:edit,rcg:del,rcg:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='recommend' onclick="switchMenu(this)">
+                            <span class="recommendMenuIcon"></span>推荐配置
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+                <shiro:hasAnyPermissions name="clc:add,clc:del,clc:edit,clc:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='accessMouthList2' onclick="switchMenu(this)">
+                            <span class="menuIcon1"></span>跨层通道
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+
+                <shiro:hasAnyPermissions name="pet:add,pet:edit,pet:del,pet:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='accessMouthList' onclick="switchMenu(this)">
+                            <span class="menuIcon1"></span>车库出入口
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+                <shiro:hasAnyPermissions name="mpl:add,mpl:edit,mpl:del,mpl:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='mapPathLabels' onclick="switchMenu(this)">
+                            <span class="mapPathLabelsMenuIcon"></span>地图路径标注
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+                <shiro:hasAnyPermissions name="cpy:add,cpy:edit,cpy:del,cpy:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='company' onclick="switchMenu(this)">
+                            <span class="menuIconCom"></span>公司管理
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+                <shiro:hasAnyPermissions name="peb:add,peb:del,peb:edit,peb:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='elevator' onclick="switchMenu(this)">
+                            <span class="menuIconElevator"></span>电梯管理
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+                <shiro:hasAnyPermissions name="mp:add,mp:del,mp:edit,mp:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='serviceFacilities' onclick="switchMenu(this)">
+                            <span class="menuIconMap"></span>服务设施
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+                <shiro:hasAnyPermissions name="mp:add,mp:del,mp:edit,mp:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='outdoorObjects' onclick="switchMenu(this)">
+                            <span class="menuIconCom"></span>室外物体
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+                <shiro:hasAnyPermissions name="cp:add,cp:del,cp:edit,cp:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='licensePlateBind' onclick="switchMenu(this)">
+                            <span class="menuIcon permissIcon"></span>车牌绑定
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+                <shiro:hasAnyPermissions name="ucm:add,ucm:del,ucm:edit,ucm:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='exclusiveUser' onclick="switchMenu(this)">
+                            <span class="menuIcon memberIcon"></span>专属用户
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+                <shiro:hasAnyPermissions name="plt:add,plt:edit,plt:del,plt:see">
+                    <div class="menuItem">
+                        <div class="defaCur" data-path="parkingLotCost" onclick="switchMenu(this)">
+                            <span class="vipPlaceMenuIcon"></span>收费管理
+                        </div>
+                    </div>
+                </shiro:hasAnyPermissions>
+            </div>
+
+            <div id="businessManag" class="hide">
+                <div class="menuTxt">
+                    <shiro:hasAnyPermissions name="bss:add,bss:del,bss:edit,bss:see">
+                        <div class="menuItem">
+                            <div class="defaCur" id="business"  data-path="business" onclick="switchMenu(this)">
+                                <span class="menuIcon businessIcon"></span>商家信息
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+                    <shiro:hasAnyPermissions name="sjt:add,sjt:del,sjt:edit,sjt:see">
+                        <div class="menuItem">
+                        <div class="defaCur" data-path="merchantType" onclick="switchMenu(this)">
+                            <span class="loginLogMenuIcon"></span>商家类型
+                        </div>
+                    </div>
+                    </shiro:hasAnyPermissions>
+                    <shiro:hasAnyPermissions name="sqa:add,sqa:del,sqa:edit,sqa:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path="textmessage" onclick="switchMenu(this)">
+                                <span class="menuIcon menuIconUserAdmin"></span>短信服务
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+                    <shiro:hasAnyPermissions name="po:add,po:del,po:edit,po:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path="promotion" onclick="switchMenu(this)">
+                                <span class="menuIcon memberIcon"></span>推广人管理
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+                    <shiro:hasAnyPermissions name="pqc:add,pqc:del,pqc:edit,pqc:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path="promotionQRcodelist" onclick="switchMenu(this)">
+                                <span class="menuIcon permissIcon"></span>推广码管理
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+                </div>
+            </div>
+
+            <div id="deviceManag" class="hide">
+                <div class="menuTxt">
+                    <shiro:hasAnyPermissions name="sub:add,sub:del,sub:edit,sub:see">
+                        <div class="menuItem">
+                            <div class="defaCur" id="baseStation" data-path="baseStation" onclick="switchMenu(this)">
+                                <span class="menuIcon baseIcon"></span>蓝牙信标
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+                    <shiro:hasAnyPermissions name="gy:add,gy:del,gy:edit,gy:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path="gateway" onclick="switchMenu(this)">
+                                <span class="menuIconGateway"></span>网关
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+                    <shiro:hasAnyPermissions name="ir:add,ir:del,ir:edit,ir:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path="detector" onclick="switchMenu(this)">
+                                <span class="menuIcon magneticIcon"></span>车位检测器
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+                    <shiro:hasAnyPermissions name="fk:add,fk:del,fk:edit,fk:see,fk:call">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path="floorLock" onclick="switchMenu(this)">
+                                <span class="menuIcon floorLockIcon"></span>地锁
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+
+                    <shiro:hasAnyPermissions name="flc:add,flc:del,flc:edit,flc:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path="floorLockConfig" onclick="switchMenu(this)">
+                                <span class="menuIcon floorLockIcon"></span>地锁配置
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+
+                    <shiro:hasAnyPermissions name="ba:add,ba:del,ba:edit,ba:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path="barrier" onclick="switchMenu(this)">
+                                <span class="menuIcon barrierIcon"></span>道闸
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+
+                    <shiro:hasAnyPermissions name="cac:add,cac:del,cac:edit,cac:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path="videoDataList" onclick="switchMenu(this)">
+                                <span class="placeVideoMenuIcon"></span>AI智能摄像头管理
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+
+                    <div class="menuItem">
+                        <div class="defaCur" data-path="originalVideoData" onclick="switchMenu(this)">
+                            <span class="loginLogMenuIcon"></span>视频原数据
+                        </div>
+                    </div>
+
+                    <shiro:hasAnyPermissions name="gsd:add,gsd:del,gsd:edit,gsd:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path='guideScreen'  onclick="switchMenu(this)">
+                                <span class="guideScreenMenuIcon"></span>导引屏设备
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+                    <shiro:hasAnyPermissions name="sg:add,sg:del,sg:edit,sg:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path='displayScreen'  onclick="switchMenu(this)">
+                                <span class="displayScreenMenuIcon"></span>导引屏配置
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+                    <shiro:hasAnyPermissions name="map:add,map:del,map:edit,map:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path="map" onclick="switchMenu(this)">
+                                <span class="menuIconMap"></span>地图管理
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+
+                    <shiro:hasAnyPermissions name="tp:add,tp:del,tp:edit,tp:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path="timeManagement" onclick="switchMenu(this)">
+                                <span class="loginLogMenuIcon"></span>时段管理
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+
+                    <shiro:hasAnyPermissions name="pur:add,pur:del,pur:edit,pur:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path="unlockInfo" onclick="switchMenu(this)">
+                                <span class="menuIcon1"></span>开锁信息
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+                </div>
+            </div>
+
+            <div id="callpolice" class="hide">
+<!--                <shiro:hasAnyPermissions name="mc:add,mc:del,mc:edit,mc:see">-->
+                    <div class="menuItem">
+                        <div class="defaCur" id="cpid" data-path="devopsList" onclick="switchMenu(this)">
+                            <span class="menuIcon memberIcon"></span>运维人员管理
+                        </div>
+                    </div>
+<!--                </shiro:hasAnyPermissions>-->
+<!--                <shiro:hasAnyPermissions name="atc:add,atc:del,atc:edit,atc:see">-->
+                    <div class="menuItem">
+                        <div class="defaCur" data-path="callPoliceConfig" onclick="switchMenu(this)">
+                            <span class="menuIcon menuIconCom"></span>报警类型配置
+                        </div>
+                    </div>
+<!--                </shiro:hasAnyPermissions>-->
+<!--                <shiro:hasAnyPermissions name="pac:add,pac:del,pac:edit,pac:see">-->
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='callPoliceConfig2' onclick="switchMenu(this)">
+                            <span class="menuIconCom"></span>报警参数配置
+                        </div>
+                    </div>
+<!--                </shiro:hasAnyPermissions>-->
+<!--                <shiro:hasAnyPermissions name="wli:add,wli:del,wli:edit,wli:see">-->
+                    <div class="menuItem">
+                        <div class="defaCur" data-path="whiteList" onclick="switchMenu(this)">
+                            <span class="menuIconUserAdmin"></span>白名单
+                        </div>
+                    </div>
+<!--                </shiro:hasAnyPermissions>-->
+<!--                <shiro:hasAnyPermissions name="das:se">-->
+                    <div class="menuItem callPolice">
+                        <div class="defaCur" data-path="callPolice" onclick="switchMenu(this)">
+                            <span class="menuIcon permissIcon"></span>报警管理
+                        </div>
+                    </div>
+<!--                </shiro:hasAnyPermissions>-->
+<!--                <shiro:hasAnyPermissions name="apb:add,apb:del,apb:edit,apb:see">-->
+                    <div class="menuItem">
+                        <div class="defaCur" data-path='alarmPushList' onclick="switchMenu(this)">
+                            <span class="menuIconElevator"></span>报警推送配置
+                        </div>
+                    </div>
+<!--                </shiro:hasAnyPermissions>-->
+            </div>
+
+            <div id="userManag" class="hide">
+                <div class="menuTxt">
+                    <shiro:hasAnyPermissions name="mer:add,mer:del,mer:edit,mer:see">
+                        <div class="menuItem">
+                            <div class="defaCur" id="member"    data-path="member" onclick="switchMenu(this)">
+                                <span class="menuIcon memberIcon"></span>人员账户管理
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+                    <shiro:hasAnyPermissions name="rle:add,rle:del,rle:edit,rle:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path="permiss" onclick="switchMenu(this)">
+                                <span class="menuIcon permissIcon"></span>账户权限管理
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+                    <shiro:hasAnyPermissions name="apr:add,apr:del,apr:edit,apr:see">
+                        <div class="menuItem">
+                            <div class="defaCur" data-path="mapmember" onclick="switchMenu(this)">
+                                <span class="menuIconUserAdmin"></span>移动端账户管理
+                            </div>
+                        </div>
+                    </shiro:hasAnyPermissions>
+                    <div class="menuItem">
+                        <div class="defaCur" data-path="loginLog" onclick="switchMenu(this)">
+                            <span class="loginLogMenuIcon"></span>登录日志
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 右侧内容 -->
+    <div class="content" id="content">
+        <iframe src="#" id="iframeBox" class="iframeBox" frameborder="0"></iframe>
+    </div>
+</div>
+<!-- 提示 -->
+<div class="tips" id="tip"></div>
+</body>
+<!--<script>-->
+<!--    window.onload = function () {-->
+<!--        document.onkeydown = function () {-->
+<!--            var e = window.event || arguments[0];-->
+<!--            //屏蔽F12-->
+<!--            if (e.keyCode === 123) {-->
+
+<!--                return false;-->
+<!--                //屏蔽Ctrl+Shift+I-->
+<!--            } else if ((e.ctrlKey) && (e.shiftKey) && (e.keyCode === 73)) {-->
+
+<!--                return false;-->
+<!--                //屏蔽Shift+F10-->
+<!--            } else if ((e.shiftKey) && (e.keyCode === 121)) {-->
+<!--                return false;-->
+<!--            }-->
+<!--        };-->
+<!--        //屏蔽右键单击-->
+<!--        document.oncontextmenu = function () {-->
+<!--            return false;-->
+<!--        }-->
+<!--    }-->
+<!--</script>-->
+</html>

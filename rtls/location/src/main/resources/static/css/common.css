@@ -1,0 +1,84 @@
+html, body, div, span, h1, h2, h3, h4, h5, h6, p, a, em, img,i, dl, dt, dd, ol, ul, li,table, tbody, tfoot, thead, tr, th, td {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+}
+body{
+    font-family:Microsoft YaHei;
+    font-size: 14px;
+    min-width: 1160px;
+    padding-left: 20px;
+}
+.requestTime{
+    height: 32px;
+    line-height: 32px;
+    padding: 20px 0;
+}
+.requestTime input{
+    border: 1px solid #E5E5E5;
+    height: 30px;
+    width: 120px;
+    padding: 0 0 0 10px;
+}
+.top{
+    padding-bottom: 20px;
+    height: 32px;
+}
+.top span{
+    float: left;
+    width: 80px;
+    height: 32px;
+    line-height: 32px;
+    color: #fff;
+    background-color: #5474E8;
+    text-align: center;
+    border-radius: 2px;
+    cursor: pointer;
+    user-select: none;
+}
+.start{
+    margin-right: 20px;
+}
+.top span:hover{
+    background-color: #4A60CF;
+}
+.info{
+    height: 32px;
+    line-height: 32px;
+    font-size: 16px;
+}
+.detail{
+    height: 400px;
+    margin-top:20px;
+    margin-right:20px;
+    padding:10px;
+    border:1px solid #E5E5E5;
+    line-height: 30px;
+    overflow-y:scroll;
+}
+.item{
+    width: 1100px;
+    overflow: hidden;
+    border:1px solid #E5E5E5;
+    padding:20px;
+}
+.itemL{
+    float: left;
+}
+.bsQua{
+    width: 100px;
+    float: left;
+}
+.bsInfo{
+    margin-left: 108px;
+    width: 400px;
+    border:1px solid #E5E5E5;
+}
+.bsInfo div{
+    padding: 0 20px;
+    border-bottom:1px solid #E5E5E5;
+}
+.itemR{
+    float: right;
+}

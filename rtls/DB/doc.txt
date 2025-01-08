@@ -1,0 +1,10 @@
+#查找进程
+netstat -ano|findstr 8081
+#终止
+taskkill /f /t /im pid
+
+for %a in (8081 28089) do @(for /f "tokens=5" %b in ('netstat -ano ^| findstr :%a ^| findstr LISTENING') do @taskkill /PID %b /F)
+
+nohup java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -jar location-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev > /dev/null 2>&1 &
+
+nohup java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -jar location-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev > app.log 2>&1 &

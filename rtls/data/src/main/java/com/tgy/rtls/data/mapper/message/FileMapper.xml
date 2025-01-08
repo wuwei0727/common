@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.message.FileMapper">
+
+    <select id="findByAll" resultType="com.tgy.rtls.data.entity.message.FileSyn">
+        SELECT f.personid,f.file,f.filelocal,f.addTime,f.type,f.direction,f.title,f.`status`,
+        (SELECT NAME FROM person WHERE f.personid=id)AS name,
+        (SELECT num FROM person WHERE f.personid=id)AS num
+        FROM
+        (SELECT personid,file as filelocal ,file,`addTime`,instanceid,1 AS `type`,0 AS direction,title,`status`
+        FROM textrecord
+        WHERE `addTime` IN (SELECT MAX(ADDTIME) FROM textrecord GROUP BY personid)
+        GROUP BY personid
+        UNION
+        SELECT personid, filelocal,file,ADDTIME,instanceid,2 AS `type`,direction,title,`status`
+        FROM voicerecord
+        WHERE `addTime` IN (SELECT MAX(ADDTIME) FROM voicerecord GROUP BY personid)
+        GROUP BY personid
+        ) AS f
+        WHERE `addTime` IN (
+        SELECT MAX(ADDTIME)
+        FROM
+        (SELECT personid,`file` as filelocal,file,`addTime`,instanceid,1 AS `type`
+        FROM textrecord
+        WHERE `addTime` IN (SELECT MAX(ADDTIME) FROM textrecord GROUP BY personid)
+        UNION
+        SELECT personid,filelocal,file,ADDTIME,instanceid,2 AS `type`
+        FROM voicerecord
+        WHERE `addTime` IN (SELECT MAX(ADDTIME) FROM voicerecord GROUP BY personid)
+        )AS f1
+        GROUP BY personid
+        )
+        and instanceid=#{instanceid}
+        <if test="startTime!=null and startTime!='' and endTime !=null and endTime!=''">
+            and addTime>#{startTime} and #{endTime}>addTime
+        </if>
+        <if test="name!=null and name!=''">
+            having name like concat ('%',#{name},'%')
+        </if>
+        <if test="pageIndex!=null">
+            limit ${pageIndex},${pageSize}
+        </if>
+    </select>
+
+    <select id="findByPersonid" resultType="com.tgy.rtls.data.entity.message.FileRecord">
+        SELECT f.filelocal,f.file,f.addTime,f.instanceid,f.type,f.direction,f.title,f.`status`
+        FROM
+        (SELECT personid,file as filelocal,file,`addTime`,instanceid,1 AS `type`,0 AS direction,title,`status`
+        FROM textrecord
+        UNION
+        SELECT personid,filelocal ,file,ADDTIME,instanceid,2 AS `type`,direction,title,`status`
+        FROM voicerecord
+        ) AS f
+        WHERE personid=#{personid}
+        <if test="startTime!=null and startTime!='' and endTime !=null and endTime!=''">
+            and addTime>#{startTime} and #{endTime}>addTime
+        </if>
+        order by addTime desc
+
+    </select>
+
+    <insert id="addVoice" keyProperty="id" useGeneratedKeys="true">
+        insert into voicerecord(direction,title,file,random,personid,instanceid,status,filelocal)
+        value (#{voice.direction},#{voice.title},#{voice.file},#{voice.random},#{voice.personid},#{voice.instanceid},#{voice.status},#{voice.filelocal})
+    </insert>
+
+    <insert id="addText" keyProperty="id" useGeneratedKeys="true">
+        insert into textrecord (title,file,random,personid,instanceid,status)
+        value (#{text.title},#{text.file},#{text.random},#{text.personid},#{text.instanceid},#{text.status})
+    </insert>
+
+    <update id="updateVoice">
+        update voicerecord
+        set status=#{status}
+        <if test="url!=null and url!=''">
+            ,file=#{url}
+        </if>
+        <if test="urllocal!=null and urllocal!=''">
+            ,filelocal=#{urllocal}
+        </if>
+        where random=#{random}
+    </update>
+
+    <update id="updateText">
+        update textrecord
+        set status=#{status}
+        where random=#{random}
+    </update>
+</mapper>

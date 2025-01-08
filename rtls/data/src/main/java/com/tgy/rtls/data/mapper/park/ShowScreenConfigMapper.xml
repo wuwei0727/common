@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.park.ShowScreenConfigMapper">
+    <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.park.ShowScreenConfig">
+        <!--@mbg.generated-->
+        <!--@Table showscreenconfig-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <id column="guideScreenId" jdbcType="BIGINT" property="guideScreenId"/>
+        <id column="deviceId" jdbcType="BIGINT" property="deviceNum"/>
+        <result column="devicenum" jdbcType="VARCHAR" property="devicenum"/>
+        <result column="screennum" jdbcType="VARCHAR" property="screennum"/>
+        <result column="screenposition" jdbcType="VARCHAR" property="screenposition"/>
+        <result column="placeList" jdbcType="VARCHAR" property="placeList"/>
+        <result column="map" jdbcType="VARCHAR" property="map"/>
+        <result column="mapName" jdbcType="VARCHAR" property="mapName"/>
+        <result column="areaId" jdbcType="VARCHAR" property="areaId"/>
+        <result column="bindarea" jdbcType="VARCHAR" property="bindarea"/>
+        <result column="networkstatus" jdbcType="TINYINT" property="networkstatus"/>
+        <result column="starttime" jdbcType="TIMESTAMP" property="starttime"/>
+        <result column="endtime" jdbcType="TIMESTAMP" property="endtime"/>
+        <result column="x" property="x"/>
+        <result column="y" property="y"/>
+        <result column="mapKey" property="mapKey"/>
+        <result column="fmapID" property="fmapID"/>
+        <result column="mapImg" property="mapImg"/>
+        <result column="floorName" jdbcType="VARCHAR" property="floorName"/>
+
+        <collection property="vertexInfo" javaType="java.util.List" ofType="com.tgy.rtls.data.entity.park.ShowScreenConfigArea">
+            <result column="areaQuFen" jdbcType="INTEGER" property="areaQuFen"/>
+            <collection property="points" javaType="java.util.List" ofType="com.tgy.rtls.data.entity.park.ShowScreenConfigArea">
+                <result column="x" jdbcType="VARCHAR" property="x"/>
+                <result column="y" jdbcType="VARCHAR" property="y"/>
+                <result column="floor" jdbcType="VARCHAR" property="floor"/>
+            </collection>
+        </collection>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        <!--@sql select -->
+        ss.id,
+        ss.devicenum,
+        ss.screennum,
+        ss.screenposition,
+        ss.bindarea,
+        ss.networkstatus,
+        ss.starttime,
+        ss.endtime,
+        g.device_id                         deviceId,
+        ssa.x,
+        ssa.y,
+        ssa.floor,
+        mrf.name floorName,
+        ssa.areaQuFen,
+        ssa.id as                           areaId,
+        m2d.name                            mapName,
+        m2d.mapKey,
+        m2d.appName,
+        m2d.fmapID,
+        m2d.themeImg,
+        m2d.mapImg,
+        GROUP_CONCAT(pp.NAME SEPARATOR ',') placeList
+        <!--@sql from showscreenconfig ss
+                 left join guidescreendevice g on ss.guide_screen_id = g.id
+                 left join showscreenconfigarea ssa on ss.id = ssa.sid
+                 left join showscreenconfigareaplace ssap on ssa.id = ssap.areaId
+                 left join map_2d m2d on ss.map = m2d.id
+                 left join parking_place pp on ssap.placeId = pp.id
+          left join map_relevance_floor mrf on mrf.map = m2d.id-->
+        <!--@mbg.generated-->
+    </sql>
+
+    <!--$var desc=q-->
+    <select id="getAllShowScreenConfigOrConditionQuery" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from showscreenconfig ss
+                 left join guidescreendevice g on ss.guide_screen_id = g.id
+                 left join showscreenconfigarea ssa on ss.id = ssa.sid
+                 left join showscreenconfigareaplace ssap on ssa.id = ssap.areaId
+                 left join map_2d m2d on ss.map = m2d.id
+                 left join parking_place pp on ssap.placeId = pp.id
+        left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = ssa.floor
+        <where>1=1
+            <if test="map != null and map != ''">
+                and ss.map = #{map}
+            </if>
+            <if test="bindArea != null and bindArea != ''">
+                and ss.bindarea like concat('%',#{bindArea},'%')
+            </if>
+            <if test="deviceNum != null and deviceNum != ''">
+                and g.device_id like concat('%',#{deviceNum},'%')
+            </if>
+            <if test="floorName != null and floorName != ''">
+                and mrf.name like concat('%',#{floorName},'%')
+            </if>
+            <if test="screenNum != null and screenNum != ''">
+                and ss.screennum like concat('%',#{screenNum},'%')
+            </if>
+            <if test="screenPosition != null and screenPosition != ''">
+                and ss.screenposition like concat('%',#{screenPosition},'%')
+            </if>
+            <if test="mapids != null and mapids != ''">
+                and m2d.id in
+                <foreach close=")" collection="mapids" item="mapids" open="(" separator=",">
+                    #{mapids}
+                </foreach>
+            </if>
+            group by ss.id
+            <if test="desc != null and desc != ''">
+                order by ${desc}
+            </if>
+        </where>
+    </select>
+
+    <insert id="addShowScreenConfig" keyProperty="id"  useGeneratedKeys="true">
+        insert into showscreenconfig
+        (guide_screen_id,devicenum, screennum, screenposition, `map`, bindarea, networkstatus, starttime, endtime)
+        values (#{guideScreenId},#{devicenum},#{screennum},#{screenposition},#{map},#{bindarea},#{networkstatus},#{starttime},#{endtime})
+    </insert>
+
+    <insert id="addShowScreenConfigArea" keyProperty="id"  useGeneratedKeys="true">
+        insert into showscreenconfigarea (x,y,floor,sid,areaQuFen)
+        values
+        <foreach item="item" collection="area" index="index" separator=",">
+            (#{item.x},#{item.y},#{item.floor},#{item.sid},#{item.areaQuFen})
+        </foreach>
+
+        <!--values (#{x},#{y},#{floor},#{sid},#{areaQuFen})-->
+    </insert>
+
+
+    <insert id="addShowScreenConfigArea12" keyProperty="id"  useGeneratedKeys="true">
+        insert into showscreenconfigarea (x,y,floor,sid,areaQuFen)
+        values (#{x},#{y},#{floor},#{sid},#{areaQuFen})
+    </insert>
+
+    <insert id="addShowScreenConfigAreaPlace" keyProperty="id"  useGeneratedKeys="true">
+        insert into showscreenconfigareaplace (areaId, placeId)
+        values
+        <foreach item="areaPlaces" collection="areaPlace" index="index" separator=",">
+            (#{areaPlaces.areaId},#{areaPlaces.placeId})
+        </foreach>
+<!--values (#{areaId},#{placeId})-->
+    </insert>
+
+
+    <insert id="addShowScreenConfigAreaPlace12" keyProperty="id"  useGeneratedKeys="true">
+        insert into showscreenconfigareaplace (areaId, placeId)
+        values (#{areaId},#{placeId})
+    </insert>
+
+    <select id="getShowScreenConfigById" resultMap="BaseResultMap"><!--查看单个-->
+        select ss.id,
+               ss.devicenum,
+               ss.guide_screen_id                  guideScreenId,
+               ss.screennum,
+               ss.screenposition,
+               ss.`map`,
+               ss.bindarea,
+               ss.networkstatus,
+               ss.starttime,
+               ss.endtime,
+               g.device_id                         deviceId,
+               ssa.x,
+               ssa.y,
+               ssa.floor,
+               ssa.areaQuFen,
+               ssa.sid as                           areaId,
+               m2d.name                            mapName,
+               m2d.mapKey,
+               m2d.appName,
+               m2d.fmapID,
+               m2d.themeImg,
+               m2d.mapImg,
+               GROUP_CONCAT(pp.NAME SEPARATOR ',') placeList
+        from showscreenconfig ss
+                 left join guidescreendevice g on ss.guide_screen_id = g.id
+                 left join map_2d m2d on ss.map = m2d.id
+                 left join showscreenconfigarea ssa on ssa.sid = ss.id
+                 left join showscreenconfigareaplace ssap on ss.id = ssap.areaId
+                 left join parking_place pp on ssap.placeId = pp.id
+        where ss.id = #{sid}
+        GROUP BY ssa.id
+    </select>
+
+    <delete id="delShowScreenConfigByAreaId">
+        delete from showscreenconfigareaplace
+        where areaId=#{areaId}
+    </delete>
+    <delete id="delShowScreenConfigArea">
+        delete from showscreenconfigarea
+        where sid=#{id}
+    </delete>
+    <delete id="delShowScreenConfig">
+        delete from showscreenconfig
+        where id=#{id}
+    </delete>
+
+    <update id="updateShowScreenConfig">
+        update showscreenconfig
+        <set>
+            <if test="guideScreenId != null">
+                guide_screen_id = #{guideScreenId},
+            </if>
+            <if test="devicenum != null and devicenum != ''">
+                devicenum = #{devicenum},
+            </if>
+            <if test="screennum != null and screennum != ''">
+                screennum = #{screennum},
+            </if>
+            <if test="screenposition != null and screenposition != ''">
+                screenposition = #{screenposition},
+            </if>
+            <if test="map != null and map != ''">
+                map = #{map},
+            </if>
+            <if test="bindarea != null and bindarea != ''">
+                bindarea = #{bindarea},
+            </if>
+            <if test="networkstatus != null">
+                networkstatus = #{networkstatus},
+            </if>
+            <if test="endtime != null">
+                endtime = #{endtime}
+            </if>
+        </set>
+        <where>
+            <if test="id != null">
+                and id=#{id}
+            </if>
+        </where>
+    </update>
+
+    <update id="updateShowScreenConfigArea">
+        update showscreenconfigarea
+        <set>
+            <if test="x != null and x != ''">
+                x = #{x},
+            </if>
+            <if test="y != null and y != ''">
+                y = #{y}
+            </if>
+        </set>
+        <where>
+            <if test="id != null">
+                and id=#{id}
+            </if>
+        </where>
+    </update>
+
+    <update id="updateShowScreenConfigAreaPlace">
+        update showscreenconfigareaplace
+        <set>
+            <if test="areaId != null ">
+                areaId = #{areaId},
+            </if>
+            <if test="placeId != null ">
+                placeId = #{placeId}
+            </if>
+        </set>
+        <where>
+            <if test="id != null">
+                and areaId=#{id}
+            </if>
+        </where>
+    </update>
+
+    <resultMap id="getCorrespondDeviceUnderMap" type="com.tgy.rtls.data.entity.park.ParkingCompanyVo">
+            <result property="mapId" column="mapId"/>
+            <result property="mapName" column="mapName"/>
+            <collection property="showScreenList" ofType="com.tgy.rtls.data.entity.park.ParkingCompanyVo">
+                <result property="guideScreenDeviceId" column="guideScreenDeviceId"/>
+                <result property="deviceId" column="deviceId"/>
+            </collection>
+    </resultMap>
+    <select id="getAllShowScreenByMapId" resultMap="getCorrespondDeviceUnderMap">
+        select m.id    as mapId,
+        m.name  as mapName,
+        g.id   as guideScreenDeviceId,
+        g.device_id as deviceId
+        from map_2d as m
+        left join guidescreendevice g on m.id = g.map
+        where 1 = 1
+        and m.enable != 0
+        <if test="mapIds != '' and mapIds != null">
+            and m.id in
+            <foreach collection="mapIds" open="(" close=")" separator="," item="mapIds">
+                #{mapIds}
+            </foreach>
+        </if>
+        order by mapId
+    </select>
+</mapper>

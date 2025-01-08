@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>支付页面</title>
+  <link rel="stylesheet" href="../../css/wechatJSApiPay.css">
+  <script src="../../js/common/jquery-2.1.1.js"></script>
+  <script src="../../js/jweixin-1.6.0.js"></script>
+  <script src="../../js/wechatJSApiPay.js"></script>
+
+  <style>
+    .inputBox {
+      width: 100%;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      border: 1px solid #aaa;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+
+    .inputBox input {
+      flex: 1;
+      height: 100%;
+      border: unset;
+      border-radius: 8px;
+      padding: 0 8px;
+      box-sizing: border-box;
+    }
+
+    .inputBox .submit {
+      width: 60px;
+      height: 100%;
+      line-height: 40px;
+      color: #fff;
+      text-align: center;
+      background-color: green;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="payBox">
+    <div class="payText" id="payText">0.00</div>
+    <div class="payBtn" id="payBtn" onclick="debounceFn(toPay, '')">支付</div>
+
+
+    <!-- test -->
+    <div class="inputBox">
+      <input type="text" id="openid" value="" placeholder="输入openid">
+      <div class="submit" onclick="submit()">提交</div>
+    </div>
+    <!-- test -->
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	<meta charset="UTF-8">
+	<title>地磁记录</title>
+	<link rel="stylesheet" href="../css/common/common.css">
+	<link rel="stylesheet" href="../css/bluetoothTest.css">
+	<script src="../js/common/jquery-1.8.0.min.js"></script>
+	<script src="../js/common/laydate.js"></script>
+	<script src="../js/common/common.js"></script>
+<!--	<script src="../js/common/page.js"></script>-->
+	<script src="../js/mag.js"></script>
+</head>
+<body>
+
+	<div class="main">
+		<div >
+			<div class="search">
+				<span class="searchItem">
+					编号：<input type="text" name="num" class="searchInp" placeholder="请输入编号" />
+				</span>
+
+				<span class="searchItem">
+					开始时间：<input type="text" name="start" id="start" class="searchInp" value="2022-11-01 17:05:36" />
+				</span>
+				<span class="searchItem">
+					结束时间：<input type="text" name="end" id="end" class="searchInp" value="2022-11-01 17:05:36" />
+				</span>
+			 <span class="searchBtn mainBtn" onclick="search(1)">搜索</span>
+<!--			 <span class="searchBtn mainBtn" onclick="search(2)">导出数据</span>-->
+<!--			 <span class="searchBtn mainBtn" onclick="search(3)">导出丢包数据</span>-->
+<!--				<span class="searchBtn mainBtn"  onclick="toView()">打开状态数据页面</span>-->
+			</div>
+		</div>
+		<div class="center">
+			<table class="tab" id="tab">
+				<thead>
+					<tr>
+				      	<td name="id" class="line">序号</td>
+						<td name="time">时间</td>
+						<td name="num">编号</td>
+						<td name="x">x</td>
+						<td name="y">y</td>
+						<td name="z">z</td>
+						<td name="x_fix">x_fix</td>
+						<td name="y_fix">y_fix</td>
+						<td name="z_fix">z_fix</td>
+						<td name="x_diff">x_diff</td>
+						<td name="y_diff">y_diff</td>
+						<td name="z_diff">z_diff</td>
+						<td name="occupy_x">occupy_x</td>
+						<td name="occupy_y">occupy_y</td>
+						<td name="occupy_z">occupy_z</td>
+						<td name="empty_x">empty_x</td>
+						<td name="empty_y">empty_y</td>
+						<td name="empty_z">empty_z</td>
+						<td name="state">state</td>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+<!--			<div class="listFooter clearfix">-->
+<!--				<div class="page">-->
+<!--					<span>每页显示</span>-->
+<!--					<select onchange="changePageSize(this)">-->
+<!--						<option value="1">1</option>-->
+<!--						<option value="10">10</option>-->
+<!--						<option value="20">20</option>-->
+<!--						<option value="50">50</option>-->
+<!--						<option value="100">100</option>-->
+<!--					</select>-->
+
+<!--					<span class="turnPage prev" onclick="prevPage()"></span>-->
+<!--				 	<ul class="pageList"></ul>-->
+<!--				 	<span class="turnPage next" onclick="nextPage(this)"></span> 跳至<input type="text" value="1" class="jumpPage" onkeyup="jumpCurPage(this,event)">页-->
+<!--				</div>-->
+<!--			</div>-->
+		</div>
+	</div>
+</body>
+<script type="text/javascript">
+  laydate.render({
+	  elem: '#start',
+	  type: 'datetime',
+	  format: 'yyyy-MM-dd HH:mm:ss',
+	  trigger: 'click'
+  });
+
+  laydate.render({
+	  elem: '#end',
+	  type: 'datetime',
+	  format: 'yyyy-MM-dd HH:mm:ss',
+	  trigger: 'click'
+  });
+  </script>
+</html>

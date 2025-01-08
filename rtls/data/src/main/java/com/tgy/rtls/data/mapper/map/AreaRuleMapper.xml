@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.map.AreaRuleMapper">
+    <select id="findByTurnover" resultType="com.tgy.rtls.data.entity.map.AreaTurnover">
+        select *
+        from area_turnover
+        where area=#{area}
+    </select>
+
+    <select id="findByOverload" resultType="com.tgy.rtls.data.entity.map.AreaOverload">
+        select *
+        from area_overload
+        where area=#{area}
+    </select>
+
+    <select id="findByDetection" resultType="com.tgy.rtls.data.entity.map.AreaDetection">
+        select *
+        from area_detection
+        where area=#{area}
+    </select>
+
+
+    <insert id="addAreaTurnover" useGeneratedKeys="true" keyProperty="id">
+        insert into area_turnover(type,enable,startTime,endTime,instanceid,area,floor)
+        value (#{turnover.type},#{turnover.enable},#{turnover.startTime},#{turnover.endTime},#{turnover.instanceid},#{turnover.area},#{turnover.floor})
+    </insert>
+
+    <insert id="addAreaOverload" useGeneratedKeys="true" keyProperty="id">
+        insert into area_overload(maxnum,enable,startTime,endTime,instanceid,area,floor)
+        value (#{overload.maxnum},#{overload.enable},#{overload.startTime},#{overload.endTime},#{overload.instanceid},#{overload.area},#{overload.floor})
+    </insert>
+
+    <insert id="addAreaDetection" useGeneratedKeys="true" keyProperty="id">
+        insert into area_detection(type,enable,startTime,endTime,instanceid,area,floor)
+        value (#{detection.type},#{detection.enable},#{detection.startTime},#{detection.endTime},#{detection.instanceid},#{detection.area},#{detection.floor})
+    </insert>
+
+   
+    <delete id="delAreaTurnover">
+        delete from area_turnover
+        where id=#{id}
+    </delete>
+    <delete id="delAreaTurnoverArea">
+        delete from area_turnover
+        where area=#{area}
+    </delete>
+
+    <delete id="delAreaOverload">
+        delete from area_overload
+        where id=#{id}
+    </delete>
+    <delete id="delAreaOverloadArea">
+        delete from area_overload
+        where area=#{area}
+    </delete>
+
+    <delete id="delAreaDetection">
+        delete from area_detection
+        where id=#{id}
+    </delete>
+    <delete id="delAreaDetectionArea">
+        delete from area_detection
+        where area=#{area}
+    </delete>
+
+    <insert id="addWhitelist">
+        insert into whitelist(turnoverid,personid)
+        value (#{turnoverid},#{personid})
+    </insert>
+
+    <delete id="delWhitelist">
+        delete from whitelist
+        where turnoverid=#{turnoverid}
+    </delete>
+
+    <select id="findByTurnoverEnable" resultType="com.tgy.rtls.data.entity.map.AreaTurnover">
+        select *
+        from area_turnover
+        where area=#{area}
+        and enable=1
+        and type=#{type}
+    </select>
+
+    <select id="findByOverloadEnable" resultType="com.tgy.rtls.data.entity.map.AreaOverload">
+        select *
+        from area_overload
+        where area=#{area}
+         and enable=1
+    </select>
+
+    <select id="findByDetectionEnable" resultType="com.tgy.rtls.data.entity.map.AreaDetection">
+        select *
+        from area_detection
+        where area=#{area}
+         and enable=1
+         and type=#{type}
+    </select>
+
+    <select id="findByWhitelist" resultType="int">
+        select count(1)
+          from whitelist
+          where turnoverid=#{turnoverid} and personid=#{personid};
+    </select>
+</mapper>

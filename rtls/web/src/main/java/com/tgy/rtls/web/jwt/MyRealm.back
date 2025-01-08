@@ -1,0 +1,76 @@
+package com.tgy.rtls.web.jwt;
+
+import com.tgy.rtls.data.common.NullUtils;
+import com.tgy.rtls.data.entity.user.Company;
+import com.tgy.rtls.data.entity.user.Member;
+import com.tgy.rtls.data.entity.user.Permission;
+import com.tgy.rtls.data.mapper.user.CompanyMapper;
+import com.tgy.rtls.data.service.user.impl.MemberService;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationInfo;
+import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.SimpleAuthenticationInfo;
+import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.realm.AuthorizingRealm;
+import org.apache.shiro.subject.PrincipalCollection;
+
+import javax.annotation.Resource;
+
+
+public class MyRealm extends AuthorizingRealm {
+    @Autowired
+    private CompanyMapper companyMapper;
+    @Autowired
+    private MemberService memberService;
+
+    @Override
+    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
+        System.out.println("============用户授权==============");
+        SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+        /*获取当前的用户,已经登录后可以使用在任意的地方获取用户的信息*/
+        Member member= (Member) principalCollection.getPrimaryPrincipal();
+        /*查询用户的权限*/
+     //   Roles role = rolesMapper.getRole(username);
+        /*将role放在一个集合中,多个权限使用集合*/
+      //  info.addRole(role.getRole());
+
+        for (Permission p:member.getPermissions()){
+            info.addStringPermission(p.getPermission());
+        }
+        return info;
+    }
+    @Override
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
+        System.out.println("============用户验证==============");
+        //从token中获取信息,此token只是shiro用于身份验证的,并非前端传过来的token.
+        //获取用户输入的账号
+        String  phone=(String)authenticationToken.getPrincipal();
+
+        //通过username从数据库中查找User对象
+        Member member=memberService.findByPhone(phone);
+        if (NullUtils.isEmpty(member)){
+            return null;
+        }
+        if (member.getEnabled()==0){
+            return null;
+        }
+        Company company=companyMapper.findById(member.getCid());
+        if (company.getEnabled()==0){
+            return null;
+        }
+/*        UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(member.getPhone(), member.getPassword());
+        Subject subject = SecurityUtils.getSubject();
+        subject.login(usernamePasswordToken);*/
+        String token = TokenUtil.getToken(member.getPhone(), member.getPassword(),"112.94.22.123");
+        System.out.println("token:"+token);
+        //登录成功 记录登录信息
+        memberService.addLonginRecord(phone);
+        SimpleAuthenticationInfo authenticationInfo=new SimpleAuthenticationInfo(member,
+                member.getPassword(),
+                getName()
+        );
+
+        return authenticationInfo;
+    }
+}

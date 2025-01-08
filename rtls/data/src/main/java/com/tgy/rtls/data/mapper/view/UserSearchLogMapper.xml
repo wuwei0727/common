@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.view.UserSearchLogMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.view.UserSearchLog">
+    <!--@mbg.generated-->
+    <!--@Table user_search_log-->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="map" jdbcType="VARCHAR" property="map" />
+    <result column="map_name" jdbcType="VARCHAR" property="mapName" />
+    <result column="count" jdbcType="INTEGER" property="count" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, user_id, `map`, map_name, `count`
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    <!--@mbg.generated-->
+    select 
+    <include refid="Base_Column_List" />
+    from user_search_log
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    <!--@mbg.generated-->
+    delete from user_search_log
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.tgy.rtls.data.entity.view.UserSearchLog" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into user_search_log
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="map != null">
+        `map`,
+      </if>
+      <if test="mapName != null">
+        map_name,
+      </if>
+      <if test="count != null">
+        `count`,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="map != null">
+        #{map,jdbcType=VARCHAR},
+      </if>
+      <if test="mapName != null">
+        #{mapName,jdbcType=VARCHAR},
+      </if>
+      <if test="count != null">
+        #{count,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.tgy.rtls.data.entity.view.UserSearchLog">
+    <!--@mbg.generated-->
+    update user_search_log
+    <set>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="map != null">
+        `map` = #{map,jdbcType=VARCHAR},
+      </if>
+      <if test="mapName != null">
+        map_name = #{mapName,jdbcType=VARCHAR},
+      </if>
+      <if test="count != null">
+        `count` = #{count,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.tgy.rtls.data.entity.view.UserSearchLog">
+    <!--@mbg.generated-->
+    update user_search_log
+    set user_id = #{userId,jdbcType=INTEGER},
+      `map` = #{map,jdbcType=VARCHAR},
+      map_name = #{mapName,jdbcType=VARCHAR},
+      `count` = #{count,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <insert id="insertUserSearchLog">
+    insert into user_search_log_time (u_s_log_id)
+    values (#{uslogid})
+  </insert>
+</mapper>

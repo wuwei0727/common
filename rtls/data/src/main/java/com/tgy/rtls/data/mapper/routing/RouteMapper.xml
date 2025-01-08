@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.routing.RouteMapper">
+    <resultMap id="Route" type="com.tgy.rtls.data.entity.routing.Route">
+        <id property="id" column="id"/>
+        <collection property="routedots"  column="id" javaType="ArrayList" ofType="com.tgy.rtls.data.entity.routing.Routedot" select="findByRoutedot"/>
+    </resultMap>
+
+    <select id="findByAll" resultMap="Route">
+        select route.*,map_2d.name as mapName
+        from route left join map_2d  on route.map=map_2d.id
+        where map in
+        (select id from map_2d where instanceid=#{instanceid})
+        <if test="map!=null and map!=''">
+            and map=#{map}
+        </if>
+        order by id desc
+    </select>
+
+    <select id="findByMapRouteid" resultType="string">
+        select group_concat(id)
+        from route
+        where map in
+        <foreach collection="maps" item="map" open="(" close=")" separator=",">
+            #{map}
+        </foreach>
+    </select>
+
+    <select id="findByRoutedot" resultType="com.tgy.rtls.data.entity.routing.Routedot">
+        select *
+        from routedot
+        where rid=#{id}
+    </select>
+
+
+    <select id="findByRouteNameAndMap" resultType="com.tgy.rtls.data.entity.routing.Route">
+        select *
+        from route
+        where name=#{name} and map=#{map}
+    </select>
+
+    <insert id="addRoute" keyProperty="id" useGeneratedKeys="true">
+        insert into route(map,name,style,floor)
+        values (#{route.map},#{route.name},#{route.style},#{route.floor})
+    </insert>
+
+    <insert id="addRoutedot">
+        insert into routedot(name,x,y,z,`range`,startTime,endTime,rid,floor)
+        values (#{routedot.name},#{routedot.x},#{routedot.y},#{routedot.z},#{routedot.range},#{routedot.startTime},#{routedot.endTime},#{routedot.rid},#{routedot.floor})
+    </insert>
+
+    <update id="updateRoute">
+        update route
+        <set>
+            <if test="route.name!=null and route.name!=''">
+                name=#{route.name},
+            </if>
+            <if test="route.style!=null and route.style!=''">
+                style=#{route.style},
+            </if>
+        </set>
+        where id=#{route.id}
+    </update>
+
+    <update id="updateRoutedot">
+        update routedot
+        <set>
+            <if test="routedot.name!=null and routedot.name!=''">
+                name=#{routedot.name},
+            </if>
+            <if test="routedot.x!=null and routedot.x!=''">
+                x=#{routedot.x},
+            </if>
+            <if test="routedot.y!=null and routedot.y!=''">
+                y=#{routedot.y},
+            </if>
+            <if test="routedot.z!=null and routedot.z!=''">
+                z=#{routedot.z},
+            </if>
+            <if test="routedot.range!=null and routedot.range!=''">
+                `range`=#{routedot.range},
+            </if>
+            <if test="routedot.startTime!=null and routedot.startTime!=''">
+                startTime=#{routedot.startTime},
+            </if>
+            <if test="routedot.endTime!=null and routedot.endTime!=''">
+                endTime=#{routedot.endTime},
+            </if>
+            <if test="routedot.floor!=null and routedot.floor!=''">
+                floor=#{routedot.floor},
+            </if>
+        </set>
+        where id=#{routedot.id}
+    </update>
+
+    <delete id="delRoute">
+        delete from route
+        where id=#{id}
+    </delete>
+
+    <delete id="delRoutedot">
+        delete from routedot
+        where id=#{id}
+    </delete>
+
+    <delete id="delRoutedotRid">
+        delete from routedot
+        where rid=#{rid}
+    </delete>
+
+    <delete id="delRoutetask">
+        delete from routetask
+        where rid=#{id}
+    </delete>
+</mapper>

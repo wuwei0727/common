@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.check.TagchecklocationDao">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.check.TagchecklocationEntity">
+        <id column="id" property="id" />
+        <result column="checkbsid" property="checkbsid" />
+        <result column="tagid" property="tagid" />
+        <result column="bsid" property="bsid" />
+        <result column="time" property="time" />
+        <result column="x" property="x" />
+        <result column="y" property="y" />
+        <result column="z" property="z" />
+    </resultMap>
+<!--    <cache type="com.tgy.rtls.data.config.RedisCache">
+        <property name="eviction" value="LRU" />
+        <property name="flushInterval" value="6000000" />
+        <property name="size" value="1024" />
+        <property name="readOnly" value="false" />
+    </cache>-->
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, checkbsid, tagid, bsid, time, x, y, z
+    </sql>
+    <select id="getByTagcheckbsid_Recent" resultType="com.tgy.rtls.data.entity.check.TagchecklocationEntity">
+
+  SELECT A.* FROM tagchecklocation A,
+(SELECT tagid,checkbsid, MAX(id) id FROM tagchecklocation WHERE checkbsid=#{checkbsid} GROUP BY tagid) B
+WHERE A.tagid = B.tagid AND A.id = B.id AND B.checkbsid=A.checkbsid order by tagid asc
+    </select>
+
+    <select id="getByTagcheckbsid_All" resultType="com.tgy.rtls.data.entity.check.TagchecklocationEntity">
+                SELECT A.* FROM tagchecklocation A where 1=1
+        and A.checkbsid=#{checkbsid} ORDER BY tagid ASC ,id ASC
+    </select>
+
+</mapper>

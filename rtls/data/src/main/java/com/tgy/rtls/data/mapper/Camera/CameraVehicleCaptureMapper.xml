@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.Camera.CameraVehicleCaptureMapper">
+    <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.Camera.CameraVehicleCapture">
+        <!--@mbg.generated-->
+        <!--@Table camera_vehicle_capture-->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="serial_number" jdbcType="VARCHAR" property="serialNumber"/>
+        <result column="number" jdbcType="VARCHAR" property="number"/>
+        <result column="camera_record_time" jdbcType="TIMESTAMP" property="cameraRecordTime"/>
+        <result column="place" jdbcType="VARCHAR" property="place"/>
+        <result column="place_record_time" jdbcType="VARCHAR" property="placeRecordTime"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id,
+        serial_number,
+        `number`,
+        camera_record_time,
+        place,
+        place_record_time,
+        create_time,
+        update_time
+    </sql>
+
+    <select id="getPlaceByLicense" resultType="com.tgy.rtls.data.entity.eventserver.VehicleData">
+        select p.id,
+               p.name as placeName,
+               m.id   as `map`,
+               m.name as `mapName`,
+               p.license,
+               p.x,
+               p.y,
+               p.`floor`,
+               mrf.name  floorName,
+               p.`state`,
+               p.fid
+        from parking_place p
+                 left join map_2d m on p.map = m.id
+                 left join map_relevance_floor mrf on mrf.map = m.id AND mrf.level = m.defaultfloor
+        where
+        <if test="map != null">
+            p.map = #{map}
+        </if>
+        <if test="license != null and license != ''">
+            and p.license like concat('%',#{license},'%')
+        </if>
+        <if test="placeName != null and placeName.size() != 0">
+            and p.name in
+            <foreach collection="placeName" item="name" open="(" separator="," close=")">
+                #{name.parkingNo}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getPlaceById" resultType="com.tgy.rtls.data.entity.Camera.CameraVehicleCapture">
+        select c.id,
+               c.event_id,
+               c.serial_number,
+               c.`number`,
+               c.camera_record_time,
+               c.place,
+               c.place_record_time,
+               c.create_time,
+               c.update_time,
+               m.id     as `map`,
+               m.name   as mapName,
+               p.license as number,
+               p.x,
+               p.y,
+               p.`floor`,
+               mrf.name floorName,
+               p.`state`,
+               p.fid
+        from camera_vehicle_capture c
+                 left join parking_place p on p.id=c.place
+                 left join map_2d m on p.map = m.id
+                 left join map_relevance_floor mrf on mrf.map = m.id AND mrf.level = m.defaultfloor
+        <where>
+            <if test="id != null">
+                and p.id=#{id}
+            </if>
+            <if test="license != null and license != ''">
+                and c.number = #{license}
+            </if>
+            <if test="serialNumbers != null and serialNumbers.size() != 0">
+                and place is null and c.serial_number in
+                <foreach collection="serialNumbers" item="serialNumber" open="(" separator="," close=")">#{serialNumber}</foreach>
+                and c.create_time >= #{baseTime} - INTERVAL #{intervalValue} MINUTE
+            </if>
+            order by c.create_time desc
+            limit 1
+        </where>
+    </select>
+
+
+    <select id="getPlaceById2" resultType="com.tgy.rtls.data.entity.Camera.CameraVehicleCapture">
+        select
+        c.id,
+        c.event_id,
+        c.serial_number,
+        c.`number` as `license`,
+        c.camera_record_time,
+        c.place as `place`,
+        c.place_record_time,
+        c.create_time,
+        c.update_time,
+        c.unique_flag,
+        cc.id configId,
+        (select area_name from camera_area_info where id = cc.area_id) areaName,
+        cc.camera_vertex_info cameraVertexInfo,
+        cp.place_id as `capturePlace`,
+        m.id     as `map`,
+        m.name   as mapName,
+        p.name as placeName,
+        p.license as number,
+        p.id,
+        p.x,
+        p.y,
+        p.`floor`,
+        mrf.name floorName,
+        p.`state`,
+        p.fid
+        from camera_vehicle_capture c
+        left join camera_place cp on cp.camera_vehicle_capture_id=c.id
+        left join parking_place p on p.id=cp.place_id
+        left join camera_config cc on cc.serial_number=c.serial_number
+        left join map_2d m on p.map = m.id
+        left join map_relevance_floor mrf on mrf.map = m.id AND mrf.level = m.defaultfloor
+        <where>
+            <if test="ids != null and ids.size() != 0">
+                p.id in
+                <foreach collection="ids" item="id" separator="," open="(" close=")">
+                     #{id}
+                </foreach>
+            </if>
+            <if test="license != null and license != ''">
+                and c.number like concat('%',#{license},'%')
+                AND c.create_time = (
+                    SELECT MAX(c2.create_time)
+                    FROM camera_vehicle_capture c2
+                    WHERE c2.number = c.number
+                )
+            </if>
+            <if test="map != null">
+                and cc.map = #{map}
+            </if>
+            <if test="serialNumbers != null and serialNumbers.size() != 0">
+                and c.serial_number in
+                <foreach collection="serialNumbers" item="serialNumber" open="(" separator="," close=")">#{serialNumber}</foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getAllOrFilteredCameraVehicleCapture" resultType="com.tgy.rtls.data.entity.Camera.CameraVehicleCapture">
+        select c.id,
+        cc.name,
+        c.serial_number,
+        c.`number`,
+        c.camera_record_time,
+        c.place,
+        p.name placeName,
+        c.place_record_time,
+        c.create_time,
+        c.update_time,
+        m.id     as `map`,
+        m.name   as mapName,
+        mrf.name floorName,
+        c.img_url,
+        c.img_path_local
+        from camera_vehicle_capture c
+        left join camera_config cc on cc.serial_number=c.serial_number
+        left join parking_place p on p.id=c.place
+        left join map_2d m on cc.map = m.id
+        left join map_relevance_floor mrf on mrf.map = m.id AND mrf.level = m.defaultfloor
+        <where>
+            <if test="license != null and license != ''">
+                c.number like concat('%',#{license},'%')
+            </if>
+            <if test="serialNumber != null and serialNumber != ''">
+                and c.serial_number like concat('%',#{serialNumber},'%')
+            </if>
+            <if test="name != null and name != ''">
+                and cc.name like concat('%',#{name},'%')
+            </if>
+            <if test="placeName != null and placeName != ''">
+                and p.name like concat('%',#{placeName},'%')
+            </if>
+            <if test="start != null and start != '' and end != null and end != ''">
+                and c.create_time BETWEEN #{start} AND #{end}
+            </if>
+            <if test="floorName != null and floorName != ''">
+                and mrf.name like  concat('%',#{floorName},'%')
+            </if>
+            <if test="map != null and map != ''">
+                and m.id = #{map}
+            </if>
+            <if test="mapids != null and mapids != ''">
+                and cc.map in
+                <foreach close=")" collection="mapids" item="maps" open="(" separator=",">
+                    #{maps}
+                </foreach>
+            </if>
+        </where>
+            <if test="desc != null and desc != ''">
+                order by ${desc} <!--$sql 11-->
+            </if>
+    </select>
+</mapper>

@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.user.SysUserMapper">
+    <resultMap id="userMap" type="com.tgy.rtls.data.entity.user.SysUser">
+        <id column="user_id" property="userId"/>
+        <result column="user_name" property="userName"/>
+        <result column="password" property="password"/>
+        <result column="login_time" property="loginTime"/>
+        <result column="createdTime" property="createdTime"/>
+        <result column="updatedTime" property="updatedTime"/>
+        <result column="rawPassword" property="rawPassword"/>
+        <result column="enable" property="enable"/>
+    </resultMap>
+    <insert id="addLonginRecord">
+        insert into loginrecord(ip,address,phone)
+        values (#{login.ip},#{login.address},#{login.phone})
+    </insert>
+
+    <select id="getAllUsers" resultMap="userMap">
+        SELECT s.user_id,s.user_name,s.password,s.login_time,s.createdTime,s.updatedTime,s.rawPassword,s.enable,
+        (SELECT GROUP_CONCAT(m.name SEPARATOR '--，')
+        from map_2d m
+        left join sys_appuser_map am on am.map_id = m.id
+        where user_id in (s.user_id) ) as mapName
+        FROM sys_user s
+        where 1=1
+        <if test="keyword != null and keyword != ''">
+            and s.user_name like concat('%',#{keyword},'%')
+        </if>
+        <if test="enable != null">
+            and s.enable=#{enable}
+        </if>
+        <if test="desc != null and desc != ''">
+            order by ${desc}
+        </if>
+    </select>
+
+    <select id="getAllUsers2" resultMap="userMap">
+        SELECT distinct s.user_id,s.user_name,s.password,s.login_time,s.createdTime,s.updatedTime,s.rawPassword,s.enable,
+            ( SELECT GROUP_CONCAT(distinct m.name SEPARATOR '，')
+              from map_2d m
+                   left join sys_appuser_map am on am.map_id = m.id
+              where user_id in (s.user_id) and m.enable = 1
+            ) as mapName
+        FROM sys_user s
+                left join sys_appuser_map am on am.user_id = s.user_id
+                left join map_2d m2d on m2d.id=am.map_id
+        WHERE 1=1
+        <if test="enable != null">
+            and s.enable=#{enable}
+        </if>
+        <if test="createuId != null and createuId != ''">
+            and createuId = #{createuId}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            and s.user_name like concat('%',#{keyword},'%')
+        </if>
+        <if test="desc != null and desc != ''">
+            order by ${desc}
+        </if>
+    </select>
+
+    <select id="findUserName" resultMap="userMap">
+        SELECT user_id,user_name,password,login_time,createdTime,updatedTime
+        FROM sys_user
+        where user_name = #{userName}
+    </select>
+
+    <select id="getPermByUserId" resultType="java.lang.String">
+        SELECT
+        user_id,user_name,password,login_time,createdTime,updatedTime
+        FROM
+        sys_user
+        WHERE
+        openid = #{openid}
+    </select>
+    <select id="getUserByIdMap" resultType="com.tgy.rtls.data.entity.map.Map_2d">
+        SELECT
+        distinct
+        m.id,
+        m.NAME,
+        m.mapkey,
+        m.appName,
+        m.fmapID,
+        m.theme as themeName
+        FROM
+        map_2d m
+        LEFT JOIN sys_appuser_map um ON um.map_id = m.id
+        LEFT JOIN sys_user `user` ON `user`.user_id = um.user_id
+
+        WHERE
+        `user`.user_id = #{userId} and m.enable = 1
+    </select>
+    <select id="getUserByIdMap1" resultType="com.tgy.rtls.data.entity.map.Map_2d">
+        SELECT
+        distinct
+        m.id,
+        m.NAME,
+        m.mapkey,
+        m.appName,
+        m.fmapID
+        FROM
+        map_2d m
+        WHERE
+        m.id = #{map}
+    </select>
+    <select id="findByUserId" resultType="java.lang.String" parameterType="int">
+        SELECT
+        u.user_name AS userName,
+        id AS permissId,
+        enabled,
+        #{name} AS name,
+        parentid,
+        parentids,
+        permission,
+        url
+        FROM
+        permission p
+        LEFT JOIN sys_user_permiss up ON up.permiss_id = p.id
+        LEFT JOIN sys_user u ON u.user_id = up.user_id
+        WHERE
+        u.user_id = #{userId}
+    </select>
+    <select id="getUserName" resultMap="userMap">
+        SELECT user_id,user_name,password,login_time,createdTime,updatedTime,enable
+        FROM sys_user
+        where user_name = #{userName}
+    </select>
+    <select id="getByUserId" resultMap="userMap">
+        SELECT user_id,user_name,login_time,createdTime,updatedTime,rawPassword,enable
+        FROM sys_user
+        where user_id=#{userId}
+    </select>
+
+    <delete id="removeByIds">
+        delete from sys_user
+        where user_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="insertUserMap">
+        insert into sys_appuser_map
+        values(#{userId},#{mapid})
+    </insert>
+    <insert id="addUserMap">
+        insert into sys_appuser_map
+        values
+        <foreach collection="mapid" item="mapId" separator=",">
+            (#{userId},#{mapId})
+        </foreach>
+    </insert>
+    <insert id="saveAppUserMap" keyProperty="userId" useGeneratedKeys="true">
+        insert into sys_user(user_id,user_name,password,enable,login_time,createdTime,updatedTime,createuId,rawPassword)
+        values
+        (#{sysUser.userId},#{sysUser.userName},#{sysUser.password},#{sysUser.enable},#{sysUser.loginTime},#{sysUser.createdTime},#{sysUser.updatedTime},#{sysUser.createuId},#{sysUser.rawPassword})
+    </insert>
+
+    <update id="updateAddTime">
+        update sys_user
+        set login_time=#{loginTime}
+        where user_id=#{userId}
+    </update>
+    <update id="updateByUserId">
+        update sys_user
+        <set>
+            <if test="sysUser.userName != ''and sysUser.userName != null">
+                user_name = #{sysUser.userName},
+            </if>
+            <if test="sysUser.password != ''and sysUser.password != null">
+                password = #{sysUser.password},
+            </if>
+            <if test="sysUser.updatedTime != null">
+                updatedTime = #{sysUser.updatedTime},
+            </if>
+            <if test="sysUser.rawPassword != null and sysUser.rawPassword != ''">
+                rawPassword = #{sysUser.rawPassword},
+            </if>
+            <if test="sysUser.enable!=null">
+                enable = #{sysUser.enable}
+            </if>
+        </set>
+        where user_id=#{sysUser.userId}
+    </update>
+
+    <delete id="delUserMap">
+        DELETE
+        FROM
+        sys_appuser_map
+        WHERE
+        user_id = #{userId}
+    </delete>
+
+    <select id="getMapName" resultType="com.tgy.rtls.data.entity.map.Map_2d">
+        SELECT
+        m.id,
+        m.`name`,
+        m.`enable`
+        FROM
+        map_2d AS m
+        LEFT JOIN sys_appuser_map AS usermap ON usermap.map_id = m.id
+        WHERE
+        usermap.user_id = #{userId}
+    </select>
+
+    <select id="getCreateByuid" resultMap="userMap">
+        select s.user_id,s.user_name,s.password,s.login_time,s.createdTime,s.updatedTime,s.createuId
+        from sys_user s left join member m on m.uid = s.createuId
+        where m.uid = #{userId}
+    </select>
+</mapper>

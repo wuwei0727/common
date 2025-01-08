@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.user.PermissionMapper">
+    <select id="findByAll" resultType="com.tgy.rtls.data.entity.user.Permission">
+        select id,enabled,${name} as name,parentid,parentids,permission,url
+        from permission
+        WHERE
+        id not in (31,32,33,34,35)
+    </select>
+    <select id="findByCidAll" resultType="com.tgy.rtls.data.entity.user.Permission">
+        SELECT
+            p.id,
+            p.enabled,
+            p.name,
+            <!--${name} as name,-->
+            p.parentid,
+            p.parentids,
+            p.permission,
+            p.url
+        FROM
+            permission p
+                LEFT JOIN sys_company_permission scp ON scp.permission_id = p.id
+                LEFT JOIN company c ON c.id = scp.company_id
+        WHERE
+            (c.id = #{cid} or p.parentid = 0 and p.enabled !=0)
+    </select>
+
+    <select id="findByCid" resultType="com.tgy.rtls.data.entity.user.Permission">
+            select id,enabled,${name} as name,parentid,parentids,permission,url
+        FROM permission
+        WHERE id IN
+        (SELECT permission_id FROM sys_company_permission WHERE company_id=#{cid})
+        and id not in (31,32,33,34,35)
+        OR parentid=0
+        ORDER BY id
+    </select>
+
+    <select id="findByUid" resultType="com.tgy.rtls.data.entity.user.Permission">
+            select id,enabled,${name} as name,parentid,parentids,permission,url
+        from permission
+        where id in (select permission_id from sys_member_permission where uid=#{uid})
+    </select>
+
+    <select id="findByMemberPermission" resultType="int">
+        select count(1)
+         from sys_member_permission
+        where uid=#{uid} and permission_id=#{permission_id}
+    </select>
+
+    <select id="findByCompanyPermission" resultType="int">
+        select count(1)
+        from sys_company_permission
+        where company_id=#{cid} and permission_id=#{permission_id}
+    </select>
+
+    <insert id="insertMemberPermission">
+        insert into sys_member_permission(permission_id,uid)
+        values (#{permission_id},#{uid})
+    </insert>
+
+    <insert id="insertCompanyPermission">
+        insert into sys_company_permission(permission_id,company_id)
+        value (#{permission_id},#{cid})
+    </insert>
+
+    <insert id="insertMemberProject">
+        INSERT INTO `sys_member_project`(uid,pid)
+        values (#{uid},#{pid})
+    </insert>
+
+    <insert id="insertCompanyProject">
+        INSERT INTO `sys_company_project`(cid,pid)
+        values (#{cid},#{pid})
+    </insert>
+    <insert id="insertMemberPermiss">
+        insert into sys_member_permission
+        values
+        <foreach collection="permissionIds" item="permissionId" separator=",">
+            (#{uid},#{permissionId})
+        </foreach>
+    </insert>
+
+ <insert id="insertMemberPermiss1">
+     insert into sys_member_permission(permission_id,uid)
+     values
+     <foreach collection="permissionIds" item="permissionId" separator=",">
+         (#{permissionId},#{uid})
+     </foreach>
+ </insert>
+
+
+    <delete id="delMemberPermission">
+        delete from sys_member_permission
+        where uid=#{uid}
+        <if test="permission_ids!=null and permission_ids!=''">
+            and permission_id not in
+            <foreach collection="permission_ids" close=")" open="(" separator="," item="permission_id">
+                #{permission_id}
+            </foreach>
+        </if>
+    </delete>
+
+    <delete id="delMemberPermiss">
+        delete from sys_member_permission
+        WHERE uid = #{uid}
+    </delete>
+
+    <delete id="delCompanyPermiss">
+        delete from sys_company_permission
+        where company_id = #{companyId}
+    </delete>
+
+
+    <delete id="delMemberPermissionId">
+        delete from sys_member_permission
+        where uid=#{uid} and permission_id=#{permission_id}
+    </delete>
+
+    <delete id="delMemberPermissionIds">
+        delete from sys_member_permission
+        where uid=#{uid}
+    </delete>
+
+    <delete id="delCompanyPermission">
+        delete from sys_company_permission
+        where company_id=#{cid}
+        <if test="permission_ids!=null and permission_ids!=''">
+            and permission_id not in
+            <foreach collection="permission_ids" close=")" open="(" separator="," item="permission_id">
+                #{permission_id}
+            </foreach>
+        </if>
+    </delete>
+    <select id="findRolePermissions" resultType="java.lang.String">
+           SELECT permission.permission FROM permission WHERE permission.id IN
+   ( SELECT role_permission.permission FROM role_permission LEFT JOIN parking_company ON parking_company.`role`=role_permission.`role` WHERE role_permission.`role`=#{company}
+   <if test="company!=null">
+       AND parking_company.`id`=#{company}
+   </if>
+     )
+
+
+    </select>
+    <select id="getPermByUId" resultType="java.lang.String">
+        SELECT
+            permission
+        FROM
+            permission p
+                LEFT JOIN sys_company_permission mp ON mp.permission_id = id
+                LEFT JOIN company c ON c.id = mp.company_id
+                LEFT JOIN member m ON m.cid = c.id
+        WHERE
+            m.uid = #{uid}
+    </select>
+
+    <select id="getPermisByUser" resultType="com.tgy.rtls.data.entity.user.Permission">
+        select p.id,
+        p.enabled,
+        p.name,
+        p.parentid,
+        p.permission
+        from permission p
+        left join sys_member_permission smp on p.id = smp.permission_id
+        left join member m on smp.uid = m.uid
+        where m.uid = #{uid} or p.parentid = 0
+        and p.id not in (32,33,34,35)
+    </select>
+
+</mapper>

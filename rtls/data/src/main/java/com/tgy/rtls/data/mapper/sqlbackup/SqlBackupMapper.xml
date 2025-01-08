@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.sqlbackup.SqlBackupMapper">
+    <!-- 通用查询映射结果 -->
+  <!--  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.location.Originaldata">
+        <result column="id" property="id" />
+        <result column="filter_dis" property="filter_dis" />
+        <result column="original_dis" property="original_dis" />
+        <result column="tagid" property="tagid" />
+        <result column="rangebsid" property="rangebsid" />
+        <result column="lr" property="lr" />
+    </resultMap>-->
+    <insert id="addSqlBackupFile">
+        insert into sqlbackup(`time`,downloadpath,localpath)
+        value (#{sqlBackup.time},#{sqlBackup.downloadPath},#{sqlBackup.localPath})
+    </insert>
+
+
+    <select id="getSqlBackFileList" resultType="com.tgy.rtls.data.entity.sqlbackup.SqlBackup">
+        SELECT id,`time`,downloadpath as downloadPath,localpath as localPath,flag  FROM sqlbackup where 1=1
+        <if test="flag!=null"  >
+            and   flag=#{flag}
+        </if>
+         <if test="start!=null and end!=null"  >
+           and   `time` between #{start} and #{end}
+         </if>
+
+         order by `id` desc
+    </select>
+    <select id="findSqlBackFileById" resultType="com.tgy.rtls.data.entity.sqlbackup.SqlBackup">
+        SELECT id,`time`,flag,downloadpath as downloadPath,localpath as localPath  FROM sqlbackup where 1=1
+        <if test="id!=null "  >
+           and  `id` =#{id}
+        </if>
+    </select>
+    <update id="updateSqlFlag">
+        update sqlbackup
+        <set>
+            <if test="flag!=null">
+                flag=#{flag}
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+
+
+   <!-- <select id="findByTrail" resultType="com.tgy.rtls.data.entity.location.Trailrecord">
+        select id,area,personid,`time`,x,y,z,`type`,mapid
+        from trailrecord
+        where mapid=#{map}
+        <if test="personid!=null">
+        and personid=#{personid}
+        </if>
+        <if test="name!=null">
+            and `name`=#{name}
+        </if>
+        <if test="num!=null">
+            and num=#{num}
+        </if>
+       &lt;!&ndash; <if test="name!=null and name!=''">
+        and personid in (select id from person where name=#{name})
+        </if>&ndash;&gt;
+        <if test="startTime!=null and endTime!=null and startTime!='' and startTime!=''">
+            and time>#{startTime} and #{endTime}>time
+        </if>
+    </select>
+
+    <select id="findByTrailWithDebugData" resultType="com.tgy.rtls.data.entity.location.DebugRecord">
+        SELECT `x` AS `x`, `y` AS `y`, z AS z, debugdata as debugdata,mapid AS map, `time` AS `time`,(SELECT num  FROM tag WHERE id=#{id}) AS tagid,#{id} as `id`,area as area
+        from trailrecord
+        where mapid=#{map}
+            and personid = (select id from person where tagid=#{id})
+        <if test="startTime!=null and endTime!=null and startTime!='' and startTime!=''">
+            and time>#{startTime} and #{endTime}>time
+        </if>
+    </select>
+
+    <insert id="addDiag">
+        insert into diag(isTx,frametype,uwbdata,hasdiag,diag,`timestamp`,uwb_error,upbsid,x,y)
+        value (#{diagdata.isTx},#{diagdata.frametype},#{diagdata.uwbdata},#{diagdata.hasdiag},#{diagdata.diag},#{diagdata.timestamp},#{diagdata.uwb_error},#{diagdata.upbsid},#{diagdata.x},#{diagdata.y})
+        </insert>
+
+   &lt;!&ndash; <insert id="addTrailrecord">
+        insert into trailrecord(area,personid,x,y,z,`type`,mapid,debugdata)
+        value (#{trailrecord.area},#{trailrecord.personid},#{trailrecord.x},#{trailrecord.y},#{trailrecord.z},#{trailrecord.type},#{trailrecord.mapid},#{trailrecord.debugdata})
+    </insert>&ndash;&gt;
+
+    <select id="getOriginalDataByBsidAndTagid" resultMap="BaseResultMap">
+        SELECT * FROM ( SELECT * FROM originaldata WHERE 1=1
+        <if test="bsid!=null and bsid!=''">
+            and  rangebsid=#{bsid}
+        </if>
+        <if test="tagid!=null and tagid!=''">
+            and  tagid=#{tagid}
+        </if>
+         GROUP BY id DESC ) AS a
+        GROUP BY a.lr
+
+    </select>
+    <select id="gettest" resultType="com.tgy.rtls.data.entity.location.Batch" >
+        SELECT * FROM track WHERE 1=1
+        <if test="batchID!=null and batchID!=''">
+            and  batchID=#{batchID}
+        </if>
+
+
+    </select>-->
+
+</mapper>

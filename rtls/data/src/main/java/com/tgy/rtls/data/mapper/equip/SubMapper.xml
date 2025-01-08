@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.equip.SubMapper">
+    <select id="findByAll" resultType="com.tgy.rtls.data.entity.equip.BsSyn">
+        SELECT s.id,s.num,s.addTime,s.updateTime,s.batteryVolt,s.batteryTime,s.power,
+        (SELECT NAME FROM map_2d WHERE id=s.map)AS mapName,
+        (select ${name} from bstype where class='type' and id=s.type)as typeName,
+        (SELECT ${name} FROM status WHERE TYPE='network' AND typeid=s.networkstate)AS networkName,
+        (SELECT ${name} FROM status WHERE TYPE='power' AND typeid=s.powerstate)AS powerName,
+        (SELECT  ${name} FROM bserror WHERE id=s.error)AS errorName,
+        (SELECT product FROM bsfirmware WHERE bsid=s.num) AS product,
+        (SELECT `release` FROM bsfirmware WHERE bsid=s.num) AS `release`,
+        (SELECT ucb1 FROM bsfirmware WHERE bsid=s.num)AS ucb1,
+        (SELECT armupdatestate FROM bsfirmware WHERE bsid=s.num)AS armupdatestate,
+        (SELECT uwbupdatestate FROM bsfirmware WHERE bsid=s.num)AS uwbupdatestate
+        FROM substation s  LEFT JOIN map_2d m ON s.map = m.id
+        where 1=1
+        <if test="instanceid!=null and instanceid!=''">
+            and  instanceid=#{instanceid}
+        </if>
+
+        <if test="num!=null and num!=''">
+            and num like concat('%',#{num},'%')
+        </if>
+        <if test="type!=null">
+            and type=#{type}
+        </if>
+        <if test="networkstate!=null">
+            and networkstate=#{networkstate}
+        </if>
+        <if test="powerstate!=null">
+            and powerstate=#{powerstate}
+        </if>
+        <if test="relevance==1">
+            and map is not null
+        </if>
+        <if test="relevance==0">
+            and map is null
+        </if>
+        <if test="error==1">
+            and error>1
+        </if>
+        <if test="error==0">
+            and error=1
+        </if>
+        <if test="map!=null and map!=''">
+            and map=#{map}
+        </if>
+        <if test="start!=null and start!=''">
+            and  #{start}>batteryTime or batteryTime is null
+        </if>
+        <if test="desc!=null and desc!=''">
+            order by ${desc}
+        </if>
+
+    </select>
+    <!--$var name=1-->
+    <!--$var desc=1-->
+    <select id="findByAll2" resultType="com.tgy.rtls.data.entity.equip.BsSyn">
+        SELECT s.id,s.num,s.addTime,s.updateTime,s.batteryVolt,s.batteryTime,s.power,b.x,b.y,s.map,b.floor,mrf.name as floorName,bs.name typeName,
+               map_2d.mapKey,map_2d.appName,map_2d.fmapID,map_2d.themeImg,
+        (SELECT NAME FROM map_2d WHERE map_2d.id=s.map)AS mapName,
+        (select ${name} from bstype where class='type' and id=s.type)as typeName,
+        (SELECT ${name} FROM status WHERE TYPE='network' AND typeid=s.networkstate)AS networkName,
+        (SELECT ${name} FROM status WHERE TYPE='power' AND typeid=s.powerstate)AS powerName,
+        (SELECT  ${name} FROM bserror WHERE id=s.error)AS errorName,
+        (SELECT product FROM bsfirmware WHERE bsid=s.num) AS product,
+        (SELECT `release` FROM bsfirmware WHERE bsid=s.num) AS `release`,
+        (SELECT ucb1 FROM bsfirmware WHERE bsid=s.num)AS ucb1,
+        (SELECT armupdatestate FROM bsfirmware WHERE bsid=s.num)AS armupdatestate,
+        (SELECT uwbupdatestate FROM bsfirmware WHERE bsid=s.num)AS uwbupdatestate
+        FROM
+        substation s
+            LEFT JOIN map_2d ON map_2d.id = s.map
+            LEFT JOIN bsconfig b ON b.bsid = s.id
+        left join bstype bs on s.type = bs.id
+        left join map_relevance_floor mrf on mrf.map = map_2d.id AND mrf.level = b.floor
+        WHERE
+        1 =1 and num != 0112
+        <if test="maps != null and maps != ''">
+            and map_2d.id in
+            <foreach collection="maps" open="(" close=")"  separator="," item="maps">
+                #{maps}
+            </foreach>
+        </if>
+        <if test="floorName != null and floorName != ''">
+            and mrf.name like concat('%',#{floorName},'%')
+        </if>
+        <if test="instanceid!=null and instanceid!=''">
+            and  s.instanceid=#{instanceid}
+        </if>
+
+        <if test="num!=null and num!=''">
+            and num like concat('%',#{num},'%')
+        </if>
+
+        <if test="type!=null">
+            and s.type=#{type}
+        </if>
+        <if test="typeName != null and typeName != ''">
+            and s.type = #{typeName}
+        </if>
+        <if test="networkstate!=null">
+            and networkstate=#{networkstate}
+        </if>
+        <if test="powerstate!=null">
+            and powerstate=#{powerstate}
+        </if>
+        <if test="relevance==1">
+            and s.map is not null
+        </if>
+        <if test="relevance==0">
+            and s.map is null
+        </if>
+        <if test="error==1">
+            and error>1
+        </if>
+        <if test="error==0">
+            and error=1
+        </if>
+        <if test="map!=null and map!=''">
+            and map_2d.id=#{map}
+        </if>
+        <if test="start!=null and start!=''">
+            and  (#{start}>batteryTime or batteryTime is null)
+        </if>
+        <if test="power != null">
+            <choose>
+                <when test="power == 100">
+                    and power = 100
+                </when>
+                <when test="power == 50">
+                    and power >= 50 and power &lt; 100
+                </when>
+                <when test="power == 30">
+                    and power >= 30 and power &lt;= 50
+                </when>
+                <when test="power == 10">
+                    and power >= 0 and power &lt;= 30
+                </when>
+            </choose>
+        </if>
+        <if test="desc!=null and desc!=''">
+            order by s.${desc}
+        </if>
+    </select>
+    <select id="findByNameId" resultType="string">
+        select group_concat(num)
+        from substation
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="findById" resultType="com.tgy.rtls.data.entity.equip.Substation">
+    select s.*,
+    (select name from map_2d where id=s.map)as mapName,
+    (select ${name} from status where type='network' and typeid=s.networkstate)as networkName,
+    (select ${name} from status where type='power' and typeid=s.powerstate)as powerName,
+    (select ${name} from bserror where id=s.error)as errorName,
+    (select ${name} from bstype where id=s.type)as typeName,
+    (select product from bsfirmware where bsid=s.num) as product,
+    (select `release` from bsfirmware where bsid=s.num) as `release`,
+    (select sn from bsfirmware where bsid=s.num) as sn,
+    (SELECT armupdatestate FROM bsfirmware WHERE bsid=s.num)AS armupdatestate,
+    (SELECT uwbupdatestate FROM bsfirmware WHERE bsid=s.num)AS uwbupdatestate,
+    (select core from bsfirmware where bsid=s.num) as core,
+    (select qt from bsfirmware where bsid=s.num) as qt,
+    (select ucb1 from bsfirmware where bsid=s.num) as ucb1,
+    (select ucb2 from bsfirmware where bsid=s.num) as ucb2,
+    (select fru from bsfirmware where bsid=s.num) as fru,
+    (select pid from bsfirmware where bsid=s.num) as pid
+    from substation s
+    where id=#{id}
+    </select>
+
+    <select id="findByBsid" resultType="com.tgy.rtls.data.entity.equip.Substation">
+        select *
+        from substation
+        where id=(select bsid from bsconfig where id=#{id})
+    </select>
+
+    <select id="findByNum" resultType="com.tgy.rtls.data.entity.equip.Substation">
+        select *,
+      (select ${name} from bstype where id=s.type)as typeName
+        from substation s
+        where num=#{num}
+    </select>
+
+    <select id="findByMaxnum" resultType="com.tgy.rtls.data.entity.equip.SubSyn">
+        select id,num,
+        (select ${name} from status where type='network' and typeid=s.networkstate)as networkName,
+        (select ${name} from status where type='power' and typeid=s.powerstate)as powerName,
+        (select  ${name} from bserror where id=s.error)as errorName,
+        (select ${name} from bstype where id=s.type)as typeName,
+        (select count(1) from person where sub=s.num and minestate=0)as count
+        from substation s
+        where num=#{num}
+    </select>
+
+    <insert id="addSub" keyProperty="id" useGeneratedKeys="true">
+        insert into substation(num,type,map,deviceType)
+        value (#{sub.num},#{sub.type},#{sub.map},#{sub.deviceType})
+    </insert>
+
+    <insert id="addSubNum" keyProperty="id" useGeneratedKeys="true">
+        insert into substation(num)
+        value (#{sub.num})
+    </insert>
+
+    <update id="updateSub">
+        update substation
+        <set>
+            updateTime=#{sub.updateTime},
+            <if test="sub.num!=null ">
+                num=#{sub.num},
+            </if>
+            <if test="sub.type!=null">
+                type=#{sub.type},
+            </if>
+            <if test="sub.deviceType !=null">
+                deviceType=#{sub.deviceType},
+            </if>
+            <if test="sub.power!=null ">
+                power=#{sub.power},
+            </if>
+            <if test="sub.map!=null ">
+                map=#{sub.map},
+            </if>
+            <if test="sub.networkstate!=null ">
+                networkstate=#{sub.networkstate},
+            </if>
+        </set>
+        where id=#{sub.id}
+    </update>
+
+    <delete id="delSub">
+        DELETE substation,bsfirmware FROM substation LEFT JOIN bsfirmware ON substation.num=bsfirmware.bsid
+        where substation.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="delSubInstance">
+         DELETE  bsconfig,substation,bsfirmware
+        FROM  bsconfig LEFT JOIN substation ON bsconfig.bsid= substation.id  JOIN bsfirmware ON substation.num=bsfirmware.bsid
+        where instanceid=#{instanceid}
+    </delete>
+
+    <update id="updateSubNetworkstate">
+        update substation
+        set networkstate=#{state}
+        where num=#{num}
+    </update>
+
+    <update id="updateSubError">
+        update substation
+        set error=#{error}
+        where num=#{num}
+    </update>
+
+    <update id="updateSubPowerstate">
+        update substation
+        set powerstate=#{state}
+        where num=#{num}
+    </update>
+
+    <update id="updateSubBattery">
+        update substation
+        <set>
+            batteryTime=#{batteryTime},
+            <if test="batteryVolt!=null and batteryVolt!=''">
+             batteryVolt=#{batteryVolt},
+            </if>
+            <if test="power != null">
+                power=#{power}
+            </if>
+        </set>
+        where num=#{num}
+    </update>
+
+<!--    <update id="updateSubIp">-->
+<!--        update substation-->
+<!--        set ipAddress=#{ip}-->
+<!--        where num=#{num}-->
+<!--    </update>-->
+
+
+
+    <select id="findBySubCount" resultType="int">
+        select count(1)
+        from substation
+        where map=#{map}
+    </select>
+
+
+<!--    <update id="updateAntennadelay">-->
+<!--        update substation-->
+<!--        set antennadelay=#{antennadelay} ,disfix=#{disfix}-->
+<!--        where id=(select bsid from bsconfig where id=#{id})-->
+<!--    </update>-->
+
+    <select id="findCalcuuByMap" resultType="com.tgy.rtls.data.entity.park.BeaconCount">
+          SELECT (SELECT COUNT(1)
+        FROM substation
+        WHERE map=#{map} AND networkstate=0 and type=1) AS offLine,
+        (SELECT COUNT(1)
+        FROM substation
+        WHERE map=#{map} and type=1)  AS total,
+        (SELECT COUNT(1)
+        FROM substation
+        WHERE map=#{map} AND networkstate=1 and type=1) AS onLine,
+        (select Count(1) from  substation WHERE map=#{map} AND networkstate=2) AS subLowPower,
+        (select count(*) from substation where map=#{map} and type=7)                                                            AS roadSpikeCount,
+        (select count(CASE networkstate WHEN '0' THEN '离线' END) from substation where num != '0112' and map=#{map} and type=7) as rsOffLine,
+        (select count(CASE networkstate WHEN '1' THEN '在线' END) from substation where map=#{map} and type=7)                     as rsOnLine,
+        (select Count(1) from  infrared WHERE map=#{map} AND networkstate=2) AS detectorLowPower
+    </select>
+    <insert id="addBeaconVolt">
+          insert into beaconvolt(num,volt)
+        value (#{num},#{volt})
+    </insert>
+
+    <select id="getCurrentSubMapName" resultType="com.tgy.rtls.data.entity.equip.Substation">
+        select s.id, s.num,s.map, s.networkstate, s.powerstate, s.addTime, s.updateTime,
+              s. power, s.batteryVolt, s.batteryTime,(select m.name from map_2d m where m.id =#{map}) as mapName
+        from substation s
+            left join map_2d m2d on s.map = m2d.id
+        where 1=1
+         and s.num =#{num}
+
+    </select>
+
+    <select id="getSubAll" resultType="com.tgy.rtls.data.entity.equip.DeviceVo">
+        SELECT s.id,s.num,s.map,s.batteryTime
+        FROM
+        substation s
+        LEFT JOIN bsconfig b ON b.bsid = s.id
+    </select>
+
+    <select id="getSubMoreThan30Days" resultType="com.tgy.rtls.data.entity.equip.DeviceVo">
+        select s.id, s.num,s.map,s.batterytime
+        from substation s
+        where s.batteryTime &lt;= NOW() - INTERVAL 30 DAY and num != '0112' and s.networkstate !=2
+        <if test="map != null and map != ''">
+            and map =#{map}
+        </if>
+    </select>
+
+    <select id="getSubMoreThan60Days" resultType="com.tgy.rtls.data.entity.equip.DeviceVo">
+        select s.id, s.num,s.map,s.batterytime
+        from substation s
+        where s.batteryTime &lt;= NOW() - INTERVAL 60 DAY and num != '0112' and s.networkstate !=2
+        <if test="map != null and map != ''">
+            and map =#{map}
+        </if>
+    </select>
+
+    <select id="substationBatteryTimeWarningLevelsQuery" resultType="com.tgy.rtls.data.entity.equip.DeviceVo">
+        SELECT
+        s.id,
+        s.map,
+        s.num,
+        s.networkstate,
+        s.batteryVolt,
+        s.batterytime,
+        CASE
+            WHEN s.networkstate = 1 and s.batteryVolt &lt; 2.69 THEN 4
+            WHEN DATEDIFF(NOW(),s.batterytime) &gt; 30 and DATEDIFF(NOW(),s.batterytime) &lt;= 60 THEN 3
+            WHEN DATEDIFF(NOW(),s.batterytime) &gt; 60 and DATEDIFF(NOW(),s.batterytime) &lt;= 90 THEN 2
+            WHEN DATEDIFF(NOW(),s.batterytime) &gt; 90 THEN 1
+            WHEN s.batterytime is null THEN 1
+            ELSE 12
+        END AS level
+        FROM substation s
+        WHERE num != '0112'
+        and s.networkstate != 2
+        GROUP BY level,id
+        ORDER BY id
+<!--        limit 5-->
+    </select>
+
+    <update id="updateSubForOffline">
+        UPDATE substation
+        SET networkstate=0,updateTime = NOW()
+        WHERE id =#{id} AND networkstate != 0
+    </update>
+
+    <update id="updateSubLessThanBatterySub">
+        update substation
+        set networkstate=2,updateTime = NOW()
+        where id =#{id} AND networkstate != 2;
+    </update>
+
+    <select id="timeNotUpdateBetweenFetche" resultType="com.tgy.rtls.data.entity.equip.Substation">
+        SELECT * FROM substation
+        WHERE batteryVolt BETWEEN 2.7 AND 3.1
+          AND batteryTime &lt; DATE_SUB(NOW(), INTERVAL 1 MONTH) and networkstate != 0
+        <if test="map != null and map != ''">
+            and map =#{map}
+        </if>
+    </select>
+
+    <select id="getNum" resultType="int">
+        select *
+        from substation
+        where num=#{num};
+    </select>
+    <select id="getBsconfig" resultType="com.tgy.rtls.data.entity.equip.Substation">
+        select
+            s.num,s.type,concat(s.power,'%')power1,s.batteryVolt,if(s.type=1,'信标','道钉') typeName,
+        (select name from map_relevance_floor mrf where mrf.map=s.map and mrf.level=b.floor)floorName,
+        CASE
+                WHEN s.power &lt;= 1 or s.networkstate = 2 THEN '低电量'
+        WHEN s.networkstate = 0 THEN '离线'
+        WHEN s.networkstate = 1 THEN '在线'
+        ELSE '未知状态'
+        END AS networkName,
+        (select name from map_2d m where m.id = s.map) as mapName,
+        s.addTime addTime1,s.updateTime updateTime1,s.batteryTime batteryTime1,
+        b.bsid,
+        b.x,
+        b.y,
+        b.z,
+        b.type,
+        b.floor
+        from substation s
+        left join bsconfig b on  s.id = b.bsid
+        <where>
+            <if test="num != null and num != ''">
+                num=#{num}
+            </if>
+            <if test="mapId != null and mapId != ''">
+               and map=#{mapId}
+            </if>
+        </where>
+
+    </select>
+
+    <insert id="addSub1" keyProperty="id" useGeneratedKeys="true">
+        insert substation(num,map,addTime)
+        value (#{num},#{map},#{addTime})
+    </insert>
+
+    <insert id="addBsconfig" keyProperty="id" useGeneratedKeys="true">
+        insert into bsconfig(bsconfig.bsid, bsconfig.x, bsconfig.y, bsconfig.z, bsconfig.floor)
+           values (#{bs.bsid},#{bs.x},#{bs.y},#{bs.z},#{bs.floor})
+    </insert>
+
+    <delete id="delSub1">
+        delete
+        from substation
+        where id=#{id};
+    </delete>
+
+    <delete id="delBsconfig">
+        delete
+        from bsconfig
+        where bsid=#{id};
+    </delete>
+
+    <update id="updateSub2">
+        update substation
+        <set>
+            <if test="num != null and num != ''">
+                num = #{num},
+            </if>
+            <if test="map != null and map != ''">
+                map = #{map},
+            </if>
+        </set>
+        where num =#{num}
+    </update>
+
+    <update id="updateLifetimeByMap">
+        UPDATE substation
+        SET lifetime_months = #{lifetimeMonths}
+        WHERE map = #{map} and type=#{type}
+    </update>
+
+    <update id="updateAddTime">
+        UPDATE substation
+        SET addTime = #{now}
+        WHERE map = #{map} and num=#{num}
+    </update>
+</mapper>

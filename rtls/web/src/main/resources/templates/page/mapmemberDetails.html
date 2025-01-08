@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>移动端账户管理</title>
+    <link rel="stylesheet" href="../css/common/common.css"/>
+    <link rel="stylesheet" href="../css/details.css"/>
+    <script src="../js/common/jquery-1.8.0.min.js"></script>
+    <script src="../js/common/url.js"></script>
+    <script src="../js/common/page.js"></script>
+    <script src="../js/common/common.js"></script>
+    <script src="../js/mapmemberDetails.js"></script>
+</head>
+<body>
+    <div class="top">
+        <span class="topTitle">移动端账户管理 >
+            <span id="titleFlag">新增</span>
+        </span>
+        <div class="topBtn">
+            <shiro:hasAnyPermissions name="apr:edit,apr:add">
+                <span class="save" onclick="save()">
+                    <i></i>保存
+                </span>
+            </shiro:hasAnyPermissions>
+            <span class="refresh" onclick="location.reload()">
+                <i></i>刷新
+            </span>
+            <span class="back" onclick="back()">
+                <i></i>返回
+            </span>
+        </div>
+    </div>
+    <div class="main">
+        <div class="mainBox clearfix">
+            <div class="mainItem marginR">
+                <span class="itemTxt">
+                    <span class="require">*</span>用户账号：
+                </span>
+                <input type="text" placeholder="请输入12位英文或数字的账号 最低6位" autocomplete="off" maxlength="12"
+                           oninput="value=value.replace(/[^\w]/g,'')" name="userName" class="itemInput"/>
+            </div>
+            <div class="mainItem">
+                <span class="itemTxt">
+                  <span class="require">*</span>地图绑定：
+                </span>
+                <div class="batchBox" onclick="switchSele(event)">
+                    <div name="mapid" data-reg="^\S+$" class="batchTxt" data-val=""></div>
+                    <div class="batchList" id="mapid"></div>
+                </div>
+            </div>
+
+
+
+            <div class="mainItem marginR">
+                <span class="itemTxt">
+                    <span class="require">*</span>登录密码：
+                </span>
+                <input type="password" readonly onfocus="this.removeAttribute('readonly')" value=""  placeholder="请输入12位英文加数字的密码 最低6位" id="password" maxlength="12" onkeyup="CountWords()"
+                       oninput="value=value.replace(/[^\w]/g,'')" autocomplete="off" name="password" class="itemInput"/>
+        <!--            <p style="position:absolute;margin-left: 442px;margin-top: -47px;">-->
+        <!--					<span id="txtNum" style="position:absolute;margin-left: -20px;">-->
+        <!--						0-->
+        <!--					</span>-->
+        <!--                /12-->
+        <!--            </p>-->
+                <label>
+                    <img src="../image/common/hide.png" alt="" id="eyes1">
+                </label>
+            </div>
+
+            <div class="mainItem">
+                <span class="itemTxt">
+                    <span class="require">*</span>登录时间：
+                </span>
+                <input type="text" disabled autocomplete="off" id="loginTime" name="loginTime" class="itemInput"/>
+            </div>
+
+            <div class="mainItem marginR">
+                <span class="itemTxt">原密码：</span>
+                <input type="text" autocomplete="off" maxlength="12" disabled placeholder="用于测试查看密码"
+                       name="rawPassword" id="rawPassword" class="itemInput"/>
+            </div>
+
+            <div class="mainItem ">
+                <span class="itemTxt">
+                    <span class="require">*</span>修改时间：
+                </span>
+                <input type="text" disabled autocomplete="off" id="updatedTime" name="updatedTime" class="itemInput"/>
+            </div>
+
+            <div class="mainItemB">
+                <span class="itemTxt">是否启用：</span>
+                <label class="seleLabel">
+                    <input type="checkbox" id="id_enablePop" class="tabCheck" name="enable">
+                    <span style="margin-top:8px;" class="seleIcon"></span>
+                    <span style="padding-left:0;color: red" class="itemDetail">！选中代表启用该账号</span>
+                </label>
+            </div>
+
+<!--            <span class="tipsSpan">-->
+<!--                <img src="../image/common/tip.png" style="width: 27px;left: 178px;position: relative;top: -45px;" onmouseover="hint()">-->
+<!--                <span class="hint">选中代表启用账号</span>-->
+<!--            </span>-->
+        </div>
+        <div class="box" style="height: 300px;"></div>
+    </div>
+    <div class=".main1">
+
+    </div>
+    <!-- 提示 -->
+    <div class="tips" id="tip"></div>
+    <!-- 遮罩 -->
+    <div class="mask" id="mask"></div>
+</body>
+<script type="text/javascript">
+    //  获取元素（两种方式都可以）
+    var input = document.getElementById('password')
+    var imgs = document.getElementById('eyes1');
+    //下面是一个判断每次点击的效果
+    var flag = 0;
+    imgs.onclick = function () {
+        if (flag === 0) {
+            input.type = 'text';
+            eyes1.src = '../image/common/show.png';//睁眼图
+            flag = 1;
+        } else {
+            input.type = 'password';
+            eyes1.src = '../image/common/hide.png';//闭眼图
+            flag = 0;
+        }
+    }
+</script>
+</html>

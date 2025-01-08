@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.map.AreaMapper">
+    <select id="findByAll" resultType="com.tgy.rtls.data.entity.map.Area">
+        select *,
+        (select name from area_type where id=a.type)as typeName,
+        (select color from area_type where id=a.type)as color
+        from area a
+        where 1=1
+        <if test="map!=null">
+           and  map=#{map}
+        </if>
+        <if test="type!=null and type!=''">
+            and type=#{type}
+        </if>
+        <if test="name!=null and name!=''">
+            and name like concat('%',#{name},'%')
+        </if>
+        order by id desc
+    </select>
+
+    <select id="findByMap" resultType="com.tgy.rtls.data.entity.map.Area">
+        select *,
+        (select name from area_type where id=a.type)as typeName,
+        (select color from area_type where id=a.type)as color
+        from area a
+        where  map=#{map} and enable=1
+    </select>
+
+    <select id="findById" resultType="com.tgy.rtls.data.entity.map.Area">
+         select *,
+        (select name from area_type where id=a.type)as typeName,
+        (select color from area_type where id=a.type)as color
+        from area a
+        where id=#{id}
+    </select>
+
+    <select id="findByName" resultType="com.tgy.rtls.data.entity.map.Area">
+         select *
+        from area a
+        where name=#{name}
+    </select>
+
+    <insert id="addArea" keyProperty="id" useGeneratedKeys="true">
+        insert into area(name,type,enable,map,floor)
+        value (#{areaSyn.name},#{areaSyn.type},#{areaSyn.enable},#{areaSyn.map},#{areaSyn.floor})
+    </insert>
+
+    <insert id="addAreaId" keyProperty="id" useGeneratedKeys="true">
+        insert into area(id,name,type,enable,map,floor)
+        value (#{areaSyn.id},#{areaSyn.name},#{areaSyn.type},#{areaSyn.enable},#{areaSyn.map},#{areaSyn.floor})
+    </insert>
+
+    <update id="updateArea">
+        update area
+        <set>
+            <if test="area.name!=null and area.name!=''">
+                name=#{area.name},
+            </if>
+            <if test="area.type!=null and area.type!=''">
+                type=#{area.type},
+            </if>
+            <if test="area.enable!=null">
+                enable=#{area.enable},
+            </if>
+            <if test="area.floor!=null and area.floor!=''">
+                floor=#{area.floor},
+            </if>
+        </set>
+        where id=#{area.id}
+    </update>
+
+    <delete id="delArea">
+        delete from area
+        where id =#{id}
+    </delete>
+
+    <insert id="addEventlogType">
+        insert into eventlogtype(name,instanceid)
+        value (#{name},#{instanceid})
+    </insert>
+
+    <update id="updateEventlogType">
+        update eventlogtype
+        set name=#{name1}
+        where name=#{name2}
+    </update>
+
+    <delete id="delEventlogType">
+        delete from eventlogtype
+        where name=#{name}
+    </delete>
+
+    <select id="findByAreaCount" resultType="com.tgy.rtls.data.entity.map.AreaVO">
+        select id,name,enable,map,
+        (select name from area_type where id=a.type)as typeName,
+        (select count(1) from person p
+        where id IN (SELECT personid FROM inarearecord WHERE AREA=a.id AND outTime IS NULL)
+         and minestate=0)as count,
+         (select maxnum from area_overload where area=a.id)as maxnum
+        from area a
+        where id=#{id}
+    </select>
+    
+    <update id="updateWarnRecordArea">
+        update warnrecord
+        set warnstate=1,endTime=#{endTime}
+        where area=#{id} and warnstate=0
+    </update>
+
+    <update id="updateInArea">
+        update inarearecord
+        set outTime=#{endTime}
+        where area=#{id}
+    </update>
+</mapper>

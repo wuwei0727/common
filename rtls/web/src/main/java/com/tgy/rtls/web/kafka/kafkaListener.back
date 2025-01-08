@@ -1,0 +1,552 @@
+package com.tgy.rtls.web.kafka;
+
+import com.tgy.rtls.data.common.KafukaTopics;
+import com.tgy.rtls.data.common.NullUtils;
+import com.tgy.rtls.data.entity.equip.*;
+import com.tgy.rtls.data.entity.location.Trailrecord;
+import com.tgy.rtls.data.entity.message.VoiceRecord;
+import com.tgy.rtls.data.entity.message.WarnRecord;
+import com.tgy.rtls.data.entity.user.Person;
+import com.tgy.rtls.data.mapper.equip.TagMapper;
+import com.tgy.rtls.data.mapper.message.WarnRecordMapper;
+import com.tgy.rtls.data.service.common.RedisService;
+import com.tgy.rtls.data.service.equip.*;
+import com.tgy.rtls.data.service.location.LocationService;
+import com.tgy.rtls.data.service.lock.impl.RedissonDistributedLocker;
+import com.tgy.rtls.data.service.message.FileService;
+import com.tgy.rtls.data.service.user.PersonService;
+import com.tgy.rtls.data.websocket.WebSocketLocation;
+import net.sf.json.JSONObject;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * @author 许强
+ * @Package com.tgy.rtls.web.kafka
+ * @date 2020/10/23
+ * 接收消息
+ */
+@Service(value = "/kafkaLocation")
+public class kafkaListener {
+    private Logger logger = LoggerFactory.getLogger(kafkaListener.class);
+    @Autowired
+    private TagService tagService;
+    @Autowired
+    private SubService subService;
+    @Autowired
+    private PersonService personService;
+    @Autowired
+    private LocationService locationService;
+    @Autowired
+    private RedisService redisService;
+    @Autowired
+    private WebSocketLocation webSocketLocation;
+    @Autowired(required = false)
+    private TagMapper tagMapper;
+    @Autowired
+    private FileService fileService;
+    @Autowired
+    private BaseService baseService;
+    @Autowired
+    private SubScanService subScanService;
+    @Autowired
+    private TagScanService tagScanService;
+    @Autowired(required = false)
+    private WarnRecordMapper warnRecordMapper;
+    @Autowired
+    private RedissonDistributedLocker redissonDistributedLocker;
+    @Autowired
+    private Executor scheduledExecutorService ;
+    private final static ResourceBundle resourceBundle = ResourceBundle.getBundle("application");
+    private final static String url1 = resourceBundle.getString("file.url");
+
+    /*
+     * 定位数据接收
+     * */
+    @KafkaListener(topics = {KafukaTopics.TAG_LOCATION})
+    public void taglocation(ConsumerRecord<?, ?> record) {
+        scheduledExecutorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Optional<?> kafkaMessage = Optional.ofNullable(record.value());
+                    if (kafkaMessage.isPresent()) {
+                        //当前时间
+                        Object message = kafkaMessage.get();
+                        logger.info("------------------ 接收到标签定位数据 =" + message);
+                        synchronized (this) {
+                            JSONObject json = JSONObject.fromObject(message);
+                            String tagid = json.getString("tagid");//标签编号
+                            int type = json.getInt("type");//定位类型  0：室内三维坐标/煤矿 1：GPS，GPS时，x，y为经纬度，z为精度 2：蓝牙 3 uwb室内定位DW1001
+                            //根据不同类型做不同的数据处理
+                            double x = 0.0;
+                            double y = 0.0;
+                            double z = 0.0;
+                            String  floor=null;
+                            Integer map = 0;//定位来着哪个地图
+                            String area=null;
+                            String debugData="";
+                            long time=new Date().getTime();
+                            double r=0.0;//精度值
+                            if (type == 0) {
+                                x = json.getDouble("x");
+                                y = json.getDouble("y");
+                                z = json.getDouble("z");
+                                r=json.getDouble("r");
+                                floor=json.getString("floor");
+                                Long locationTime = json.getLong("time");
+                                if(locationTime!=null)
+                                    time=locationTime;
+                                area=json.getString("area");
+                                String bsid = json.getString("bsid");//分站编号
+                                 debugData=json.getString("debugData");
+                                 
+                                //2.2判断区域属于哪个地图
+                                Substation substation = subService.findByNum(bsid);
+                                if (NullUtils.isEmpty(substation)) {//没有找到地图信息 结束
+                                    return;
+                                }
+                                map = Integer.valueOf(substation.getMap());
+                            } else if (type == 3) {
+                                String position = json.getString("position");
+                                JSONObject obj2 = JSONObject.fromObject(position);
+                                x = Double.valueOf(String.format("%.2f", Double.valueOf(obj2.getString("x"))));
+                                y = Double.valueOf(String.format("%.2f", Double.valueOf(obj2.getString("y"))));
+                                z = Double.valueOf(String.format("%.2f", Double.valueOf(obj2.getString("z"))));
+                                floor=json.getString("floor");
+                                map = json.getInt("map");
+                            }
+                            //2.存储定位数据到数据库
+                            //2.1判断标签是否绑定了人员
+                            Person person = personService.findByTagNum(tagid);
+                            if (NullUtils.isEmpty(person)) {//没有找到人员信息结束
+                                return;
+                            }
+                            //2.2.1修改人员所在地图信息
+                            if (NullUtils.isEmpty(person.getMap()) || !person.getMap().equals(map)) {
+                                personService.updatePersonMap(person.getId(), map);
+                            }
+                            //1.标签在线
+                            if (person.getStatus() == 0){
+                                tagService.updateTagStatus(tagid, 1);
+                                //传输离线人数信息给前端
+                                JSONObject objectdata = new JSONObject();
+                                objectdata.put("counttype", 2);
+                                objectdata.put("count", personService.findByOff(person.getMap()));
+                                JSONObject objectCount = new JSONObject();
+                                objectCount.put("data", objectdata);
+                                objectCount.put("type", 3);
+                                objectCount.put("map", map);
+                                webSocketLocation.sendAll(objectCount.toString());
+                                //解除离线报警
+                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                String currentTime = dateFormat.format(new Date());
+                                WarnRecord warnRecord=warnRecordMapper.findByType(map,0,person.getId(),10);
+                                if (!NullUtils.isEmpty(warnRecord)) {
+                                    warnRecordMapper.updateWarnRecord(currentTime, warnRecord.getId());
+                                    //3.1.2通知前端结束报警
+                                    JSONObject object = new JSONObject();
+                                    object.put("id",warnRecord.getId());//报警信息编号(唯一标识）
+                                    object.put("warnstate",1);//报警状态 0报警 1结束
+                                    JSONObject objectWarn=new JSONObject();
+                                    objectWarn.put("data",object);
+                                    objectWarn.put("type",2);
+                                    webSocketLocation.sendAll(objectWarn.toString());
+                                }
+                                //将离线时间置空
+                                personService.updatePersonOff(person.getId(),null);
+                            }
+                            //2.3存储数据
+                            Trailrecord trail = new Trailrecord();
+                            trail.setPersonid(person.getId());
+                            trail.setNum(person.getNum());
+                            trail.setName(person.getName());
+                            trail.setMapid(map);
+                            trail.setArea(area);
+                            trail.setType(type);
+                            trail.setX(x);
+                            trail.setY(y);
+                            trail.setZ(z);
+                            trail.setR(r);
+                            if(floor!=null&&!floor.trim().isEmpty())
+                            trail.setFloor(Double.valueOf(floor).shortValue());
+                            trail.setDebugData(debugData);
+                            locationService.addTrailrecord(trail);
+                            //3.实时更新数据到redis
+                            JSONObject data = new JSONObject();
+                            data.put("status", 1);//在线
+                            data.put("tagid", tagid);
+                            data.put("id",person.getTagid());//标签自增id
+                            data.put("map", map);
+                            data.put("area", area);
+                            data.put("x", x);
+                            data.put("y", y);
+                            data.put("z", z);
+                            data.put("r",r);
+                            data.put("floor",floor);
+                            data.put("debugData",debugData);
+                            data.put("personName", person.getName());
+                            data.put("time",new Timestamp(time).toString());
+                            JSONObject object = new JSONObject();
+                            object.put("type", 1);//定位数据传输 1定位数据 2报警数据
+                            object.put("data", data.toString());
+                            object.put("map", map);
+
+                            //3.1设置离线时间并存储实时定位数据
+                            redisService.setex("tag," + tagid, 60, data.toString());
+                            //3.2 存储定位数据用于查找最后一次位置
+                            redisService.set("tag:" + tagid, data.toString());
+                            //4.通过websocket传输数据给前端
+                            webSocketLocation.sendAll(object.toString());
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    logger.info("定位数据接收异常");
+                }
+            }
+        });
+    }
+
+    /*
+     * 定位卡传感数据接收
+     * */
+    @KafkaListener(topics = {KafukaTopics.TAG_SENSOR})
+    public void tagsensor(ConsumerRecord<?, ?> record) {
+        scheduledExecutorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Optional<?> kafkaMessage = Optional.ofNullable(record.value());
+                    if (kafkaMessage.isPresent()) {
+                        Object message = kafkaMessage.get();
+                        JSONObject json = JSONObject.fromObject(message);
+                        String tagid = json.getString("tagid");
+                        double power = json.getDouble("power");//电量
+                        /*
+                         * 搜寻标签功能
+                         * */
+                        //1.判断是否开启了搜寻标签功能
+                        redissonDistributedLocker.lock("tagscan"+tagid, TimeUnit.SECONDS,5);
+                        String value = redisService.get("tagScan");
+
+                        if (!NullUtils.isEmpty(value) && value.equals("yes")) {//2.开启了
+                            Tag tag = tagService.findByNum(tagid);
+                            //2.1判断该标签有没有存储到服务器中
+                            TagScan tagScan = new TagScan();
+                            if (NullUtils.isEmpty(tag)) {
+                                tagScan.setStatus(0);
+                            } else {
+                                tagScan.setStatus(1);
+                            }
+                            tagScan.setBatteryVolt(power);
+                            tagScan.setNum(tagid);
+                            tagScan.setType(1);
+                            //2.2判断该标签有没有扫描到过
+                            TagScan scan = tagScanService.findByNum(tagid);
+                            if (NullUtils.isEmpty(scan)) {
+                                tagScanService.addTagScan(tagScan);
+                            }
+                        }
+                        redissonDistributedLocker.unlock("tagscan"+tagid);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+    /*
+     * 报警模块的报警数据接收以及项目概览的数据
+     * */
+    @KafkaListener(topics = {KafukaTopics.WARN_MESSAGE})
+    public void warnmessage(ConsumerRecord<?, ?> record) {
+        Optional<?> kafkaMessage = Optional.ofNullable(record.value());
+        if (kafkaMessage.isPresent()) {
+            Object message = kafkaMessage.get();
+            logger.info("------------------ 接收到项目概览数据 =" + message);
+            webSocketLocation.sendAll(message.toString());
+        }
+    }
+
+    private double batter = 0.1;//分站电压变化临界值
+
+    /*
+     * 基站状态接收
+     * */
+    @KafkaListener(topics = {KafukaTopics.BS_STATE})
+    public void bsstate(ConsumerRecord<?, ?> record) {
+        scheduledExecutorService.execute(new Runnable() {
+            @Override
+            public void run() {
+
+                    Optional<?> kafkaMessage = Optional.ofNullable(record.value());
+                    if (kafkaMessage.isPresent()) {
+                        Object message = kafkaMessage.get();
+                        logger.info("------------------ 接收到基站状态数据 =" + message);
+                        JSONObject json = JSONObject.fromObject(message);
+                        int type = json.getInt("type");//1煤炭 2uwb
+                        //根据不同类型的基站走不同分支
+                        String bsid = json.getString("bsid");//基站编号
+                        redissonDistributedLocker.lock("bsstate"+bsid,TimeUnit.SECONDS,5);
+                        try {
+                        if (type == 1) {
+                            Substation sub = subService.findByNum(bsid);
+                            //煤炭分站判断
+                            int errorCode = json.getInt("errorCode");//异常码 1：供电状态   2：网络状态  3：CAN口状态  4：UWB状态
+                            int state = json.getInt("state");//状态 0正常 1异常
+                            String ip=json.getString("ip");
+                            Double chargeVolt = json.getDouble("chargeVolt");//充电电压 errorCode=1&&state=0时有效
+                            Double batteryVolt = json.getDouble("batteryVolt");//电池电压 errorCode=1 有效
+                            long time = json.getLong("time");//电压检测时间
+                            if (!NullUtils.isEmpty(sub)) {
+                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                //修改ip
+                                if (NullUtils.isEmpty(sub.getIpAddress())){
+                                    subService.updateSubIp(bsid,ip);
+                                }else {
+                                    if (!sub.getIpAddress().equals(ip)) {
+                                        subService.updateSubIp(bsid, ip);
+                                    }
+                                }
+                                //1.供电状态
+
+                                if (errorCode == 1) {
+                                    //1.1分站在线
+                                    if (sub.getNetworkstate() == 0) {
+                                        subService.updateSubNetworkstate(bsid, 1);
+                                    }
+                                    if (state == 0) {//1.2正常
+                                        if (sub.getPowerstate() == 1) {//1.2.1改为主电供电
+                                            subService.updateSubPowerstate(bsid, 0);
+                                            if(sub.getNetworkstate()==1){//网络正常，且主电供电，基站修改为无故障
+                                                subService.updateSubError(bsid,1);
+                                            }
+
+                                        }
+                                    } else {//1.3异常
+                                        if (sub.getPowerstate() == 0){//1.3.1改为备用电源供电
+                                            subService.updateSubPowerstate(bsid, 1);
+                                            subService.updateSubError(bsid,2);
+                                        }
+                                        //1.3.2如果电压变化超过了临界值就修改
+                                        boolean result=true;
+                                        if (!NullUtils.isEmpty(sub.getBatteryVolt())){
+                                            result = Math.abs(Double.parseDouble(sub.getBatteryVolt()) - batteryVolt) >= batter;
+                                        }
+                                        if (result) {
+                                            //1.3.3电池供电时修改电压和电压检测时间
+                                            subService.updateSubBattery(bsid, String.valueOf(batteryVolt), dateFormat.format(time));
+                                        }
+                                    }
+                                } else if (errorCode == 2) {//2.网络状态
+                                    if (state == 0) {//2.1正常
+                                        if (sub.getNetworkstate() == 0) {
+                                            subService.updateSubNetworkstate(bsid, 1);
+                                            if(sub.getPowerstate()==0){//主电供电，且网络正常，基站修改为无故障
+                                                subService.updateSubError(bsid,1);
+                                            }
+                                        }
+                                    } else {//2.2异常
+                                        if (sub.getNetworkstate() == 1) {
+                                            //2.2.1修改状态为离线
+                                            subService.updateSubNetworkstate(bsid, 0);
+                                            subService.updateSubError(bsid,2);
+                                            //2.2.2修改电压和电压检测时间
+                                            subService.updateSubBattery(bsid, null, dateFormat.format(new Date()));
+                                        }
+                                    }
+                                }
+                            }
+                            /*
+                             * 搜寻分站功能
+                             * */
+                            //1.判断是否开启了搜寻分站的功能
+                            String value=redisService.get("subScan");
+                            if (!NullUtils.isEmpty(value)&&value.equals("yes")){//2.开启了
+                                //2.1判断该分站有没有存储到服务器中
+                                SubScan subScan=new SubScan();
+                                subScan.setBatteryVolt(batteryVolt);
+                                subScan.setIpAddress(ip);
+                                subScan.setNum(bsid);
+                                subScan.setPowerstate(0);
+                                if (NullUtils.isEmpty(sub)){
+                                    subScan.setStatus(0);
+                                }else {
+                                    subScan.setStatus(1);
+                                }
+                                //2.2判断该分站有没有扫描到过
+                                SubScan scan=subScanService.findByNum(bsid);
+                                if (NullUtils.isEmpty(scan)){
+                                    subScanService.addSubScan(subScan);
+                                }
+                            }
+                        }else if (type==2){
+                            //微基站判断
+                            int instanceid=json.getInt("instanceid");//实例id
+                            int map = json.getInt("map");//基站所在地图
+                            String configuration = json.getString("configuration");
+                            JSONObject json1 = JSONObject.fromObject(configuration);
+                            String anchor = json1.getString("anchor");
+                            JSONObject json2 = JSONObject.fromObject(anchor);
+                            String position = json2.getString("position");
+                            Boolean initiator = json2.getBoolean("initiator");
+                            JSONObject json3 = JSONObject.fromObject(position);
+                            double x = json3.getDouble("x");
+                            double y = json3.getDouble("y");
+                            double z = json3.getDouble("z");
+                            Basestation base=null;
+                            boolean equal=true;
+                            short init=(short)(initiator?1:0);
+                            Basestation basestation=baseService.findByNum(bsid);
+
+                            if(basestation==null ||!(x==basestation.getX()&& y==basestation.getY()&& z==basestation.getZ() &&init==basestation.getInitiator()&&basestation.getNetworkstate()==1)){
+                                base=new Basestation();
+                            base.setInstanceid(instanceid);
+                            base.setMap(map+"");
+                            base.setNetworkstate(1);
+                            base.setNum(bsid);
+                            base.setX(x);
+                            base.setY(y);
+                            base.setZ(z);
+                            base.setInitiator(init);
+                                equal=false;
+                            }
+                            if (NullUtils.isEmpty(basestation)){//没有就添加
+                                baseService.addBasestation(base);
+                            }else{//有就修改
+                                if(!equal) {
+                                    base.setId(basestation.getId());
+                                    baseService.updateBasestation(base);
+                                }
+                            }
+                        }
+
+                    }catch (Exception e) {
+                            e.printStackTrace();
+                            logger.info("基站状态数据异常");
+                        } finally {
+                            redissonDistributedLocker.unlock("bsstate"+bsid);
+                        }
+                }
+            }
+        });
+    }
+
+    /*
+     * 音频接收
+     * */
+    @KafkaListener(topics = {KafukaTopics.FIlE_RES})
+    public void fileres(ConsumerRecord<?, ?> record) {
+        Optional<?> kafkaMessage = Optional.ofNullable(record.value());
+        if (kafkaMessage.isPresent()) {
+            Object message = kafkaMessage.get();
+            logger.info("------------------ 接收到音频文件数据 =" + message);
+            JSONObject json = JSONObject.fromObject(message);
+            int fileType = json.getInt("fileType");
+            int bsid = json.getInt("bsid");//基站编号
+            int target = json.getInt("target");//标签名
+            String messageid = json.getString("messageid");//唯一id
+            int state = json.getInt("state");//状态 0成功 1已读 2发送失败 -1发送中
+            String fileName = json.getString("fileName");//文件名
+            int direction = json.getInt("direction");//方向 0上行 1下行
+            String url = json.getString("url");//完整的地址
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+            String currentTime = dateFormat.format(new Date());
+            if (direction == 0 && state == -1) {//上行且状态为发送中
+                //判断该target标签有没有绑定人
+                Person person = personService.findByTagNum(String.valueOf(target));
+                if (!NullUtils.isEmpty(person)){
+                    VoiceRecord voiceRecord = new VoiceRecord();
+                    voiceRecord.setTitle(currentTime);
+                    voiceRecord.setStatus(state);
+                    voiceRecord.setRandom(messageid);
+                    voiceRecord.setDirection(direction);
+                    voiceRecord.setInstanceid(person.getInstanceid());
+                    voiceRecord.setPersonid(person.getId());
+                 //   voiceRecord.setFile(url1 + bsid + "/" + fileName + ".wav");
+                    fileService.addVoice(voiceRecord);
+                    //传输信息给前端
+                    JSONObject data = new JSONObject();
+                    data.put("describe", person.getName()+"发送一条消息");
+                    data.put("time",currentTime);
+                    JSONObject object = new JSONObject();
+                    object.put("type", 5);//1定位数据 2报警数据 3统计人数 4区域信息 5音频消息
+                    object.put("data", data.toString());
+                    object.put("map", person.getMap());
+                    //4.通过websocket传输数据给前端
+                    webSocketLocation.sendAll(object.toString());
+                }
+                return;
+            }
+            fileService.updateVoice(messageid, state,null,null);
+        }
+    }
+
+
+    /*
+     * 文本接收
+     * */
+    @KafkaListener(topics = {KafukaTopics.TEXT_RES})
+    public void textinfres(ConsumerRecord<?, ?> record) {
+        Optional<?> kafkaMessage = Optional.ofNullable(record.value());
+        if (kafkaMessage.isPresent()) {
+            Object message = kafkaMessage.get();
+            logger.info("------------------ 接收到文本文件数据 =" + message);
+            JSONObject json = JSONObject.fromObject(message);
+            String messageid = json.getString("messageid");//唯一id
+            int state = json.getInt("state");//状态 0: 发送/接收中  1：发送/接收成功  2：消息已读 3：发送/接收失败
+            //修改接收的文字状态
+            fileService.updateText(messageid, state);
+        }
+    }
+
+    /*
+     * 标签参数配置
+     * */
+    @KafkaListener(topics = {KafukaTopics.TAG_CONTROLRES})
+    public void tagcontrolres(ConsumerRecord<?, ?> record) {
+        Optional<?> kafkaMessage = Optional.ofNullable(record.value());
+        if (kafkaMessage.isPresent()) {
+            Object message = kafkaMessage.get();
+            JSONObject json = JSONObject.fromObject(message);
+            String keyOrder = json.getString("keyOrder");
+            logger.info("------------------ 接收到标签参数数据 "+keyOrder+"===========>" + message);
+            if (keyOrder.equals("locpara")) {//定位频率
+                Integer loca_inval = json.getInt("loca_inval") / 1000;//唯一id
+                String tagid = json.getString("tagid");//标签编号
+                //修改定位频率
+                tagMapper.updateLocaInval(tagid, loca_inval);
+            } else if (keyOrder.equals("versioninf")) {
+                System.out.println("修改标签版本");
+            }
+        }
+    }
+
+
+    /*
+     * 基站参数配置
+     * */
+    @KafkaListener(topics = {KafukaTopics.BS_CONTROLRES})
+    public void bscontrolres(ConsumerRecord<?, ?> record) {
+        Optional<?> kafkaMessage = Optional.ofNullable(record.value());
+        if (kafkaMessage.isPresent()) {
+            Object message = kafkaMessage.get();
+            logger.info("------------------ 接收到基站参数数据 =" + message);
+            JSONObject json = JSONObject.fromObject(message);
+        }
+    }
+
+}

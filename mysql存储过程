@@ -1,0 +1,31 @@
+-- 添加车位使用记录，随机车位、地图、时间
+DROP PROCEDURE IF EXISTS insert_use_75;
+
+DELIMITER //
+CREATE PROCEDURE insert_use_75 ( IN num INT, IN startTime DATETIME, IN endTime DATETIME )
+BEGIN
+DECLARE i INT DEFAULT 1;
+
+myloop: WHILE i <= num DO
+        SET @randomTime = DATE_ADD(startTime, INTERVAL FLOOR(RAND() * TIMESTAMPDIFF(MINUTE, startTime, endTime)) MINUTE);
+
+        IF @randomTime > endTime THEN -- 如果随机时间大于结束时间，跳出循环
+            LEAVE myloop;
+        END IF;
+
+        -- 修改开始：
+        -- 随机选择map表中的id
+        SELECT id INTO @randomMapId FROM map_2d ORDER BY RAND() LIMIT 1;
+
+        -- 随机选择place表中的id
+        SELECT id INTO @randomPlaceId FROM parking_place ORDER BY RAND() LIMIT 1;
+
+        -- 插入记录
+        INSERT INTO `place_userecord` (`id`, `map`, `place`, `license`, `start`)
+        VALUES (NULL, @randomMapId, @randomPlaceId, NULL, @randomTime);
+
+        SET i = i + 1;
+    END WHILE myloop;
+END //
+DELIMITER;
+CALL insert_use_75(5,'2023-05-13 13:00:00','2023-05-13 13:14:00')

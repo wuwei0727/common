@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.vip.VipParkingMapper">
+    <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.vip.VipParking">
+        <!--@mbg.generated-->
+        <!--@Table vip_parking-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="map" jdbcType="BIGINT" property="map"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="floor" jdbcType="TINYINT" property="floor"/>
+        <result column="source" jdbcType="TINYINT" property="source"/>
+        <result column="floorName" jdbcType="VARCHAR" property="floorName"/>
+        <result column="license" jdbcType="VARCHAR" property="license"/>
+        <result column="reservation_person" jdbcType="VARCHAR" property="reservationPerson"/>
+        <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        <result column="type" jdbcType="TINYINT" property="type"/>
+        <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="duration" jdbcType="VARCHAR" property="duration"/>
+        <result column="state" jdbcType="TINYINT" property="state"/>
+        <result column="mapName" jdbcType="TINYINT" property="mapName"/>
+        <result column="deviceId" jdbcType="VARCHAR" property="deviceId"/>
+        <result column="placeElevatorId" jdbcType="INTEGER" property="placeElevatorId"/>
+        <result column="place" jdbcType="INTEGER" property="place"/>
+    </resultMap>
+
+    <resultMap id="placeNameList" type="com.tgy.rtls.data.entity.park.ParkingCompanyVo">
+        <result property="mapId" column="mapId"/>
+        <result property="mapName" column="mapName"/>
+        <collection property="placeNameList" ofType="com.tgy.rtls.data.entity.park.ParkingCompanyVo">
+            <result property="placeId" column="placeId"/>
+            <result property="placeName" column="placeName"/>
+        </collection>
+    </resultMap>
+
+    <select id="getAllPlaceNameByMapId" resultMap="placeNameList">
+        select m.id    as mapId,
+               m.name  as mapName,
+               pp.id   as placeId,
+               pp.name as placeName
+        from map_2d as m
+                 left join parking_place pp on m.id = pp.map
+<!--        and pp.carbittype = 1-->
+        where 1 = 1
+          and m.enable != 0
+        <if test="type != null and type != '' and type.equals('vipPlace')">
+            and pp.state= 0
+            and pp.carbittype = 1
+        </if>
+
+        <if test="mapIds != '' and mapIds != null">
+            and m.id in
+            <foreach collection="mapIds" open="(" close=")" separator="," item="mapIds">
+                #{mapIds}
+            </foreach>
+        </if>
+        order by mapId
+    </select>
+
+    <sql id="Base_Column_List">
+        <!--@sql select -->
+        v.id,
+        v.`name`,
+        v.map,
+        v.license,
+        v.reservation_person,
+        v.phone,
+        v.duration,
+        v.status,
+        v.`start_time`,
+        v.`end_time`,
+        v.`source`,
+        CONCAT(DATE_FORMAT(v.start_time, '%Y-%m-%d %H:%i'), '至',
+               DATE_FORMAT(v.end_time, '%Y-%m-%d %H:%i')) AS appointmentSlot,
+        m2d.name                                          as mapName,
+        m2d.mapKey,
+        m2d.appName,
+        m2d.fmapID,
+        m2d.mapImg,
+        m2d.themeImg,
+        place.id as place,
+        place.carbittype as type,
+        place.`state`,
+        place.x,
+        place.y,
+        place.fid,
+        place.floor,
+        mrf.name floorName,
+        f.device_num                                      as deviceId
+        <!--@sql from vip_parking v left join map_2d m2d on m2d.id = v.map left join parking_place place on place.id = v.place left join floor_lock f on place.id = f.place left join map_relevance_floor mrf on mrf.map = m2d.id-->
+    </sql>
+
+    <!--$var desc=m2d.id desc-->
+    <select id="getVipParkingSpaceInfo" resultType="com.tgy.rtls.data.entity.vip.VipParking">
+        select distinct
+        <include refid="Base_Column_List"/>
+        from vip_parking v
+                 left join map_2d m2d on m2d.id = v.map
+                 left join parking_place place on place.id = v.place
+                 left join floor_lock f on place.id = f.place
+        left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = v.floor
+        where 1 = 1
+        <if test="parkingName != null and parkingName != ''">
+            and v.name like concat('%', #{parkingName}, '%')
+        </if>
+        <if test="license != null and license != ''">
+            and v.license like concat('%', #{license}, '%')
+        </if>
+        <if test="floorName != null and floorName != ''">
+            and mrf.name like concat('%', #{floorName}, '%')
+        </if>
+        <if test="map != null">
+            and v.map = #{map}
+        </if>
+        <if test="phone != null and phone != ''">
+            and v.phone like concat('%', #{phone}, '%')
+        </if>
+        <if test="state != null">
+            and place.state = #{state}
+        </if>
+        <if test="status != null">
+            and v.status = #{status}
+        </if>
+        <if test="type != null">
+            and v.type = #{type}
+        </if>
+        <if test="mapids != null and mapids != ''">
+            and m2d.id in
+            <foreach close=")" collection="mapids" item="maps" open="(" separator=",">
+                #{maps}
+            </foreach>
+        </if>
+        <if test="desc != null and desc != ''">
+            order by ${desc}
+        </if>
+    </select>
+
+    <select id="getInfoByMapAndName" resultType="com.tgy.rtls.data.entity.park.ParkingPlace">
+        select p.id, p.`name`, p.`floor`,m2d.name as mapName,p.company
+        from parking_place p
+                 left join map_2d m2d on m2d.id = p.map
+        where
+        <if test="map != null">
+            map = #{map}
+        </if>
+        <if test="name != null and name != ''">
+            and p.name = #{name}
+        </if>
+        <if test="state != null">
+            and state = #{state}
+        </if>
+        <if test="type != null">
+            and p.carbittype = #{type}
+        </if>
+    </select>
+
+    <insert id="addVipParingSpaceInfo" keyProperty="id" useGeneratedKeys="true">
+        insert into vip_parking (map, name, place, floor, license, reservation_person, phone,status,start_time,end_time, create_time)
+        values (#{map}, #{name}, #{place}, #{floor}, #{license}, #{reservationPerson}, #{phone}, #{status},#{startTime},#{endTime},#{createTime})
+    </insert>
+
+    <delete id="delVipParingSpaceInfo">
+        delete
+        from vip_parking
+        where id = #{id};
+    </delete>
+
+    <update id="editVipParingSpaceInfo">
+        update vip_parking
+        <set>
+        <if test="map != null">
+            map = #{map},
+        </if>
+        <if test="name != null and name != ''">
+            name = #{name},
+        </if>
+        <if test="place != null">
+            place = #{place},
+        </if>
+        <if test="floor != null and floor != ''">
+            floor = #{floor},
+        </if>
+        <if test="license != null and license != ''">
+            license = #{license},
+        </if>
+        <if test="reservationPerson != null and reservationPerson != ''">
+            reservation_person = #{reservationPerson},
+        </if>
+        <if test="phone != null">
+            phone = #{phone},
+        </if>
+        <if test="status != null">
+            status =  #{status},
+        </if>
+        <if test="startTime != null">
+            start_time = #{startTime},
+        </if>
+            <if test="endTime != null">
+            end_time = #{endTime},
+        </if>
+        <if test="updateTime != null">
+            update_time = #{updateTime}
+        </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="getVipParingSpaceInfoById" resultMap="BaseResultMap">
+        select distinct
+        <include refid="Base_Column_List"/>,ped.id as `placeElevatorId`,ped.name
+        from vip_parking v
+                 left join map_2d m2d on m2d.id = v.map
+                 left join parking_place place on place.id = v.place
+                 left join floor_lock f on f.place = v.place
+                 left join parking_elevator_binding ped on place.elevator_id = ped.id
+        left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = v.floor
+        where v.id = #{id}
+    </select>
+
+    <select id="getVipParingSpaceInfoBySomeTimePart" resultMap="BaseResultMap">
+        select distinct
+        <include refid="Base_Column_List"/>
+        from vip_parking v
+                 left join map_2d m2d on m2d.id = v.map
+                 left join parking_place place on place.id = v.place
+                 left join floor_lock f on f.place = v.place
+        left join map_relevance_floor mrf on mrf.map = m2d.id AND mrf.level = v.floor
+
+        where v.map = #{map}
+        <if test="name != null and name != ''">
+            and v.name = #{name}
+        </if>
+        <if test="license != null and license != ''">
+            and v.license = #{license}
+        </if>
+        <if test="id != null">
+            and v.id != #{id}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and v.start_time &lt;= #{endTime}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            and v.end_time &gt;= #{startTime}
+        </if>
+        <!--          and v.start_time BETWEEN #{startTime} and #{endTime}-->
+        <!--          and v.end_time BETWEEN #{startTime} and #{endTime}-->
+    </select>
+</mapper>

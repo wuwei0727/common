@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>??PARK??????</title>
+    <link rel="shortcut icon" href="../image/titleIcon.ico">
+    <link rel="stylesheet" href="../css/view.css">
+    <link rel="stylesheet" href="../css/jedate/jedate.css" />
+    <link rel="stylesheet" href="../fMap/3.1.3/fMapControl.css" />
+    <script src="../js/common/jquery-1.8.0.min.js"></script>
+    <script src="../js/common/url.js"></script>
+    <script src="../js/common/echarts-view.min.js"></script>
+    <script src="../js/common/jedate.min.js"></script>
+    <script src="../fMap/3.1.3/fengmap.map.min.js"></script>
+    <script src="../fMap/3.1.3/fengmap.plugin.min.js"></script>
+    <script src="../fMap/3.1.3/fengmap.analyser.min.js"></script>
+    <script src="../js/common/initFmapView.js"></script>
+    <script src="../js/common/jquery.liMarquee.js"></script>
+    <script src="../js/view1.js"></script>
+
+    <style>
+        .userViewFlex {
+            justify-content: unset;
+            margin-top: -8px;
+        }
+
+        .userInfoItem {
+            margin: 5px;
+        }
+
+        .noneShow {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <span id="websocket" hidden>
+        <shiro:authenticated>
+            <shiro:principal property="uid" />
+        </shiro:authenticated>
+    </span>
+    <div class="header">
+        <div class="headerTitle" id="header">??PARK??????</div>
+        <div class="headerTime">
+            <span class="headerTimeD"></span><span class="headerTimeT"></span><span class="headerTimeW"></span>
+        </div>
+    </div>
+    <!-- ?????????? -->
+    <div id="fengmap" class="fengmap">
+        <div class="layer1Img">
+            <img src="../image/common/PARKHome3.png" alt="logo" class="imgs2">
+        </div>
+    </div>
+    <div class="oper-l">
+        <div class="oper-box">
+            <div class="oper-btn" id="realtime-btn" onclick="toggleOper(this,'realtime')">???????</div>
+        </div>
+        <div class="realtime" id="realtime">
+            <div class="realtime-list-box">
+                <div class="realtime-list">
+                    <table class="realtime-tab">
+                        <thead>
+                            <tr class="realtime-tab-header">
+                                <td class="order">???</td>
+                                <td class="user">???????</td>
+                            </tr>
+                        </thead>
+                        <tbody id="realtimeTbody"></tbody>
+                    </table>
+                </div>
+                <div class="realtime-icon">
+                    <img src="../image/common/down.png" alt="logo" class="imgs2">
+                </div>
+            </div>
+
+            <div class="realtime-detail" id="realtimeDetail">
+                <div class="r-detail-header">
+                    <div class="r-detail-header-line"></div>
+                    <div class="r-detail-header-name" id="rDetailHeaderName">xx</div>
+                </div>
+                <div class="r-detail-info">
+                    <div class="r-detail-info-type">
+                        <span class="r-detail-info-subtext">??</span>??
+                        <span id="rDetailInfoType">xxx</span>
+                    </div>
+
+                    <div class="r-detail-info-end">
+                        <span class="r-detail-info-subtext">????</span>??
+                        <span id="rDetailInfoEnd">xxx</span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="viewMode3">
+        <!--?��?????2D/3D?��?-->
+        <div class="viewMode" onclick="changeMode(this)"></div>
+    </div>
+
+    <div class="r rHide noneShow" id="usersNumMainBox">
+        <div class="main">
+
+            <div class="bigArea padding10 newboxheight">
+                <div class="areaT">
+                    <img class="areaTIcon" src="../image/common/newTitleIcon2.png"></img>
+                    ?????????
+                    <span class="countTLine">
+                        <span class="countTLineT"></span>
+                        <span class="countTLineB"></span>
+                    </span>
+                </div>
+                <div class="userViewFlex" id="usersNumBox">
+                    <!-- <div class="userInfoItem usericon1">
+                        <div class="userInfoNum" id="userTotal">0</div>
+                        <div class="usreInfoName">???????</div>
+                    </div>
+                    <div class="userInfoItem usericon2">
+                        <div class="userInfoNum" id="visits">0</div>
+                        <div class="usreInfoName">?????????</div>
+                    </div>
+                    <div class="userInfoItem usericon3">
+                        <div class="userInfoNum" id="usersActive">0</div>
+                        <div class="usreInfoName">????????</div>
+                    </div>
+                    <div class="userInfoItem usericon4">
+                        <div class="userInfoNum" id="usersNew">0</div>
+                        <div class="usreInfoName">?????????</div>
+                    </div>
+                    <div class="userInfoItem usericon5">
+                        <div class="userInfoNum" id="usersSearchesTotal">0</div>
+                        <div class="usreInfoName">???????????</div>
+                    </div>
+                    <div class="userInfoItem usericon6">
+                        <div class="userInfoNum" id="sharesTotal">0</div>
+                        <div class="usreInfoName">��?��???????</div>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+
+        <div class="arror toRight arrorRotate" onclick="toggle(this,'right')"></div>
+    </div>
+
+    <div class="tips" id="tip"></div>
+</body>
+
+</html>

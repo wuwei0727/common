@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "shiro.Jsession.timeout",
+      "type": "java.lang.String",
+      "description": "Description for shiro.Jsession.timeout."
+  }
+] }

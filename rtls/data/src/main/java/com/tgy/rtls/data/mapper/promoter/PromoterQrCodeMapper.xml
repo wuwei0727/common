@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tgy.rtls.data.mapper.promoter.PromoterQrCodeMapper">
+  <resultMap id="BaseResultMap" type="com.tgy.rtls.data.entity.promoter.PromoterQrCode">
+    <!--@mbg.generated-->
+    <!--@Table promoter_qr_code-->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="pro_info_id" jdbcType="INTEGER" property="proInfoId" />
+    <result column="dest_id" jdbcType="INTEGER" property="destId" />
+    <result column="shangjia_name" jdbcType="VARCHAR" property="shangjiaName" />
+    <result column="map" jdbcType="VARCHAR" property="map" />
+    <result column="map_name" jdbcType="VARCHAR" property="mapName" />
+    <result column="floor" jdbcType="VARCHAR" property="floor" />
+    <result column="x" jdbcType="VARCHAR" property="x" />
+    <result column="y" jdbcType="VARCHAR" property="y" />
+    <result column="fid" jdbcType="VARCHAR" property="fid" />
+    <result column="type" jdbcType="VARCHAR" property="type" />
+    <result column="promoterPersonName" jdbcType="VARCHAR" property="promoterPersonName" />
+    <result column="qrcode" jdbcType="VARCHAR" property="qrcode" />
+    <result column="qrcodelocal" jdbcType="VARCHAR" property="qrcodelocal" />
+    <result column="desc" jdbcType="VARCHAR" property="desc" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    <!--@sql select -->pqc.id, pqc.pro_info_id,pi.name promoterPersonName,pqc.dest_id,
+    pqc.shangjia_name, pqc.`map`, pqc.map_name, pqc.`floor`, pqc.x,
+    pqc.y, pqc.fid, pqc.`type`,pqc.`desc`,pqc.qrcode,pqc.qrcodelocal,pqc.create_time,pqc.update_time
+    <!--@sql from promoter_qr_code pqc
+    left join promoter_info pi on pqc.pro_info_id = pi.id-->
+
+
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    <!--@mbg.generated-->
+    select 
+    <include refid="Base_Column_List" />
+    from promoter_qr_code pqc
+    left join promoter_info pi on pqc.pro_info_id = pi.id
+    where pqc.id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    <!--@mbg.generated-->
+    delete from promoter_qr_code
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.tgy.rtls.data.entity.promoter.PromoterQrCode" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into promoter_qr_code (pro_info_id, dest_id, shangjia_name, `map`, map_name, `floor`, x, y, fid,`desc`,create_time)
+    values (#{proInfoId,jdbcType=INTEGER}, #{destId,jdbcType=INTEGER}, #{shangjiaName,jdbcType=VARCHAR}, 
+      #{map,jdbcType=VARCHAR}, #{mapName,jdbcType=VARCHAR}, #{floor,jdbcType=VARCHAR}, 
+      #{x,jdbcType=VARCHAR}, #{y,jdbcType=VARCHAR}, #{fid,jdbcType=VARCHAR},#{desc,jdbcType=VARCHAR},#{createTime}
+      )
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.tgy.rtls.data.entity.promoter.PromoterQrCode" useGeneratedKeys="true">
+    <!--@mbg.generated-->
+    insert into promoter_qr_code
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="proInfoId != null">
+        pro_info_id,
+      </if>
+      <if test="destId != null">
+        dest_id,
+      </if>
+      <if test="shangjiaName != null">
+        shangjia_name,
+      </if>
+      <if test="map != null">
+        `map`,
+      </if>
+      <if test="mapName != null">
+        map_name,
+      </if>
+      <if test="floor != null">
+        `floor`,
+      </if>
+      <if test="x != null">
+        x,
+      </if>
+      <if test="y != null">
+        y,
+      </if>
+      <if test="fid != null">
+        fid,
+      </if>
+      <if test="type != null">
+        `type`,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="proInfoId != null">
+        #{proInfoId,jdbcType=INTEGER},
+      </if>
+      <if test="destId != null">
+        #{destId,jdbcType=INTEGER},
+      </if>
+      <if test="shangjiaName != null">
+        #{shangjiaName,jdbcType=VARCHAR},
+      </if>
+      <if test="map != null">
+        #{map,jdbcType=VARCHAR},
+      </if>
+      <if test="mapName != null">
+        #{mapName,jdbcType=VARCHAR},
+      </if>
+      <if test="floor != null">
+        #{floor,jdbcType=VARCHAR},
+      </if>
+      <if test="x != null">
+        #{x,jdbcType=VARCHAR},
+      </if>
+      <if test="y != null">
+        #{y,jdbcType=VARCHAR},
+      </if>
+      <if test="fid != null">
+        #{fid,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.tgy.rtls.data.entity.promoter.PromoterQrCode">
+    <!--@mbg.generated-->
+    update promoter_qr_code
+    <set>
+      <if test="proInfoId != null">
+        pro_info_id = #{proInfoId,jdbcType=INTEGER},
+      </if>
+      <if test="destId != null">
+        dest_id = #{destId,jdbcType=INTEGER},
+      </if>
+      <if test="shangjiaName != null">
+        shangjia_name = #{shangjiaName,jdbcType=VARCHAR},
+      </if>
+      <if test="map != null">
+        `map` = #{map,jdbcType=VARCHAR},
+      </if>
+      <if test="mapName != null">
+        map_name = #{mapName,jdbcType=VARCHAR},
+      </if>
+      <if test="floor != null">
+        `floor` = #{floor,jdbcType=VARCHAR},
+      </if>
+      <if test="x != null">
+        x = #{x,jdbcType=VARCHAR},
+      </if>
+      <if test="y != null">
+        y = #{y,jdbcType=VARCHAR},
+      </if>
+      <if test="fid != null">
+        fid = #{fid,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        `type` = #{type,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.tgy.rtls.data.entity.promoter.PromoterQrCode">
+    <!--@mbg.generated-->
+    update promoter_qr_code
+    set pro_info_id = #{proInfoId,jdbcType=INTEGER},
+      dest_id = #{destId,jdbcType=INTEGER},
+      shangjia_name = #{shangjiaName,jdbcType=VARCHAR},
+      `map` = #{map,jdbcType=VARCHAR},
+      map_name = #{mapName,jdbcType=VARCHAR},
+      `floor` = #{floor,jdbcType=VARCHAR},
+      x = #{x,jdbcType=VARCHAR},
+      y = #{y,jdbcType=VARCHAR},
+      fid = #{fid,jdbcType=VARCHAR},
+      `desc` = #{desc,jdbcType=VARCHAR},
+    update_time=#{updateTime}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <update id="updateQrCodeById" parameterType="com.tgy.rtls.data.entity.promoter.PromoterQrCode">
+    <!--@mbg.generated-->
+    update promoter_qr_code
+    set qrcode = #{qrcode,jdbcType=VARCHAR},qrcodelocal =#{qrcodelocal}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <!--$var desc=1-->
+  <select id="getPromoterQrCodeInfo" resultType="com.tgy.rtls.data.entity.promoter.PromoterQrCode">
+    select <include refid="Base_Column_List" />
+    from promoter_qr_code pqc
+    left join promoter_info pi on pqc.pro_info_id = pi.id
+    where 1=1
+    <if test="name != null and name != ''">
+      and pi.name like concat('%',#{name},'%')
+    </if>
+    <if test="shangJiaName != null and shangJiaName != ''">
+      and pqc.shangjia_name like concat('%',#{shangJiaName},'%')
+    </if>
+    <if test="map != null ">
+      and pqc.map = #{map}
+    </if>
+    <if test="mapids != null and mapids != ''">
+      and pqc.map in
+      <foreach close=")" collection="mapids" item="mapids" open="(" separator=",">
+        #{mapids}
+      </foreach>
+    </if>
+    <if test="desc != null and desc != ''">
+      order by ${desc}
+    </if>
+  </select>
+
+  <delete id="deleteByIdIn">
+    delete from promoter_qr_code
+    where id in
+    <foreach item="id" index="index" collection="ids" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+  </delete>
+
+  <select id="getById" resultMap="BaseResultMap">
+    select id, pro_info_id, dest_id, shangjia_name, map, map_name,`desc`
+    from promoter_log
+    where pro_info_id = #{id}
+  </select>
+</mapper>
